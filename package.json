@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "build": "rm -rf dist && mkdir -p dist && cp -R assets areas services index.html rebates-financing.html robots.txt script.js service-areas.html sitemap.xml styles.css dist/",
+    "build": "rm -rf dist && mkdir -p dist/server dist/.openai && cp -R assets areas services index.html rebates-financing.html robots.txt script.js service-areas.html sitemap.xml styles.css dist/ && cp .openai/hosting.json dist/.openai/hosting.json && cp server/index.js dist/server/index.js",
     "start": "python3 -m http.server 8080"
   },
   "dependencies": {}
