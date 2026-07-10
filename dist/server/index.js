@@ -1,11 +1,13 @@
 import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const staticRoot = path.resolve(__dirname, "..");
+const rootCandidates = [
+  path.resolve(process.cwd(), "dist"),
+  path.resolve(process.cwd()),
+  path.resolve(process.cwd(), "..")
+];
+const staticRoot = rootCandidates.find((candidate) => fs.existsSync(path.join(candidate, "index.html"))) || process.cwd();
 const port = Number(process.env.PORT || 8080);
 
 const mimeTypes = {
