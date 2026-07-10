@@ -1,5 +1,6 @@
 {
   "scripts": {
+    "build": "rm -rf dist && mkdir -p dist && cp -R assets areas services index.html rebates-financing.html robots.txt script.js service-areas.html sitemap.xml styles.css dist/",
     "start": "python3 -m http.server 8080"
   },
   "dependencies": {}
