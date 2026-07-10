@@ -1,7 +1,10 @@
-const http = require("http");
-const fs = require("fs");
-const path = require("path");
+import http from "node:http";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const staticRoot = path.resolve(__dirname, "..");
 const port = Number(process.env.PORT || 8080);
 
