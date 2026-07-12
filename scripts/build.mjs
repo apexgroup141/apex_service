@@ -32,12 +32,16 @@ const mimeTypes = {
 
 fs.rmSync(dist, { force: true, recursive: true });
 fs.mkdirSync(path.join(dist, "server"), { recursive: true });
-fs.mkdirSync(path.join(dist, ".openai"), { recursive: true });
 
 for (const item of filesToCopy) {
   fs.cpSync(path.join(root, item), path.join(dist, item), { recursive: true });
 }
-fs.copyFileSync(path.join(root, ".openai", "hosting.json"), path.join(dist, ".openai", "hosting.json"));
+
+const hostingConfigPath = path.join(root, ".openai", "hosting.json");
+if (fs.existsSync(hostingConfigPath)) {
+  fs.mkdirSync(path.join(dist, ".openai"), { recursive: true });
+  fs.copyFileSync(hostingConfigPath, path.join(dist, ".openai", "hosting.json"));
+}
 
 function listFiles(dir) {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
