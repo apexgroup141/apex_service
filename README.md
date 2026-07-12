@@ -1,33 +1,43 @@
-# Shepsheley Heating & Cooling site
+# Apex Service Group LLC website
 
-Static HVAC landing page built around the combined structure from Varsity Heating and Call Mayster:
+Static HVAC website for Apex Service Group LLC.
 
-- Heat pumps
-- Mini-splits
-- Furnaces
-- Air conditioning
-- Ductwork
-- Repair and maintenance
-- Rebates and financing
-- Service areas
-- SEO service pages
-- Expanded service area list
-- City landing pages are included in `sitemap.xml`, but the visible Areas page stays a plain coverage list.
-
-Open `index.html` directly in a browser, or run a local static server from this folder:
+## Local preview
 
 ```bash
 python3 -m http.server 4173
 ```
 
-Editable placeholders:
+Open:
 
-- Company name: `Shepsheley Heating & Cooling`
-- Phone: `(206) 555-0198`
-- Email: `hello@shepsheleyhvac.com`
-- Service area list: Seattle, Bellevue, Redmond, Kirkland, Tacoma, Olympia, King County, Pierce County, Thurston County, Kitsap County
+```text
+http://127.0.0.1:4173/index.html
+```
 
-Main URLs:
+## Production build
+
+```bash
+npm run build
+```
+
+The build output is generated into:
+
+```text
+dist
+```
+
+## Cloudflare Pages settings
+
+Use these settings when connecting the GitHub repository:
+
+```text
+Framework preset: None
+Build command: npm run build
+Build output directory: dist
+Root directory: /
+```
+
+## Main pages
 
 - `/index.html`
 - `/services/heating.html`
