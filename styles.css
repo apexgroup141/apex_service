@@ -211,7 +211,8 @@ a {
 }
 
 .has-menu:hover .nav-menu,
-.has-menu:focus-within .nav-menu {
+.has-menu:focus-within .nav-menu,
+.has-menu.is-submenu-open .nav-menu {
   opacity: 1;
   pointer-events: auto;
   transform: translate(-50%, 0) scale(1);

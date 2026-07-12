@@ -32,6 +32,23 @@ toggle.addEventListener("click", () => {
   setNavOpen(toggle.getAttribute("aria-expanded") !== "true");
 });
 
+document.querySelectorAll(".has-menu").forEach((item) => {
+  let closeTimer;
+
+  item.addEventListener("pointerenter", () => {
+    if (window.matchMedia("(max-width: 980px)").matches) return;
+    window.clearTimeout(closeTimer);
+    item.classList.add("is-submenu-open");
+  });
+
+  item.addEventListener("pointerleave", () => {
+    if (window.matchMedia("(max-width: 980px)").matches) return;
+    closeTimer = window.setTimeout(() => {
+      item.classList.remove("is-submenu-open");
+    }, 320);
+  });
+});
+
 nav.addEventListener("click", (event) => {
   const trigger = event.target.closest(".nav-trigger");
   if (trigger && window.matchMedia("(max-width: 980px)").matches) {
