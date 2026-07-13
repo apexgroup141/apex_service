@@ -95,6 +95,14 @@ const params = new URLSearchParams(window.location.search);
 const selectedArea = params.get("area");
 const selectedService = params.get("service");
 
+const trackEvent = (eventName, eventData = {}) => {
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({
+    event: eventName,
+    ...eventData
+  });
+};
+
 if (selectedArea && areaField) {
   areaField.value = selectedArea;
   areaField.closest("label")?.classList.add("is-prefilled");
@@ -191,6 +199,12 @@ if (leadForm) {
         throw new Error("Request failed");
       }
 
+      trackEvent("lead_form_submit", {
+        lead_service: payload.service || "",
+        lead_area: payload.area || "",
+        page_location: window.location.href
+      });
+
       window.location.href = "/thank-you";
     } catch {
       setFormStatus("Could not send the request. Please call or email us directly.", "error");
@@ -202,8 +216,15 @@ if (leadForm) {
 
 document.querySelectorAll('a[href^="tel:"]').forEach((link) => {
   link.addEventListener("click", () => {
+    const phone = link.getAttribute("href")?.replace("tel:", "") || "";
+    trackEvent("phone_click", {
+      phone_number: phone,
+      phone_label: link.textContent.trim(),
+      page_location: window.location.href
+    });
+
     const payload = JSON.stringify({
-      phone: link.getAttribute("href")?.replace("tel:", "") || "",
+      phone,
       label: link.textContent.trim(),
       page: window.location.href
     });
