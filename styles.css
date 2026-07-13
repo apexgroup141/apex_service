@@ -770,7 +770,7 @@ h3 {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1px;
-  width: min(680px, 100%);
+  width: min(760px, 100%);
   margin: 0;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.22);
@@ -785,8 +785,9 @@ h3 {
 }
 
 .hero-stats dt {
-  margin-bottom: 2px;
-  font-size: 30px;
+  margin-bottom: 4px;
+  font-size: 22px;
+  line-height: 1.08;
   font-weight: 900;
 }
 
@@ -2033,7 +2034,7 @@ h3 {
   }
 
   .hero-stats dt {
-    font-size: 22px;
+    font-size: 17px;
   }
 
   .hero-stats dd {
