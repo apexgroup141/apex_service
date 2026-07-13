@@ -434,6 +434,17 @@ h3 {
   color: var(--white);
 }
 
+.thank-you-card .button.secondary {
+  border-color: rgba(6, 31, 73, 0.18);
+  background: var(--white);
+  color: var(--ink);
+}
+
+.thank-you-card .button.secondary:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
 .hero-stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

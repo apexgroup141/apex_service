@@ -61,27 +61,69 @@ const sendTelegramMessage = async (env, text) => {
   }
 };
 
-const logEvent = async (env, type, payload, request) => {
-  if (!env.DB) return;
-
+const getRequestMeta = (request) => {
   const ip =
     request.headers.get("CF-Connecting-IP") ||
     request.headers.get("X-Forwarded-For") ||
     "";
 
-  await env.DB.prepare(
-    `INSERT INTO events (type, payload, page, user_agent, ip, created_at)
-     VALUES (?, ?, ?, ?, ?, ?)`
-  )
-    .bind(
-      type,
-      JSON.stringify(payload),
-      clean(payload.page || request.headers.get("referer") || "", 500),
-      clean(request.headers.get("user-agent") || "", 500),
-      clean(ip, 80),
-      new Date().toISOString()
+  return {
+    page: clean(request.headers.get("referer") || "", 500),
+    userAgent: clean(request.headers.get("user-agent") || "", 500),
+    ip: clean(ip, 80),
+    createdAt: new Date().toISOString()
+  };
+};
+
+const logLead = async (env, lead, request) => {
+  if (!env.DB) return;
+
+  const meta = getRequestMeta(request);
+
+  try {
+    await env.DB.prepare(
+      `INSERT INTO leads (name, phone, area, service, message, page, user_agent, ip, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
-    .run();
+      .bind(
+        lead.name,
+        lead.phone,
+        lead.area,
+        lead.service,
+        lead.message,
+        lead.page || meta.page,
+        meta.userAgent,
+        meta.ip,
+        meta.createdAt
+      )
+      .run();
+  } catch (error) {
+    console.error("Could not log lead", error);
+  }
+};
+
+const logCallClick = async (env, event, request) => {
+  if (!env.DB) return;
+
+  const meta = getRequestMeta(request);
+
+  try {
+    await env.DB.prepare(
+      `INSERT INTO call_clicks (phone, label, page, user_agent, ip, created_at)
+       VALUES (?, ?, ?, ?, ?, ?)`
+    )
+      .bind(
+        clean(event.phone, 80),
+        clean(event.label, 160),
+        clean(event.page, 500) || meta.page,
+        meta.userAgent,
+        meta.ip,
+        meta.createdAt
+      )
+      .run();
+  } catch (error) {
+    console.error("Could not log call click", error);
+  }
 };
 
 const handleLead = async (request, env) => {
@@ -117,7 +159,7 @@ const handleLead = async (request, env) => {
     page: clean(request.headers.get("referer") || "", 500)
   };
 
-  await logEvent(env, "lead", payload, request);
+  await logLead(env, payload, request);
   await sendTelegramMessage(env, formatLeadMessage(payload, request));
 
   return json({ ok: true });
@@ -135,11 +177,7 @@ const handleCallClick = async (request, env) => {
     return json({ ok: true });
   }
 
-  await logEvent(env, "phone_click", {
-    phone: clean(event.phone, 80),
-    label: clean(event.label, 160),
-    page: clean(event.page, 500)
-  }, request);
+  await logCallClick(env, event, request);
 
   return json({ ok: true });
 };
