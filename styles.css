@@ -983,6 +983,46 @@ h3 {
   color: var(--muted);
 }
 
+.protection-section {
+  background: #eef4f8;
+}
+
+.protection-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  margin-top: 34px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--line);
+}
+
+.protection-grid article {
+  padding: 24px;
+  background: var(--white);
+}
+
+.protection-grid span {
+  display: block;
+  margin-bottom: 12px;
+  color: var(--red);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.protection-grid h3 {
+  margin-bottom: 10px;
+  font-size: 22px;
+}
+
+.protection-grid p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 15px;
+}
+
 .logo-showcase {
   grid-column: span 2;
 }
@@ -1892,6 +1932,7 @@ h3 {
 
   .trust-band,
   .service-grid,
+  .protection-grid,
   .process-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -2011,6 +2052,7 @@ h3 {
 
   .trust-band,
   .service-grid,
+  .protection-grid,
   .process-grid,
   .area-list {
     grid-template-columns: 1fr;
