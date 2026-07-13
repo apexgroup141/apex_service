@@ -5,6 +5,8 @@ const root = process.cwd();
 const dist = path.join(root, "dist");
 const filesToCopy = [
   "assets",
+  "admin.html",
+  "admin.js",
   "areas",
   "services",
   "index.html",

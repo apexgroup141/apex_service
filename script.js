@@ -117,7 +117,22 @@ const leadForm = document.querySelector("[data-lead-form]");
 if (leadForm) {
   const status = leadForm.querySelector("[data-form-status]");
   const submitButton = leadForm.querySelector('button[type="submit"]');
+  const phoneField = leadForm.querySelector("[data-phone-field]");
   const endpoint = leadForm.dataset.endpoint || "/api/lead";
+
+  const getPhoneDigits = () => {
+    let digits = (phoneField?.value || "").replace(/\D/g, "");
+    if (digits.length > 10 && digits.startsWith("1")) {
+      digits = digits.slice(1);
+    }
+    return digits.slice(0, 10);
+  };
+
+  const formatPhone = (digits) => {
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  };
 
   const setFormStatus = (message, type = "") => {
     status.textContent = message;
@@ -125,12 +140,30 @@ if (leadForm) {
     status.classList.toggle("is-error", type === "error");
   };
 
+  phoneField?.addEventListener("input", () => {
+    const digits = getPhoneDigits();
+    phoneField.value = formatPhone(digits);
+    phoneField.setCustomValidity(digits.length === 10 ? "" : "Enter a 10-digit US phone number.");
+  });
+
   leadForm.addEventListener("submit", async (event) => {
     event.preventDefault();
+
+    const phoneDigits = getPhoneDigits();
+    if (phoneField) {
+      phoneField.setCustomValidity(phoneDigits.length === 10 ? "" : "Enter a 10-digit US phone number.");
+    }
+
+    if (!leadForm.reportValidity()) {
+      setFormStatus("Please complete all required fields with a valid email and phone number.", "error");
+      return;
+    }
+
     setFormStatus("Sending request...");
     submitButton.disabled = true;
 
     const payload = Object.fromEntries(new FormData(leadForm).entries());
+    payload.phone = `+1${phoneDigits}`;
 
     try {
       const response = await fetch(endpoint, {

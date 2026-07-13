@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Client Leads | Apex Service Group LLC</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#061f49" />
+    <link rel="icon" type="image/png" href="/assets/apex-icon.png" />
+    <link rel="apple-touch-icon" href="/assets/apex-icon.png" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="admin-body">
+    <header class="admin-topbar">
+      <a class="brand" href="/index.html" aria-label="Apex Service Group home">
+        <img class="brand-symbol" src="/assets/apex-icon.png" alt="" aria-hidden="true" />
+        <span class="brand-text"><strong>APEX</strong><small>Service Group LLC</small></span>
+      </a>
+      <a class="admin-home-link" href="/index.html">Open website</a>
+    </header>
+
+    <main class="admin-shell">
+      <section class="admin-hero">
+        <div>
+          <p class="eyebrow">Private client list</p>
+          <h1>Lead database</h1>
+          <p>Search requests by name, phone, email, service, area, or message.</p>
+        </div>
+        <button class="button secondary admin-token-reset" type="button" data-admin-reset hidden>Change token</button>
+      </section>
+
+      <section class="admin-login" data-admin-login>
+        <label>
+          Admin token
+          <input type="password" autocomplete="current-password" data-admin-token placeholder="Paste private token" />
+        </label>
+        <button class="button primary" type="button" data-admin-login-button>Open leads</button>
+      </section>
+
+      <section class="admin-panel" data-admin-panel hidden>
+        <div class="admin-stats">
+          <div>
+            <span>Total leads</span>
+            <strong data-total-leads>0</strong>
+          </div>
+          <div>
+            <span>Phone clicks</span>
+            <strong data-total-calls>0</strong>
+          </div>
+          <div>
+            <span>Shown now</span>
+            <strong data-shown-leads>0</strong>
+          </div>
+        </div>
+
+        <form class="admin-filters" data-admin-filters>
+          <label>
+            Search
+            <input name="q" type="search" placeholder="Name, phone, email, city..." autocomplete="off" />
+          </label>
+          <label>
+            Service
+            <select name="service">
+              <option value="">All services</option>
+              <option>Heat pump installation</option>
+              <option>Mini-split installation</option>
+              <option>Furnace repair or replacement</option>
+              <option>AC repair or installation</option>
+              <option>Ductwork</option>
+              <option>Maintenance</option>
+            </select>
+          </label>
+          <button class="button primary" type="submit">Search</button>
+          <button class="button secondary" type="button" data-export-csv>Export CSV</button>
+        </form>
+
+        <p class="form-status" aria-live="polite" data-admin-status></p>
+
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Area</th>
+                <th>Service</th>
+                <th>Message</th>
+              </tr>
+            </thead>
+            <tbody data-leads-body></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script src="/admin.js" defer></script>
+  </body>
+</html>

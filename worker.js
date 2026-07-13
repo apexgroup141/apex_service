@@ -12,6 +12,18 @@ const clean = (value, maxLength = 1000) =>
     .trim()
     .slice(0, maxLength);
 
+const normalizeEmail = (value) => clean(value, 254).toLowerCase();
+
+const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value);
+
+const normalizeUsPhone = (value) => {
+  let digits = String(value || "").replace(/\D/g, "");
+  if (digits.length === 11 && digits.startsWith("1")) {
+    digits = digits.slice(1);
+  }
+  return digits.length === 10 ? `+1${digits}` : "";
+};
+
 const escapeHtml = (value) =>
   clean(value, 3500)
     .replaceAll("&", "&amp;")
@@ -30,6 +42,7 @@ const formatLeadMessage = (lead, request) => {
     "<b>New Apex HVAC request</b>",
     "",
     `<b>Name:</b> ${escapeHtml(lead.name)}`,
+    `<b>Email:</b> ${escapeHtml(lead.email)}`,
     `<b>Phone:</b> ${escapeHtml(lead.phone)}`,
     `<b>Area:</b> ${escapeHtml(lead.area || "Not provided")}`,
     `<b>Service:</b> ${escapeHtml(lead.service || "Not selected")}`,
@@ -82,11 +95,12 @@ const logLead = async (env, lead, request) => {
 
   try {
     await env.DB.prepare(
-      `INSERT INTO leads (name, phone, area, service, message, page, user_agent, ip, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO leads (name, email, phone, area, service, message, page, user_agent, ip, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
       .bind(
         lead.name,
+        lead.email,
         lead.phone,
         lead.area,
         lead.service,
@@ -143,19 +157,23 @@ const handleLead = async (request, env) => {
   }
 
   const name = clean(lead.name, 120);
-  const phone = clean(lead.phone, 80);
+  const email = normalizeEmail(lead.email);
+  const phone = normalizeUsPhone(lead.phone);
+  const area = clean(lead.area, 160);
   const service = clean(lead.service, 160);
+  const message = clean(lead.message, 1600);
 
-  if (!name || !phone || !service) {
+  if (!name || !email || !isValidEmail(email) || !phone || !area || !service || !message) {
     return json({ error: "Missing required fields" }, 400);
   }
 
   const payload = {
     name,
+    email,
     phone,
     service,
-    area: clean(lead.area, 160),
-    message: clean(lead.message, 1600),
+    area,
+    message,
     page: clean(request.headers.get("referer") || "", 500)
   };
 
@@ -182,6 +200,80 @@ const handleCallClick = async (request, env) => {
   return json({ ok: true });
 };
 
+const isAuthorizedAdmin = (request, env) => {
+  const token = clean(env.ADMIN_TOKEN, 500);
+  const authorization = request.headers.get("Authorization") || "";
+  return Boolean(token) && authorization === `Bearer ${token}`;
+};
+
+const first = async (statement, values = []) => {
+  if (!values.length) return statement.first();
+  return statement.bind(...values).first();
+};
+
+const handleAdminLeads = async (request, env) => {
+  if (request.method !== "GET") {
+    return json({ error: "Method not allowed" }, 405);
+  }
+
+  if (!isAuthorizedAdmin(request, env)) {
+    return json({ error: "Unauthorized" }, 401);
+  }
+
+  if (!env.DB) {
+    return json({ error: "Database is not configured" }, 503);
+  }
+
+  const params = new URL(request.url).searchParams;
+  const q = clean(params.get("q"), 120);
+  const service = clean(params.get("service"), 160);
+  const limit = Math.min(Math.max(Number(params.get("limit")) || 50, 1), 100);
+  const offset = Math.max(Number(params.get("offset")) || 0, 0);
+  const where = [];
+  const values = [];
+
+  if (q) {
+    const like = `%${q}%`;
+    where.push("(name LIKE ? OR email LIKE ? OR phone LIKE ? OR area LIKE ? OR service LIKE ? OR message LIKE ?)");
+    values.push(like, like, like, like, like, like);
+  }
+
+  if (service) {
+    where.push("service = ?");
+    values.push(service);
+  }
+
+  const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
+  const totalRow = await first(env.DB.prepare(`SELECT COUNT(*) AS total FROM leads ${whereSql}`), values);
+  const rows = await env.DB.prepare(
+    `SELECT id, name, email, phone, area, service, message, page, user_agent, ip, created_at
+     FROM leads
+     ${whereSql}
+     ORDER BY datetime(created_at) DESC
+     LIMIT ? OFFSET ?`
+  )
+    .bind(...values, limit, offset)
+    .all();
+
+  let callClicks = 0;
+  try {
+    const callRow = await env.DB.prepare("SELECT COUNT(*) AS total FROM call_clicks").first();
+    callClicks = Number(callRow?.total || 0);
+  } catch (error) {
+    console.error("Could not load call click count", error);
+  }
+
+  return json({
+    leads: rows.results || [],
+    total: Number(totalRow?.total || 0),
+    limit,
+    offset,
+    stats: {
+      callClicks
+    }
+  });
+};
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -206,6 +298,15 @@ export default {
       } catch (error) {
         console.error(error);
         return json({ ok: true });
+      }
+    }
+
+    if (url.pathname === "/api/admin/leads") {
+      try {
+        return await handleAdminLeads(request, env);
+      } catch (error) {
+        console.error(error);
+        return json({ error: "Could not load leads" }, 500);
       }
     }
 

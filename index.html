@@ -322,12 +322,19 @@
             <input name="name" autocomplete="name" required />
           </label>
           <label>
+            Email
+            <input name="email" type="email" autocomplete="email" required />
+          </label>
+          <label>
             Phone
-            <input name="phone" autocomplete="tel" required />
+            <span class="phone-input">
+              <span class="phone-prefix">+1</span>
+              <input name="phone" type="tel" autocomplete="tel-national" inputmode="tel" placeholder="(253) 317-8546" required data-phone-field />
+            </span>
           </label>
           <label>
             City / service area
-            <input name="area" autocomplete="address-level2" data-area-field />
+            <input name="area" autocomplete="address-level2" required data-area-field />
           </label>
           <label>
             Service needed
@@ -343,7 +350,7 @@
           </label>
           <label>
             Message
-            <textarea name="message" rows="5" placeholder="Tell us about the system, home, and timing."></textarea>
+            <textarea name="message" rows="5" placeholder="Tell us about the system, home, and timing." required></textarea>
           </label>
           <label class="form-honeypot" aria-hidden="true">
             Company
