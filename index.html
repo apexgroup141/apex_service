@@ -316,7 +316,7 @@
           </div>
         </div>
 
-        <form class="lead-form" action="mailto:info@apexgroupwa.com" method="post" enctype="text/plain">
+        <form class="lead-form" action="/api/lead" method="post" data-lead-form>
           <label>
             Name
             <input name="name" autocomplete="name" required />
@@ -345,6 +345,11 @@
             Message
             <textarea name="message" rows="5" placeholder="Tell us about the system, home, and timing."></textarea>
           </label>
+          <label class="form-honeypot" aria-hidden="true">
+            Company
+            <input name="company" tabindex="-1" autocomplete="off" />
+          </label>
+          <p class="form-status" aria-live="polite" data-form-status></p>
           <button class="button primary" type="submit">Request estimate</button>
         </form>
       </section>

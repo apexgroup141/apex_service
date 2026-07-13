@@ -1113,6 +1113,27 @@ h3 {
   resize: vertical;
 }
 
+.form-honeypot {
+  position: absolute;
+  left: -9999px;
+}
+
+.form-status {
+  min-height: 22px;
+  margin: -2px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.form-status.is-success {
+  color: #176d43;
+}
+
+.form-status.is-error {
+  color: var(--red);
+}
+
 .lead-form .button {
   width: 100%;
   border: 0;
@@ -1187,6 +1208,36 @@ h3 {
 .content-section {
   padding: clamp(58px, 8vw, 94px) clamp(18px, 5vw, 70px);
   background: var(--white);
+}
+
+.thank-you-section {
+  display: grid;
+  min-height: calc(100svh - 170px);
+  padding: clamp(82px, 11vw, 140px) clamp(18px, 5vw, 70px);
+  place-items: center;
+  background:
+    linear-gradient(135deg, rgba(6, 31, 73, 0.94), rgba(9, 101, 216, 0.72)),
+    url("assets/hvac-hero.png") center / cover;
+}
+
+.thank-you-card {
+  width: min(820px, 100%);
+  padding: clamp(30px, 5vw, 54px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--shadow);
+}
+
+.thank-you-card h1 {
+  max-width: 720px;
+  font-size: clamp(42px, 6vw, 76px);
+}
+
+.thank-you-card p:not(.eyebrow) {
+  max-width: 680px;
+  color: var(--muted);
+  font-size: 18px;
 }
 
 .content-section.alt {

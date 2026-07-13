@@ -13,7 +13,8 @@ const filesToCopy = [
   "script.js",
   "service-areas.html",
   "sitemap.xml",
-  "styles.css"
+  "styles.css",
+  "thank-you.html"
 ];
 
 const mimeTypes = {

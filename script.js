@@ -111,3 +111,64 @@ document.querySelectorAll('a[href^="/index.html?area="]').forEach((link) => {
     document.querySelector("#contact")?.scrollIntoView({ behavior: "smooth", block: "start" });
   });
 });
+
+const leadForm = document.querySelector("[data-lead-form]");
+
+if (leadForm) {
+  const status = leadForm.querySelector("[data-form-status]");
+  const submitButton = leadForm.querySelector('button[type="submit"]');
+
+  const setFormStatus = (message, type = "") => {
+    status.textContent = message;
+    status.classList.toggle("is-success", type === "success");
+    status.classList.toggle("is-error", type === "error");
+  };
+
+  leadForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    setFormStatus("Sending request...");
+    submitButton.disabled = true;
+
+    const payload = Object.fromEntries(new FormData(leadForm).entries());
+
+    try {
+      const response = await fetch(leadForm.action, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error("Request failed");
+      }
+
+      window.location.href = "/thank-you.html";
+    } catch {
+      setFormStatus("Could not send the request. Please call or email us directly.", "error");
+    } finally {
+      submitButton.disabled = false;
+    }
+  });
+}
+
+document.querySelectorAll('a[href^="tel:"]').forEach((link) => {
+  link.addEventListener("click", () => {
+    const payload = JSON.stringify({
+      phone: link.getAttribute("href")?.replace("tel:", "") || "",
+      label: link.textContent.trim(),
+      page: window.location.href
+    });
+
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon("/api/call-click", new Blob([payload], { type: "application/json" }));
+      return;
+    }
+
+    fetch("/api/call-click", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: payload,
+      keepalive: true
+    }).catch(() => {});
+  });
+});
