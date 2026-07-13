@@ -63,7 +63,7 @@ const services = [
     title: "Heat Pump Installation",
     phrase: "heat pump installation",
     serviceValue: "Heat pump installation",
-    pagePath: "/services/heat-pumps.html",
+    pagePath: "/services/heat-pumps",
     noun: "heat pump",
     headline: "Heat pump installation and replacement",
     metaVerb: "Heat pump installation and replacement",
@@ -87,7 +87,7 @@ const services = [
     title: "Mini-Split Installation",
     phrase: "mini-split installation",
     serviceValue: "Mini-split installation",
-    pagePath: "/services/mini-splits.html",
+    pagePath: "/services/mini-splits",
     noun: "mini-split",
     headline: "mini-split installation and ductless comfort planning",
     metaVerb: "Mini-split installation",
@@ -111,7 +111,7 @@ const services = [
     title: "Furnace Repair & Replacement",
     phrase: "furnace repair & replacement",
     serviceValue: "Furnace repair or replacement",
-    pagePath: "/services/furnaces.html",
+    pagePath: "/services/furnaces",
     noun: "furnace",
     headline: "furnace repair, diagnostics and replacement",
     metaVerb: "Furnace repair and replacement",
@@ -135,7 +135,7 @@ const services = [
     title: "AC Repair & Installation",
     phrase: "AC repair & installation",
     serviceValue: "AC repair or installation",
-    pagePath: "/services/air-conditioning.html",
+    pagePath: "/services/air-conditioning",
     noun: "air conditioner",
     headline: "AC repair, replacement and installation",
     metaVerb: "AC repair and installation",
@@ -159,7 +159,7 @@ const services = [
     title: "Ductwork",
     phrase: "ductwork",
     serviceValue: "Ductwork",
-    pagePath: "/services/ductwork.html",
+    pagePath: "/services/ductwork",
     noun: "ductwork",
     headline: "ductwork replacement, modification and airflow improvement",
     metaVerb: "Ductwork service",
@@ -183,7 +183,7 @@ const services = [
     title: "HVAC Repair & Maintenance",
     phrase: "HVAC repair & maintenance",
     serviceValue: "Maintenance",
-    pagePath: "/services/repair-maintenance.html",
+    pagePath: "/services/repair-maintenance",
     noun: "HVAC system",
     headline: "HVAC repair, diagnostics and maintenance",
     metaVerb: "HVAC repair and maintenance",
@@ -220,24 +220,29 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;");
 }
 
+function publicRoute(filePath) {
+  if (filePath === "/index.html") return "/";
+  return filePath.replace(/\.html$/, "");
+}
+
 function header() {
   return `<header class="site-header header-solid" data-header>
-      <a class="brand" href="/index.html" aria-label="Apex Service Group home"><img class="brand-symbol" src="/assets/apex-icon.png" alt="" aria-hidden="true" /><span class="brand-text"><strong>APEX</strong><small>Service Group LLC</small></span></a>
+      <a class="brand" href="/" aria-label="Apex Service Group home"><img class="brand-symbol" src="/assets/apex-icon.png" alt="" aria-hidden="true" /><span class="brand-text"><strong>APEX</strong><small>Service Group LLC</small></span></a>
       <button class="nav-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="site-nav" data-nav-toggle><span></span><span></span><span></span></button>
-      <nav class="site-nav" id="site-nav" data-nav><div class="nav-item has-menu"><a class="nav-trigger" href="/index.html#services">Services</a><div class="nav-menu" aria-label="Service categories"><a href="/services/heating.html"><strong>Heating</strong><span>Furnaces & heat pumps</span></a><a href="/services/cooling.html"><strong>Cooling</strong><span>AC & mini-splits</span></a><a href="/services/service.html"><strong>Service</strong><span>Repair & maintenance</span></a></div></div><a href="/rebates-financing.html">Rebates</a><a href="/index.html#process">Process</a><a href="/service-areas.html">Areas</a><a href="/index.html#contact">Contact</a></nav>
+      <nav class="site-nav" id="site-nav" data-nav><div class="nav-item has-menu"><a class="nav-trigger" href="/#services">Services</a><div class="nav-menu" aria-label="Service categories"><a href="/services/heating"><strong>Heating</strong><span>Furnaces & heat pumps</span></a><a href="/services/cooling"><strong>Cooling</strong><span>AC & mini-splits</span></a><a href="/services/service"><strong>Service</strong><span>Repair & maintenance</span></a></div></div><a href="/rebates-financing">Rebates</a><a href="/#process">Process</a><a href="/service-areas">Areas</a><a href="/#contact">Contact</a></nav>
       <a class="header-cta" href="tel:+12533178546">Call (253) 317-8546</a>
     </header>`;
 }
 
 function footer() {
-  return `<footer class="site-footer"><div><strong>Apex Service Group LLC</strong><span>Licensed HVAC installation, repair and maintenance. License APEXSSG746LJ.</span></div><a href="/service-areas.html">Areas</a></footer>`;
+  return `<footer class="site-footer"><div><strong>Apex Service Group LLC</strong><span>Licensed HVAC installation, repair and maintenance. License APEXSSG746LJ.</span></div><a href="/service-areas">Areas</a></footer>`;
 }
 
 function pageHtml(area, service) {
   const title = `${service.title} ${area.name}, WA | Apex Service Group LLC`;
   const description = `${service.metaVerb} in ${area.name}, WA. Apex Service Group handles diagnostics, planning, clean work, warranty support, financing options and documented HVAC service.`;
-  const pathName = `/areas/${area.slug}-${service.slug}.html`;
-  const requestHref = `/index.html?area=${encodeURIComponent(area.name)}&service=${encodeURIComponent(service.serviceValue)}#contact`;
+  const pathName = `/areas/${area.slug}-${service.slug}`;
+  const requestHref = `/?area=${encodeURIComponent(area.name)}&service=${encodeURIComponent(service.serviceValue)}#contact`;
   const regionalText = regionCopy[area.group];
   const faqJson = service.faq.map(([question, answer]) => ({
     "@type": "Question",
@@ -266,7 +271,7 @@ function pageHtml(area, service) {
 
     <main class="page-main">
       <section class="page-hero">
-        <div class="breadcrumb"><a href="/index.html">Home</a><span>/</span><a href="/service-areas.html">Service Areas</a><span>/</span><span>${escapeHtml(service.title)} ${escapeHtml(area.name)}</span></div>
+        <div class="breadcrumb"><a href="/">Home</a><span>/</span><a href="/service-areas">Service Areas</a><span>/</span><span>${escapeHtml(service.title)} ${escapeHtml(area.name)}</span></div>
         <p class="eyebrow">${escapeHtml(area.name)} HVAC service</p>
         <h1>${escapeHtml(service.headline)} in ${escapeHtml(area.name)}, WA.</h1>
         <p>${escapeHtml(service.intro)} Apex Service Group serves ${escapeHtml(regionalText)}.</p>
@@ -310,10 +315,10 @@ function pageHtml(area, service) {
             <div class="seo-card">
               <h3>Related services</h3>
               <div class="link-list">
-                <a href="/services/heat-pumps.html">Heat pump installation</a>
-                <a href="/services/mini-splits.html">Mini-split installation</a>
-                <a href="/services/furnaces.html">Furnace repair and replacement</a>
-                <a href="/services/repair-maintenance.html">Repair and maintenance</a>
+                <a href="/services/heat-pumps">Heat pump installation</a>
+                <a href="/services/mini-splits">Mini-split installation</a>
+                <a href="/services/furnaces">Furnace repair and replacement</a>
+                <a href="/services/repair-maintenance">Repair and maintenance</a>
               </div>
             </div>
           </aside>
@@ -400,14 +405,14 @@ function indexHtml(pages) {
     <meta name="theme-color" content="#061f49" />
     <link rel="icon" type="image/png" href="/assets/apex-icon.png" />
     <link rel="apple-touch-icon" href="/assets/apex-icon.png" />
-    <link rel="canonical" href="${baseUrl}/local-hvac-services.html" />
+    <link rel="canonical" href="${baseUrl}/local-hvac-services" />
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
     ${header()}
     <main class="page-main">
       <section class="page-hero narrow">
-        <div class="breadcrumb"><a href="/index.html">Home</a><span>/</span><a href="/service-areas.html">Service Areas</a><span>/</span><span>Local HVAC Services</span></div>
+        <div class="breadcrumb"><a href="/">Home</a><span>/</span><a href="/service-areas">Service Areas</a><span>/</span><span>Local HVAC Services</span></div>
         <p class="eyebrow">Local HVAC pages</p>
         <h1>HVAC service pages by city and service type.</h1>
         <p>Find local pages for heat pumps, mini-splits, furnaces, AC, ductwork, repair and maintenance across the Seattle metro, Eastside, South King County, Pierce County and Thurston-area communities.</p>
@@ -432,22 +437,22 @@ function indexHtml(pages) {
 function sitemapXml(pages) {
   const routes = [
     "/",
-    "/services/heating.html",
-    "/services/cooling.html",
-    "/services/service.html",
-    "/services/heat-pumps.html",
-    "/services/mini-splits.html",
-    "/services/furnaces.html",
-    "/services/air-conditioning.html",
-    "/services/ductwork.html",
-    "/services/repair-maintenance.html",
-    "/rebates-financing.html",
-    "/service-areas.html",
-    "/local-hvac-services.html",
-    "/areas/seattle.html",
-    "/areas/bellevue.html",
-    "/areas/tacoma.html",
-    "/areas/olympia.html",
+    "/services/heating",
+    "/services/cooling",
+    "/services/service",
+    "/services/heat-pumps",
+    "/services/mini-splits",
+    "/services/furnaces",
+    "/services/air-conditioning",
+    "/services/ductwork",
+    "/services/repair-maintenance",
+    "/rebates-financing",
+    "/service-areas",
+    "/local-hvac-services",
+    "/areas/seattle",
+    "/areas/bellevue",
+    "/areas/tacoma",
+    "/areas/olympia",
     ...pages.map((page) => page.pathName)
   ];
 
@@ -463,13 +468,14 @@ const pages = areas.flatMap((area) =>
   services.map((service) => ({
     area,
     service,
-    pathName: `/areas/${area.slug}-${service.slug}.html`
+    filePath: `/areas/${area.slug}-${service.slug}.html`,
+    pathName: publicRoute(`/areas/${area.slug}-${service.slug}.html`)
   }))
 );
 
 fs.mkdirSync(path.join(root, "areas"), { recursive: true });
 for (const page of pages) {
-  fs.writeFileSync(path.join(root, page.pathName), pageHtml(page.area, page.service));
+  fs.writeFileSync(path.join(root, page.filePath), pageHtml(page.area, page.service));
 }
 
 fs.writeFileSync(path.join(root, "local-hvac-services.html"), indexHtml(pages));

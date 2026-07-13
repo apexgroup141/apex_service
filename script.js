@@ -84,7 +84,7 @@ document.querySelectorAll(".area-list li, .area-group li").forEach((item) => {
   if (!areaName) return;
 
   const link = document.createElement("a");
-  link.href = `/index.html?area=${encodeURIComponent(areaName)}#contact`;
+  link.href = `/?area=${encodeURIComponent(areaName)}#contact`;
   link.textContent = areaName;
   link.className = "area-picker-link";
   item.textContent = "";
@@ -104,9 +104,9 @@ if (selectedService && serviceField) {
   serviceField.value = selectedService;
 }
 
-document.querySelectorAll('a[href^="/index.html?area="]').forEach((link) => {
+document.querySelectorAll('a[href^="/?area="]').forEach((link) => {
   link.addEventListener("click", (event) => {
-    if (window.location.pathname !== "/" && !window.location.pathname.endsWith("/index.html")) return;
+    if (window.location.pathname !== "/" && !window.location.pathname.endsWith("/")) return;
 
     event.preventDefault();
     const linkParams = new URL(link.href).searchParams;
@@ -120,8 +120,8 @@ document.querySelectorAll('a[href^="/index.html?area="]').forEach((link) => {
       serviceField.value = service;
     }
     const nextUrl = service
-      ? `/index.html?area=${encodeURIComponent(area)}&service=${encodeURIComponent(service)}#contact`
-      : `/index.html?area=${encodeURIComponent(area)}#contact`;
+      ? `/?area=${encodeURIComponent(area)}&service=${encodeURIComponent(service)}#contact`
+      : `/?area=${encodeURIComponent(area)}#contact`;
     history.replaceState(null, "", nextUrl);
     document.querySelector("#contact")?.scrollIntoView({ behavior: "smooth", block: "start" });
   });
@@ -191,7 +191,7 @@ if (leadForm) {
         throw new Error("Request failed");
       }
 
-      window.location.href = "/thank-you.html";
+      window.location.href = "/thank-you";
     } catch {
       setFormStatus("Could not send the request. Please call or email us directly.", "error");
     } finally {
