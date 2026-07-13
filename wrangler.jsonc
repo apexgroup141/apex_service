@@ -6,5 +6,12 @@
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS"
-  }
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "zayavki",
+      "database_id": "bc4f1c2c-d50c-46d5-a23e-09b13b08c113"
+    }
+  ]
 }

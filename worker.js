@@ -40,24 +40,6 @@ const formatLeadMessage = (lead, request) => {
   ].join("\n");
 };
 
-const formatCallClickMessage = (event, request) => {
-  const page = event.page || request.headers.get("referer") || "Direct visit";
-  const clickedAt = new Date().toLocaleString("en-US", {
-    timeZone: "America/Los_Angeles",
-    dateStyle: "medium",
-    timeStyle: "short"
-  });
-
-  return [
-    "<b>Apex phone click</b>",
-    "",
-    `<b>Phone:</b> ${escapeHtml(event.phone || "Unknown")}`,
-    `<b>Link:</b> ${escapeHtml(event.label || "Phone link")}`,
-    `<b>Page:</b> ${escapeHtml(page)}`,
-    `<b>Clicked:</b> ${escapeHtml(clickedAt)}`
-  ].join("\n");
-};
-
 const sendTelegramMessage = async (env, text) => {
   if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) {
     throw new Error("Telegram environment variables are missing");
@@ -77,6 +59,29 @@ const sendTelegramMessage = async (env, text) => {
   if (!response.ok) {
     throw new Error(`Telegram request failed with ${response.status}`);
   }
+};
+
+const logEvent = async (env, type, payload, request) => {
+  if (!env.DB) return;
+
+  const ip =
+    request.headers.get("CF-Connecting-IP") ||
+    request.headers.get("X-Forwarded-For") ||
+    "";
+
+  await env.DB.prepare(
+    `INSERT INTO events (type, payload, page, user_agent, ip, created_at)
+     VALUES (?, ?, ?, ?, ?, ?)`
+  )
+    .bind(
+      type,
+      JSON.stringify(payload),
+      clean(payload.page || request.headers.get("referer") || "", 500),
+      clean(request.headers.get("user-agent") || "", 500),
+      clean(ip, 80),
+      new Date().toISOString()
+    )
+    .run();
 };
 
 const handleLead = async (request, env) => {
@@ -103,16 +108,17 @@ const handleLead = async (request, env) => {
     return json({ error: "Missing required fields" }, 400);
   }
 
-  await sendTelegramMessage(
-    env,
-    formatLeadMessage({
-      name,
-      phone,
-      service,
-      area: clean(lead.area, 160),
-      message: clean(lead.message, 1600)
-    }, request)
-  );
+  const payload = {
+    name,
+    phone,
+    service,
+    area: clean(lead.area, 160),
+    message: clean(lead.message, 1600),
+    page: clean(request.headers.get("referer") || "", 500)
+  };
+
+  await logEvent(env, "lead", payload, request);
+  await sendTelegramMessage(env, formatLeadMessage(payload, request));
 
   return json({ ok: true });
 };
@@ -129,13 +135,11 @@ const handleCallClick = async (request, env) => {
     return json({ ok: true });
   }
 
-  if (env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHAT_ID) {
-    await sendTelegramMessage(env, formatCallClickMessage({
-      phone: clean(event.phone, 80),
-      label: clean(event.label, 160),
-      page: clean(event.page, 500)
-    }, request));
-  }
+  await logEvent(env, "phone_click", {
+    phone: clean(event.phone, 80),
+    label: clean(event.label, 160),
+    page: clean(event.page, 500)
+  }, request);
 
   return json({ ok: true });
 };
