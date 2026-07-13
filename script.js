@@ -2,6 +2,7 @@ const header = document.querySelector("[data-header]");
 const nav = document.querySelector("[data-nav]");
 const toggle = document.querySelector("[data-nav-toggle]");
 const areaField = document.querySelector("[data-area-field]");
+const serviceField = document.querySelector('select[name="service"]');
 const backdrop = document.createElement("button");
 
 backdrop.className = "nav-backdrop";
@@ -90,11 +91,17 @@ document.querySelectorAll(".area-list li, .area-group li").forEach((item) => {
   item.append(link);
 });
 
-const selectedArea = new URLSearchParams(window.location.search).get("area");
+const params = new URLSearchParams(window.location.search);
+const selectedArea = params.get("area");
+const selectedService = params.get("service");
 
 if (selectedArea && areaField) {
   areaField.value = selectedArea;
   areaField.closest("label")?.classList.add("is-prefilled");
+}
+
+if (selectedService && serviceField) {
+  serviceField.value = selectedService;
 }
 
 document.querySelectorAll('a[href^="/index.html?area="]').forEach((link) => {
@@ -102,12 +109,20 @@ document.querySelectorAll('a[href^="/index.html?area="]').forEach((link) => {
     if (window.location.pathname !== "/" && !window.location.pathname.endsWith("/index.html")) return;
 
     event.preventDefault();
-    const area = new URL(link.href).searchParams.get("area") || "";
+    const linkParams = new URL(link.href).searchParams;
+    const area = linkParams.get("area") || "";
+    const service = linkParams.get("service") || "";
     if (areaField) {
       areaField.value = area;
       areaField.closest("label")?.classList.add("is-prefilled");
     }
-    history.replaceState(null, "", `/index.html?area=${encodeURIComponent(area)}#contact`);
+    if (serviceField && service) {
+      serviceField.value = service;
+    }
+    const nextUrl = service
+      ? `/index.html?area=${encodeURIComponent(area)}&service=${encodeURIComponent(service)}#contact`
+      : `/index.html?area=${encodeURIComponent(area)}#contact`;
+    history.replaceState(null, "", nextUrl);
     document.querySelector("#contact")?.scrollIntoView({ behavior: "smooth", block: "start" });
   });
 });
