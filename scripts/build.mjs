@@ -10,6 +10,7 @@ const filesToCopy = [
   "areas",
   "services",
   "index.html",
+  "local-hvac-services.html",
   "rebates-financing.html",
   "robots.txt",
   "script.js",
