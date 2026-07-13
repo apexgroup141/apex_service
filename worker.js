@@ -211,31 +211,33 @@ const first = async (statement, values = []) => {
   return statement.bind(...values).first();
 };
 
-const handleAdminLeads = async (request, env) => {
-  if (request.method !== "GET") {
-    return json({ error: "Method not allowed" }, 405);
+const tableExists = async (env, table) => {
+  const row = await env.DB.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?").bind(table).first();
+  return Boolean(row?.name);
+};
+
+const tableHasColumn = async (env, table, column) => {
+  if (!(await tableExists(env, table))) return false;
+  const result = await env.DB.prepare(`PRAGMA table_info(${table})`).all();
+  return (result.results || []).some((row) => row.name === column);
+};
+
+const loadStructuredLeads = async (env, { q, service, from, to, limit, offset }) => {
+  if (!(await tableExists(env, "leads"))) {
+    return { leads: [], total: 0 };
   }
 
-  if (!isAuthorizedAdmin(request, env)) {
-    return json({ error: "Unauthorized" }, 401);
-  }
-
-  if (!env.DB) {
-    return json({ error: "Database is not configured" }, 503);
-  }
-
-  const params = new URL(request.url).searchParams;
-  const q = clean(params.get("q"), 120);
-  const service = clean(params.get("service"), 160);
-  const limit = Math.min(Math.max(Number(params.get("limit")) || 50, 1), 100);
-  const offset = Math.max(Number(params.get("offset")) || 0, 0);
+  const hasEmail = await tableHasColumn(env, "leads", "email");
   const where = [];
   const values = [];
 
   if (q) {
     const like = `%${q}%`;
-    where.push("(name LIKE ? OR email LIKE ? OR phone LIKE ? OR area LIKE ? OR service LIKE ? OR message LIKE ?)");
-    values.push(like, like, like, like, like, like);
+    const columns = hasEmail
+      ? ["name", "email", "phone", "area", "service", "message"]
+      : ["name", "phone", "area", "service", "message"];
+    where.push(`(${columns.map((column) => `${column} LIKE ?`).join(" OR ")})`);
+    values.push(...columns.map(() => like));
   }
 
   if (service) {
@@ -243,10 +245,21 @@ const handleAdminLeads = async (request, env) => {
     values.push(service);
   }
 
+  if (from) {
+    where.push("datetime(created_at) >= datetime(?)");
+    values.push(from);
+  }
+
+  if (to) {
+    where.push("datetime(created_at) <= datetime(?)");
+    values.push(to);
+  }
+
   const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
+  const emailSelect = hasEmail ? "email" : "'' AS email";
   const totalRow = await first(env.DB.prepare(`SELECT COUNT(*) AS total FROM leads ${whereSql}`), values);
   const rows = await env.DB.prepare(
-    `SELECT id, name, email, phone, area, service, message, page, user_agent, ip, created_at
+    `SELECT id, 'lead' AS source, name, ${emailSelect}, phone, area, service, message, page, user_agent, ip, created_at
      FROM leads
      ${whereSql}
      ORDER BY datetime(created_at) DESC
@@ -255,17 +268,253 @@ const handleAdminLeads = async (request, env) => {
     .bind(...values, limit, offset)
     .all();
 
+  return {
+    leads: rows.results || [],
+    total: Number(totalRow?.total || 0)
+  };
+};
+
+const loadLegacyEventLeads = async (env, { q, service, from, to, limit }) => {
+  if (!(await tableExists(env, "events"))) {
+    return { leads: [], total: 0 };
+  }
+
+  const where = ["type = 'lead'"];
+  const values = [];
+
+  if (q) {
+    const like = `%${q}%`;
+    where.push("(payload LIKE ? OR page LIKE ?)");
+    values.push(like, like);
+  }
+
+  if (service) {
+    where.push("json_extract(payload, '$.service') = ?");
+    values.push(service);
+  }
+
+  if (from) {
+    where.push("datetime(created_at) >= datetime(?)");
+    values.push(from);
+  }
+
+  if (to) {
+    where.push("datetime(created_at) <= datetime(?)");
+    values.push(to);
+  }
+
+  const whereSql = `WHERE ${where.join(" AND ")}`;
+  const totalRow = await first(env.DB.prepare(`SELECT COUNT(*) AS total FROM events ${whereSql}`), values);
+  const rows = await env.DB.prepare(
+    `SELECT
+       id,
+       'event' AS source,
+       json_extract(payload, '$.name') AS name,
+       COALESCE(json_extract(payload, '$.email'), '') AS email,
+       json_extract(payload, '$.phone') AS phone,
+       json_extract(payload, '$.area') AS area,
+       json_extract(payload, '$.service') AS service,
+       json_extract(payload, '$.message') AS message,
+       page,
+       user_agent,
+       ip,
+       created_at
+     FROM events
+     ${whereSql}
+     ORDER BY datetime(created_at) DESC
+     LIMIT ?`
+  )
+    .bind(...values, limit)
+    .all();
+
+  return {
+    leads: rows.results || [],
+    total: Number(totalRow?.total || 0)
+  };
+};
+
+const ensureLeadWritesReady = async (env) => {
+  if (!(await tableExists(env, "leads"))) {
+    return "The leads table is missing. Apply the D1 migrations first.";
+  }
+  if (!(await tableHasColumn(env, "leads", "email"))) {
+    return "The email column is missing. Apply migration 0003_add_email_to_leads.sql first.";
+  }
+  return "";
+};
+
+const readJsonBody = async (request) => {
+  try {
+    return await request.json();
+  } catch {
+    return null;
+  }
+};
+
+const normalizeAdminLead = (body) => {
+  const lead = {
+    name: clean(body?.name, 120),
+    email: normalizeEmail(body?.email),
+    phone: normalizeUsPhone(body?.phone),
+    area: clean(body?.area, 160),
+    service: clean(body?.service, 160),
+    message: clean(body?.message, 1600)
+  };
+
+  if (!lead.name || !lead.email || !isValidEmail(lead.email) || !lead.phone || !lead.area || !lead.service || !lead.message) {
+    return { error: "Fill in name, valid email, valid US phone, area, service, and message." };
+  }
+
+  return { lead };
+};
+
+const createAdminLead = async (request, env) => {
+  const schemaError = await ensureLeadWritesReady(env);
+  if (schemaError) return json({ error: schemaError }, 409);
+
+  const body = await readJsonBody(request);
+  const { lead, error } = normalizeAdminLead(body);
+  if (error) return json({ error }, 400);
+
+  const meta = getRequestMeta(request);
+  await env.DB.prepare(
+    `INSERT INTO leads (name, email, phone, area, service, message, page, user_agent, ip, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  )
+    .bind(
+      lead.name,
+      lead.email,
+      lead.phone,
+      lead.area,
+      lead.service,
+      lead.message,
+      "Admin entry",
+      meta.userAgent,
+      meta.ip,
+      meta.createdAt
+    )
+    .run();
+
+  return json({ ok: true }, 201);
+};
+
+const updateStructuredLead = async (request, env, id) => {
+  const schemaError = await ensureLeadWritesReady(env);
+  if (schemaError) return json({ error: schemaError }, 409);
+
+  const body = await readJsonBody(request);
+  const { lead, error } = normalizeAdminLead(body);
+  if (error) return json({ error }, 400);
+
+  await env.DB.prepare(
+    `UPDATE leads
+     SET name = ?, email = ?, phone = ?, area = ?, service = ?, message = ?
+     WHERE id = ?`
+  )
+    .bind(lead.name, lead.email, lead.phone, lead.area, lead.service, lead.message, id)
+    .run();
+
+  return json({ ok: true });
+};
+
+const updateLegacyEventLead = async (request, env, id) => {
+  if (!(await tableExists(env, "events"))) return json({ error: "Legacy events table is missing." }, 404);
+
+  const body = await readJsonBody(request);
+  const { lead, error } = normalizeAdminLead(body);
+  if (error) return json({ error }, 400);
+
+  await env.DB.prepare("UPDATE events SET payload = ? WHERE id = ? AND type = 'lead'")
+    .bind(JSON.stringify(lead), id)
+    .run();
+
+  return json({ ok: true });
+};
+
+const handleAdminLeadItem = async (request, env, source, id) => {
+  if (!isAuthorizedAdmin(request, env)) {
+    return json({ error: "Unauthorized" }, 401);
+  }
+
+  if (!env.DB) {
+    return json({ error: "Database is not configured" }, 503);
+  }
+
+  const numericId = Number(id);
+  if (!Number.isInteger(numericId) || numericId < 1) {
+    return json({ error: "Invalid client id" }, 400);
+  }
+
+  if (request.method === "PATCH") {
+    if (source === "lead") return updateStructuredLead(request, env, numericId);
+    if (source === "event") return updateLegacyEventLead(request, env, numericId);
+    return json({ error: "Invalid client source" }, 400);
+  }
+
+  if (request.method === "DELETE") {
+    if (source === "lead") {
+      await env.DB.prepare("DELETE FROM leads WHERE id = ?").bind(numericId).run();
+      return json({ ok: true });
+    }
+    if (source === "event") {
+      await env.DB.prepare("DELETE FROM events WHERE id = ? AND type = 'lead'").bind(numericId).run();
+      return json({ ok: true });
+    }
+    return json({ error: "Invalid client source" }, 400);
+  }
+
+  return json({ error: "Method not allowed" }, 405);
+};
+
+const handleAdminLeads = async (request, env) => {
+  if (!isAuthorizedAdmin(request, env)) {
+    return json({ error: "Unauthorized" }, 401);
+  }
+
+  if (!env.DB) {
+    return json({ error: "Database is not configured" }, 503);
+  }
+
+  if (request.method === "POST") {
+    return createAdminLead(request, env);
+  }
+
+  if (request.method !== "GET") {
+    return json({ error: "Method not allowed" }, 405);
+  }
+
+  const params = new URL(request.url).searchParams;
+  const q = clean(params.get("q"), 120);
+  const service = clean(params.get("service"), 160);
+  const fromDate = clean(params.get("from"), 20);
+  const toDate = clean(params.get("to"), 20);
+  const from = /^\d{4}-\d{2}-\d{2}$/.test(fromDate) ? `${fromDate}T00:00:00.000Z` : "";
+  const to = /^\d{4}-\d{2}-\d{2}$/.test(toDate) ? `${toDate}T23:59:59.999Z` : "";
+  const limit = Math.min(Math.max(Number(params.get("limit")) || 50, 1), 100);
+  const offset = Math.max(Number(params.get("offset")) || 0, 0);
+  const structured = await loadStructuredLeads(env, { q, service, from, to, limit, offset });
+  const legacy = await loadLegacyEventLeads(env, { q, service, from, to, limit });
+  const leads = [...structured.leads, ...legacy.leads]
+    .sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")))
+    .slice(0, limit);
+
   let callClicks = 0;
   try {
-    const callRow = await env.DB.prepare("SELECT COUNT(*) AS total FROM call_clicks").first();
-    callClicks = Number(callRow?.total || 0);
+    if (await tableExists(env, "call_clicks")) {
+      const callRow = await env.DB.prepare("SELECT COUNT(*) AS total FROM call_clicks").first();
+      callClicks += Number(callRow?.total || 0);
+    }
+    if (await tableExists(env, "events")) {
+      const legacyCallRow = await env.DB.prepare("SELECT COUNT(*) AS total FROM events WHERE type = 'phone_click'").first();
+      callClicks += Number(legacyCallRow?.total || 0);
+    }
   } catch (error) {
     console.error("Could not load call click count", error);
   }
 
   return json({
-    leads: rows.results || [],
-    total: Number(totalRow?.total || 0),
+    leads,
+    total: structured.total + legacy.total,
     limit,
     offset,
     stats: {
@@ -307,6 +556,16 @@ export default {
       } catch (error) {
         console.error(error);
         return json({ error: "Could not load leads" }, 500);
+      }
+    }
+
+    const adminLeadMatch = url.pathname.match(/^\/api\/admin\/leads\/([^/]+)\/(\d+)$/);
+    if (adminLeadMatch) {
+      try {
+        return await handleAdminLeadItem(request, env, adminLeadMatch[1], adminLeadMatch[2]);
+      } catch (error) {
+        console.error(error);
+        return json({ error: "Could not update client" }, 500);
       }
     }
 

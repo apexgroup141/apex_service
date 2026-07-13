@@ -32,9 +32,13 @@
       <section class="admin-login" data-admin-login>
         <label>
           Admin token
-          <input type="password" autocomplete="current-password" data-admin-token placeholder="Paste private token" />
+          <span class="admin-password-field">
+            <input type="password" autocomplete="current-password" data-admin-token placeholder="Paste private token" />
+            <button type="button" data-admin-toggle-password aria-label="Show admin token">Show</button>
+          </span>
         </label>
         <button class="button primary" type="button" data-admin-login-button>Open leads</button>
+        <p class="form-status admin-login-status" aria-live="polite" data-admin-login-status></p>
       </section>
 
       <section class="admin-panel" data-admin-panel hidden>
@@ -70,8 +74,58 @@
               <option>Maintenance</option>
             </select>
           </label>
+          <label>
+            From
+            <input name="from" type="date" />
+          </label>
+          <label>
+            To
+            <input name="to" type="date" />
+          </label>
           <button class="button primary" type="submit">Search</button>
+          <button class="button secondary" type="button" data-add-client>Add client</button>
           <button class="button secondary" type="button" data-export-csv>Export CSV</button>
+        </form>
+
+        <form class="admin-editor" data-admin-editor hidden>
+          <input type="hidden" name="id" />
+          <input type="hidden" name="source" />
+          <label>
+            Name
+            <input name="name" autocomplete="name" required />
+          </label>
+          <label>
+            Email
+            <input name="email" type="email" autocomplete="email" required />
+          </label>
+          <label>
+            Phone
+            <input name="phone" type="tel" autocomplete="tel" placeholder="+12533178546" required />
+          </label>
+          <label>
+            Area
+            <input name="area" autocomplete="address-level2" required />
+          </label>
+          <label>
+            Service
+            <select name="service" required>
+              <option value="">Select service</option>
+              <option>Heat pump installation</option>
+              <option>Mini-split installation</option>
+              <option>Furnace repair or replacement</option>
+              <option>AC repair or installation</option>
+              <option>Ductwork</option>
+              <option>Maintenance</option>
+            </select>
+          </label>
+          <label>
+            Message
+            <textarea name="message" rows="4" required></textarea>
+          </label>
+          <div class="admin-editor-actions">
+            <button class="button primary" type="submit">Save client</button>
+            <button class="button secondary" type="button" data-cancel-editor>Cancel</button>
+          </div>
         </form>
 
         <p class="form-status" aria-live="polite" data-admin-status></p>
@@ -87,6 +141,7 @@
                 <th>Area</th>
                 <th>Service</th>
                 <th>Message</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody data-leads-body></tbody>
