@@ -117,6 +117,7 @@ const leadForm = document.querySelector("[data-lead-form]");
 if (leadForm) {
   const status = leadForm.querySelector("[data-form-status]");
   const submitButton = leadForm.querySelector('button[type="submit"]');
+  const endpoint = leadForm.dataset.endpoint || "/api/lead";
 
   const setFormStatus = (message, type = "") => {
     status.textContent = message;
@@ -132,7 +133,7 @@ if (leadForm) {
     const payload = Object.fromEntries(new FormData(leadForm).entries());
 
     try {
-      const response = await fetch(leadForm.action, {
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
