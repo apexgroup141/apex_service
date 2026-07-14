@@ -10,6 +10,7 @@ const filesToCopy = [
   "areas",
   "services",
   "index.html",
+  "landing",
   "local-hvac-services.html",
   "rebates-financing.html",
   "robots.txt",
@@ -29,6 +30,7 @@ const mimeTypes = {
   ".js": "text/javascript; charset=utf-8",
   ".json": "application/json; charset=utf-8",
   ".png": "image/png",
+  ".avif": "image/avif",
   ".txt": "text/plain; charset=utf-8",
   ".webp": "image/webp",
   ".xml": "application/xml; charset=utf-8"
@@ -51,7 +53,10 @@ fs.rmSync(dist, { force: true, recursive: true });
 fs.mkdirSync(path.join(dist, "server"), { recursive: true });
 
 for (const item of filesToCopy) {
-  fs.cpSync(path.join(root, item), path.join(dist, item), { recursive: true });
+  const sourcePath = path.join(root, item);
+  if (fs.existsSync(sourcePath)) {
+    fs.cpSync(sourcePath, path.join(dist, item), { recursive: true });
+  }
 }
 
 const hostingConfigPath = path.join(root, ".openai", "hosting.json");

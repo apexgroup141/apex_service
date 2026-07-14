@@ -11,7 +11,9 @@
     <meta name="theme-color" content="#061f49" />
     <link rel="icon" type="image/png" href="/assets/apex-icon.png" />
     <link rel="apple-touch-icon" href="/assets/apex-icon.png" />
-    <link rel="preload" as="image" href="assets/hvac-hero.png" />
+    <link rel="preload" as="image" href="/assets/hvac-hero-mobile.avif" type="image/avif" media="(max-width: 640px)" />
+    <link rel="preload" as="image" href="/assets/hvac-hero-tablet.avif" type="image/avif" media="(min-width: 641px) and (max-width: 1024px)" />
+    <link rel="preload" as="image" href="/assets/hvac-hero-desktop.webp" type="image/webp" media="(min-width: 1025px)" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -37,7 +39,14 @@
 
     <main id="top">
       <section class="hero" aria-label="Residential HVAC services">
-        <img class="hero-photo" src="assets/hvac-hero.png" alt="HVAC technician inspecting an outdoor heat pump at a suburban home" />
+        <picture class="hero-media">
+          <source type="image/avif" media="(max-width: 640px)" srcset="/assets/hvac-hero-mobile.avif" />
+          <source type="image/avif" media="(max-width: 1024px)" srcset="/assets/hvac-hero-tablet.avif" />
+          <source type="image/webp" media="(max-width: 640px)" srcset="/assets/hvac-hero-mobile.webp" />
+          <source type="image/webp" media="(max-width: 1024px)" srcset="/assets/hvac-hero-tablet.webp" />
+          <source type="image/webp" srcset="/assets/hvac-hero-desktop.webp" />
+          <img class="hero-photo" src="/assets/hvac-hero.png" width="1823" height="863" fetchpriority="high" decoding="async" alt="HVAC technician inspecting an outdoor heat pump at a suburban home" />
+        </picture>
         <div class="hero-overlay"></div>
         <div class="hero-content">
           <p class="eyebrow">Fast, reliable HVAC service</p>

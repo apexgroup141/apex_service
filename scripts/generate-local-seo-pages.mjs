@@ -204,6 +204,111 @@ const services = [
   }
 ];
 
+const adLandingPages = [
+  {
+    slug: "heat-pump-installation",
+    title: "Heat Pump Installation",
+    serviceValue: "Heat pump installation",
+    meta: "Heat pump installation estimates with sizing, airflow review, rebate guidance, warranty support and financing options from Apex Service Group LLC.",
+    eyebrow: "Heat pump installation",
+    headline: "Replace old heating and cooling with a clean heat pump plan.",
+    intro: "Get a clear heat pump installation estimate with equipment options, ductwork notes, startup testing, warranty details and rebate or financing guidance before you approve the work.",
+    bullets: ["Ducted heat pump replacement", "Hybrid heat pump options", "Airflow and ductwork review", "Rebate and financing guidance"],
+    urgency: "Best for high bills, aging AC, electric resistance heat, oil heat, old furnaces and homeowners planning an efficient year-round comfort upgrade.",
+    warranty: "Installation scope, equipment model details, startup notes and warranty information are kept with the project.",
+    brands: ["Mitsubishi", "Carrier", "Fujitsu", "Midea", "Trane"],
+    faq: [
+      ["Can a heat pump replace my furnace and AC?", "Often, yes. The right setup depends on ductwork, electrical capacity, insulation and whether backup heat makes sense."],
+      ["Will you check rebates?", "Eligible heat pump projects can be reviewed for utility incentives and financing options before approval."]
+    ]
+  },
+  {
+    slug: "furnace-repair",
+    title: "Furnace Repair",
+    serviceValue: "Furnace repair or replacement",
+    meta: "Furnace repair and no-heat diagnostics with clear repair options, replacement planning, warranty support and fast scheduling.",
+    eyebrow: "Furnace repair",
+    headline: "No heat, weak airflow or a furnace that keeps shutting off?",
+    intro: "Request furnace diagnostics with a clear explanation of the issue, repair path, safety notes and whether replacement or a heat pump upgrade should be compared.",
+    bullets: ["No-heat diagnostics", "Ignition and blower troubleshooting", "Thermostat and control checks", "Repair vs replacement options"],
+    urgency: "Best for no heat, short cycling, strange startup noise, weak airflow, frequent faults or older equipment that may not be worth repeated repair.",
+    warranty: "Repair work is documented so the homeowner knows what was diagnosed, approved and completed.",
+    brands: ["Carrier", "Trane", "Ameristar", "Fujitsu", "Hitachi"],
+    faq: [
+      ["Should I repair or replace the furnace?", "That depends on age, safety, parts, repair cost and whether a newer heat pump or furnace makes better long-term sense."],
+      ["Can airflow cause furnace problems?", "Yes. Restricted ducts, filters or returns can create comfort and equipment problems."]
+    ]
+  },
+  {
+    slug: "ac-repair",
+    title: "AC Repair",
+    serviceValue: "AC repair or installation",
+    meta: "AC repair and cooling diagnostics with fast scheduling, clear options, warranty support, financing and replacement guidance.",
+    eyebrow: "AC repair",
+    headline: "AC not cooling? Get a clear cooling diagnosis before replacing parts.",
+    intro: "Apex Service Group checks airflow, electrical parts, coils, controls and system condition so you can compare repair, replacement or heat pump upgrade options.",
+    bullets: ["No-cool diagnostics", "Capacitor, fan and control checks", "Frozen coil and airflow review", "AC replacement guidance"],
+    urgency: "Best for warm supply air, frozen coils, breaker trips, short cycling, loud starts, high bills or older central AC systems.",
+    warranty: "The recommended repair or replacement path is explained before work begins, with equipment and warranty details kept clear.",
+    brands: ["Carrier", "Trane", "Midea", "Mitsubishi", "Fujitsu"],
+    faq: [
+      ["Why is my AC running but not cooling?", "Common causes include airflow restrictions, dirty coils, electrical parts, refrigerant issues or aging equipment."],
+      ["Should I replace AC with a heat pump?", "Sometimes. A heat pump may provide both heating and cooling, but the home needs to be reviewed first."]
+    ]
+  },
+  {
+    slug: "mini-split-installation",
+    title: "Mini-Split Installation",
+    serviceValue: "Mini-split installation",
+    meta: "Mini-split installation estimates for bedrooms, additions, garages, ADUs and whole-home ductless comfort with financing options.",
+    eyebrow: "Mini-split installation",
+    headline: "Add quiet heating and cooling where ducts do not reach.",
+    intro: "Get a ductless mini-split estimate with indoor head placement, outdoor unit location, line-set route, drainage, electrical access and warranty details explained clearly.",
+    bullets: ["Single-zone ductless installs", "Multi-zone system planning", "ADU, garage and addition comfort", "Clean line-set and drain routing"],
+    urgency: "Best for additions, upstairs rooms, home offices, garages, ADUs, detached spaces and targeted comfort without major ductwork changes.",
+    warranty: "Brand, model, placement and startup details are documented so warranty questions stay simple after installation.",
+    brands: ["Mitsubishi", "Fujitsu", "Midea", "Hitachi", "Carrier"],
+    faq: [
+      ["Can one mini-split serve the whole home?", "Sometimes, but many homes need multiple zones or another system type. Layout and comfort goals decide the answer."],
+      ["Can I finance a mini-split project?", "Payment options can be checked before choosing the final scope."]
+    ]
+  },
+  {
+    slug: "hvac-maintenance",
+    title: "HVAC Maintenance",
+    serviceValue: "Maintenance",
+    meta: "HVAC maintenance, tune-ups and diagnostics for heating, cooling, airflow, controls and seasonal reliability.",
+    eyebrow: "HVAC maintenance",
+    headline: "Keep heating and cooling running before the busy season hits.",
+    intro: "Seasonal HVAC maintenance helps catch airflow, coil, filter, electrical, thermostat and performance issues before they become larger repair calls.",
+    bullets: ["Heating and cooling tune-ups", "Thermostat and control checks", "Airflow and filter review", "Repair recommendations explained"],
+    urgency: "Best for systems with rising bills, weak airflow, uneven comfort, noisy operation or equipment that has not been serviced recently.",
+    warranty: "Maintenance notes help keep a clearer record of system condition, recommended repairs and follow-up needs.",
+    brands: ["Carrier", "Mitsubishi", "Trane", "Fujitsu", "Midea"],
+    faq: [
+      ["How often should HVAC be maintained?", "Most systems should be checked seasonally or at least once a year, depending on age, usage and equipment type."],
+      ["Can maintenance prevent breakdowns?", "It can catch many common issues early, especially airflow, coil, filter, electrical and control problems."]
+    ]
+  },
+  {
+    slug: "rebates-financing",
+    title: "Rebates & Financing",
+    serviceValue: "Heat pump installation",
+    meta: "HVAC rebates and financing options for heat pumps, mini-splits, AC and replacement systems with clear estimates from Apex Service Group LLC.",
+    eyebrow: "Rebates and financing",
+    headline: "Compare comfort, efficiency, rebates and payment options before approving HVAC work.",
+    intro: "For larger HVAC projects, Apex Service Group helps compare equipment scope, utility incentive notes, financing options and what is included in the installation.",
+    bullets: ["Acorn Finance payment options", "Heat pump rebate guidance", "Ductless project review", "Clear quote options"],
+    urgency: "Best for homeowners planning a system replacement, heat pump upgrade, ductless install or AC/furnace replacement where monthly payment options matter.",
+    warranty: "The estimate separates equipment, installation scope, rebate notes, financing path, permit items and warranty information.",
+    brands: ["Mitsubishi", "Carrier", "Fujitsu", "Midea", "Trane"],
+    faq: [
+      ["Does checking financing affect credit?", "Acorn Finance states that checking rates will not impact your credit score."],
+      ["Can rebates be guaranteed?", "Eligibility depends on utility rules, equipment, home details and program availability, so it should be reviewed before approval."]
+    ]
+  }
+];
+
 function slugify(value) {
   return value
     .toLowerCase()
@@ -236,6 +341,157 @@ function header() {
 
 function footer() {
   return `<footer class="site-footer"><div><strong>Apex Service Group LLC</strong><span>Licensed HVAC installation, repair and maintenance. License APEXSSG746LJ.</span></div><a href="/service-areas">Areas</a></footer>`;
+}
+
+function brandLogoTile(brand) {
+  const logos = {
+    Mitsubishi: "/assets/logos/mitsubishi-electric.svg",
+    Midea: "/assets/logos/midea.svg",
+    Carrier: "/assets/logos/carrier-wordmark.svg",
+    Fujitsu: "/assets/logos/fujitsu.svg",
+    Hitachi: "/assets/logos/hitachi.svg",
+    Trane: "/assets/logos/trane.svg"
+  };
+
+  if (logos[brand]) {
+    return `<figure class="logo-tile"><img src="${logos[brand]}" alt="${escapeHtml(brand)} logo" /><figcaption>${escapeHtml(brand)}</figcaption></figure>`;
+  }
+
+  return `<figure class="logo-tile"><span class="wordmark wordmark-ameristar">${escapeHtml(brand)}</span><figcaption>${escapeHtml(brand)}</figcaption></figure>`;
+}
+
+function landingPageHtml(page) {
+  const route = `/landing/${page.slug}`;
+  const requestHref = `/?service=${encodeURIComponent(page.serviceValue)}#contact`;
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${escapeHtml(page.title)} | Apex Service Group LLC</title>
+    <meta name="description" content="${escapeHtml(page.meta)}" />
+    <meta name="theme-color" content="#061f49" />
+    <link rel="icon" type="image/png" href="/assets/apex-icon.png" />
+    <link rel="apple-touch-icon" href="/assets/apex-icon.png" />
+    <link rel="canonical" href="${baseUrl}${route}" />
+    <link rel="preload" as="image" href="/assets/hvac-hero-mobile.avif" type="image/avif" media="(max-width: 640px)" />
+    <link rel="preload" as="image" href="/assets/hvac-hero-tablet.avif" type="image/avif" media="(min-width: 641px)" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    ${header()}
+
+    <main class="landing-main">
+      <section class="landing-hero">
+        <div class="landing-copy">
+          <p class="eyebrow">${escapeHtml(page.eyebrow)}</p>
+          <h1>${escapeHtml(page.headline)}</h1>
+          <p>${escapeHtml(page.intro)}</p>
+          <div class="landing-cta-row">
+            <a class="button primary" href="#estimate">Get a free estimate</a>
+            <a class="button secondary" href="tel:+12533178546">Call (253) 317-8546</a>
+            <a class="button secondary" href="https://www.acornfinance.com/pre-qualify/?d=UK5SN&utm_medium=web_pre_qual_banner" target="_blank" rel="noopener noreferrer">Check financing</a>
+          </div>
+          <div class="landing-proof" aria-label="Apex service highlights">
+            <div><strong>Licensed</strong><span>WA contractor APEXSSG746LJ</span></div>
+            <div><strong>Bonded & insured</strong><span>documents available for larger work</span></div>
+            <div><strong>Clear warranty</strong><span>equipment and scope kept documented</span></div>
+          </div>
+        </div>
+
+        <aside class="landing-form-card" id="estimate">
+          <h2>Request service</h2>
+          <p>Send the basics. Apex will follow up with timing and the right next step.</p>
+          <form class="lead-form" data-lead-form data-endpoint="/api/lead">
+            <input type="hidden" name="service" value="${escapeHtml(page.serviceValue)}" />
+            <label>
+              Name
+              <input name="name" autocomplete="name" required />
+            </label>
+            <label>
+              Email
+              <input name="email" type="email" autocomplete="email" required />
+            </label>
+            <label>
+              Phone
+              <span class="phone-input">
+                <span class="phone-prefix">+1</span>
+                <input name="phone" type="tel" autocomplete="tel-national" inputmode="tel" placeholder="(253) 317-8546" required data-phone-field />
+              </span>
+            </label>
+            <label>
+              City / service area
+              <input name="area" autocomplete="address-level2" required data-area-field />
+            </label>
+            <label>
+              Message
+              <textarea name="message" rows="4" placeholder="Tell us what is happening and when you need help." required></textarea>
+            </label>
+            <label class="form-honeypot" aria-hidden="true">
+              Company
+              <input name="company" tabindex="-1" autocomplete="off" />
+            </label>
+            <p class="form-status" aria-live="polite" data-form-status></p>
+            <button class="button primary" type="submit">Request estimate</button>
+          </form>
+        </aside>
+      </section>
+
+      <section class="landing-section">
+        <div class="landing-grid">
+          <div>
+            <p class="eyebrow">Why this page exists</p>
+            <h2>Built for people who need one clear HVAC answer, not a tour of the whole website.</h2>
+            <p>${escapeHtml(page.urgency)}</p>
+            <ul class="landing-benefits">
+              ${page.bullets.map((item) => `<li>${escapeHtml(item)}</li>`).join("\n              ")}
+            </ul>
+          </div>
+          <aside>
+            <div class="landing-side-card">
+              <h3>Warranty and protection</h3>
+              <p>${escapeHtml(page.warranty)}</p>
+            </div>
+            <div class="landing-side-card">
+              <h3>Financing available</h3>
+              <p>Payment options can be checked through Acorn Finance before approving a larger installation or replacement project.</p>
+              <a class="text-link" href="https://www.acornfinance.com/pre-qualify/?d=UK5SN&utm_medium=web_pre_qual_banner" target="_blank" rel="noopener noreferrer">Check payment options</a>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="landing-section alt">
+        <div class="section-heading">
+          <p class="eyebrow">Brands and equipment</p>
+          <h2>Recognizable HVAC equipment options.</h2>
+          <p class="section-lead">Apex works with established HVAC suppliers and can compare equipment options for comfort, warranty, availability and budget.</p>
+        </div>
+        <div class="landing-brand-row" aria-label="HVAC equipment brands">
+          ${page.brands.map((brand) => brandLogoTile(brand)).join("\n          ")}
+        </div>
+      </section>
+
+      <section class="landing-section">
+        <div class="section-heading">
+          <p class="eyebrow">Quick answers</p>
+          <h2>Before you request an estimate.</h2>
+        </div>
+        <div class="mini-grid">
+          ${page.faq.map(([question, answer]) => `<article class="mini-card"><h3>${escapeHtml(question)}</h3><p>${escapeHtml(answer)}</p></article>`).join("\n          ")}
+          <article class="mini-card"><h3>What happens after I submit?</h3><p>Apex follows up with scheduling, the right visit type and any details needed to prepare a clear repair or installation path.</p></article>
+        </div>
+      </section>
+
+      <section class="content-section alt"><div class="cta-strip"><div><h2>Ready to talk through ${escapeHtml(page.title).toLowerCase()}?</h2><p>Call now or send the short form. The request also lands in the lead system for follow-up and tracking.</p></div><a class="button primary" href="${requestHref}">Start request</a></div></section>
+    </main>
+
+    ${footer()}
+    <script src="/script.js"></script>
+  </body>
+</html>
+`;
 }
 
 function pageHtml(area, service) {
@@ -449,6 +705,7 @@ function sitemapXml(pages) {
     "/rebates-financing",
     "/service-areas",
     "/local-hvac-services",
+    ...adLandingPages.map((page) => `/landing/${page.slug}`),
     "/areas/seattle",
     "/areas/bellevue",
     "/areas/tacoma",
@@ -474,11 +731,16 @@ const pages = areas.flatMap((area) =>
 );
 
 fs.mkdirSync(path.join(root, "areas"), { recursive: true });
+fs.mkdirSync(path.join(root, "landing"), { recursive: true });
 for (const page of pages) {
   fs.writeFileSync(path.join(root, page.filePath), pageHtml(page.area, page.service));
+}
+
+for (const page of adLandingPages) {
+  fs.writeFileSync(path.join(root, "landing", `${page.slug}.html`), landingPageHtml(page));
 }
 
 fs.writeFileSync(path.join(root, "local-hvac-services.html"), indexHtml(pages));
 fs.writeFileSync(path.join(root, "sitemap.xml"), sitemapXml(pages));
 
-console.log(`Generated ${pages.length} local SEO pages.`);
+console.log(`Generated ${pages.length} local SEO pages and ${adLandingPages.length} ad landing pages.`);

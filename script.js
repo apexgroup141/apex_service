@@ -95,12 +95,25 @@ const params = new URLSearchParams(window.location.search);
 const selectedArea = params.get("area");
 const selectedService = params.get("service");
 
-const trackEvent = (eventName, eventData = {}) => {
+const trackEvent = (eventName, eventData = {}, callback = null) => {
+  let callbackCalled = false;
+  const runCallback = () => {
+    if (callbackCalled || typeof callback !== "function") return;
+    callbackCalled = true;
+    callback();
+  };
+
   window.dataLayer = window.dataLayer || [];
   window.dataLayer.push({
     event: eventName,
-    ...eventData
+    ...eventData,
+    event_callback: runCallback,
+    event_timeout: 1200
   });
+
+  if (typeof callback === "function") {
+    window.setTimeout(runCallback, 1300);
+  }
 };
 
 if (selectedArea && areaField) {
@@ -199,13 +212,17 @@ if (leadForm) {
         throw new Error("Request failed");
       }
 
-      trackEvent("lead_form_submit", {
-        lead_service: payload.service || "",
-        lead_area: payload.area || "",
-        page_location: window.location.href
-      });
-
-      window.location.href = "/thank-you";
+      trackEvent(
+        "lead_form_submit",
+        {
+          lead_service: payload.service || "",
+          lead_area: payload.area || "",
+          page_location: window.location.href
+        },
+        () => {
+          window.location.href = "/thank-you";
+        }
+      );
     } catch {
       setFormStatus("Could not send the request. Please call or email us directly.", "error");
     } finally {
@@ -215,13 +232,22 @@ if (leadForm) {
 }
 
 document.querySelectorAll('a[href^="tel:"]').forEach((link) => {
-  link.addEventListener("click", () => {
+  link.addEventListener("click", (event) => {
     const phone = link.getAttribute("href")?.replace("tel:", "") || "";
-    trackEvent("phone_click", {
-      phone_number: phone,
-      phone_label: link.textContent.trim(),
-      page_location: window.location.href
-    });
+    const href = link.href;
+
+    event.preventDefault();
+    trackEvent(
+      "phone_click",
+      {
+        phone_number: phone,
+        phone_label: link.textContent.trim(),
+        page_location: window.location.href
+      },
+      () => {
+        window.location.href = href;
+      }
+    );
 
     const payload = JSON.stringify({
       phone,
