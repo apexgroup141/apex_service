@@ -427,7 +427,23 @@ h3 {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
+  align-items: flex-start;
   margin-bottom: 42px;
+}
+
+.finance-cta-note {
+  display: grid;
+  gap: 7px;
+  justify-items: center;
+}
+
+.finance-cta-note small {
+  max-width: 300px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.35;
+  text-align: center;
 }
 
 .button {
@@ -1852,6 +1868,7 @@ h3 {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
+  align-items: flex-start;
   margin: 28px 0 30px;
 }
 
@@ -2449,6 +2466,10 @@ h3 {
   }
 
   .landing-cta-row .button {
+    width: 100%;
+  }
+
+  .finance-cta-note {
     width: 100%;
   }
 

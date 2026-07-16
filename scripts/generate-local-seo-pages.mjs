@@ -391,7 +391,10 @@ function landingPageHtml(page) {
           <div class="landing-cta-row">
             <a class="button primary" href="#estimate">Get a free estimate</a>
             <a class="button secondary" href="tel:+12533178546">Call (253) 317-8546</a>
-            <a class="button secondary" href="https://www.acornfinance.com/pre-qualify/?d=UK5SN&utm_medium=web_pre_qual_banner" target="_blank" rel="noopener noreferrer">Check financing</a>
+            <span class="finance-cta-note">
+              <a class="button secondary" href="https://www.acornfinance.com/pre-qualify/?d=UK5SN&utm_medium=web_pre_qual_banner" target="_blank" rel="noopener noreferrer">Check financing</a>
+              <small>Checking your rate won't impact your credit score.</small>
+            </span>
           </div>
           <div class="landing-proof" aria-label="Apex service highlights">
             <div><strong>Licensed</strong><span>WA contractor APEXSSG746LJ</span></div>
