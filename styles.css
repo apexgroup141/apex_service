@@ -1310,8 +1310,45 @@ h3 {
   border-radius: 6px;
 }
 
+.acorn-qr-card {
+  gap: 10px;
+  text-align: center;
+}
+
+.acorn-qr-card img {
+  border: 1px solid rgba(6, 31, 73, 0.12);
+  background: var(--white);
+}
+
+.acorn-qr-card span {
+  color: inherit;
+  font-weight: 900;
+}
+
+.acorn-qr-card small {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.35;
+}
+
 .acorn-section {
   background: #eef4f3;
+}
+
+.finance-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.finance-actions span {
+  max-width: 320px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 750;
 }
 
 .acorn-card {
@@ -1339,6 +1376,43 @@ h3 {
 .acorn-card img {
   width: 100%;
   max-width: 245px;
+  border-radius: 6px;
+}
+
+.acorn-card small {
+  color: var(--muted);
+}
+
+.finance-qr-link {
+  display: grid;
+  gap: 8px;
+  width: min(180px, 100%);
+  margin-top: 16px;
+  padding: 10px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--white);
+  color: var(--deep);
+  font-size: 12px;
+  font-weight: 900;
+  text-align: center;
+  transition:
+    border-color 160ms ease,
+    transform 120ms ease;
+}
+
+.finance-qr-link:hover {
+  border-color: var(--blue);
+}
+
+.finance-qr-link:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+.finance-qr-link img {
+  width: 100%;
+  max-width: 142px;
   border-radius: 6px;
 }
 
