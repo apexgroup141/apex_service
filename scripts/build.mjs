@@ -36,18 +36,16 @@ const mimeTypes = {
   ".xml": "application/xml; charset=utf-8"
 };
 
-const gtmId = "GTM-5DM8M275";
-const gtmHeadSnippet = `<!-- Google Tag Manager -->
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','${gtmId}');</script>
-<!-- End Google Tag Manager -->`;
-const gtmBodySnippet = `<!-- Google Tag Manager (noscript) -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=${gtmId}"
-height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-<!-- End Google Tag Manager (noscript) -->`;
+const googleTagId = "G-F4H11YXLLS";
+const googleTagSnippet = `<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=${googleTagId}"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', '${googleTagId}');
+</script>
+<!-- End Google tag -->`;
 
 fs.rmSync(dist, { force: true, recursive: true });
 fs.mkdirSync(path.join(dist, "server"), { recursive: true });
@@ -73,20 +71,19 @@ function listFiles(dir) {
   });
 }
 
-function injectGtmIntoHtml(filePath) {
+function injectGoogleTagIntoHtml(filePath) {
   let html = fs.readFileSync(filePath, "utf8");
-  if (html.includes(`googletagmanager.com/gtm.js?id=${gtmId}`)) return;
+  if (html.includes(`googletagmanager.com/gtag/js?id=${googleTagId}`)) return;
 
   html = html
-    .replace(/<head(\s[^>]*)?>/i, (match) => `${match}\n    ${gtmHeadSnippet}`)
-    .replace(/<body(\s[^>]*)?>/i, (match) => `${match}\n    ${gtmBodySnippet}`);
+    .replace(/<head(\s[^>]*)?>/i, (match) => `${match}\n    ${googleTagSnippet}`);
 
   fs.writeFileSync(filePath, html);
 }
 
 for (const filePath of listFiles(dist)) {
   if (path.extname(filePath) === ".html") {
-    injectGtmIntoHtml(filePath);
+    injectGoogleTagIntoHtml(filePath);
   }
 }
 

@@ -103,13 +103,21 @@ const trackEvent = (eventName, eventData = {}, callback = null) => {
     callback();
   };
 
-  window.dataLayer = window.dataLayer || [];
-  window.dataLayer.push({
-    event: eventName,
+  const eventPayload = {
     ...eventData,
     event_callback: runCallback,
     event_timeout: 1200
-  });
+  };
+
+  if (typeof window.gtag === "function") {
+    window.gtag("event", eventName, eventPayload);
+  } else {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: eventName,
+      ...eventPayload
+    });
+  }
 
   if (typeof callback === "function") {
     window.setTimeout(runCallback, 1300);
