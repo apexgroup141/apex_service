@@ -335,7 +335,7 @@ function header() {
       <a class="brand" href="/" aria-label="Apex Service Group home"><img class="brand-symbol" src="/assets/apex-icon.png" alt="" aria-hidden="true" /><span class="brand-text"><strong>APEX</strong><small>Service Group LLC</small></span></a>
       <button class="nav-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="site-nav" data-nav-toggle><span></span><span></span><span></span></button>
       <nav class="site-nav" id="site-nav" data-nav><div class="nav-item has-menu"><a class="nav-trigger" href="/#services">Services</a><div class="nav-menu" aria-label="Service categories"><a href="/services/heating"><strong>Heating</strong><span>Furnaces & heat pumps</span></a><a href="/services/cooling"><strong>Cooling</strong><span>AC & mini-splits</span></a><a href="/services/service"><strong>Service</strong><span>Repair & maintenance</span></a></div></div><a href="/rebates-financing">Rebates</a><a href="/#process">Process</a><a href="/service-areas">Areas</a><a href="/#contact">Contact</a></nav>
-      <a class="header-cta" href="tel:+12533178546">Call (253) 317-8546</a>
+      <a class="header-cta" href="tel:+12532821126">Call (253) 282-1126</a>
     </header>`;
 }
 
@@ -390,7 +390,7 @@ function landingPageHtml(page) {
           <p>${escapeHtml(page.intro)}</p>
           <div class="landing-cta-row">
             <a class="button primary" href="#estimate">Get a free estimate</a>
-            <a class="button secondary" href="tel:+12533178546">Call (253) 317-8546</a>
+            <a class="button secondary" href="tel:+12532821126">Call (253) 282-1126</a>
             <span class="finance-cta-note">
               <a class="button secondary" href="https://www.acornfinance.com/pre-qualify/?d=UK5SN&utm_medium=web_pre_qual_banner" target="_blank" rel="noopener noreferrer">Check financing</a>
               <small>Checking your rate won't impact your credit score.</small>
@@ -420,7 +420,7 @@ function landingPageHtml(page) {
               Phone
               <span class="phone-input">
                 <span class="phone-prefix">+1</span>
-                <input name="phone" type="tel" autocomplete="tel-national" inputmode="tel" placeholder="(253) 317-8546" required data-phone-field />
+                <input name="phone" type="tel" autocomplete="tel-national" inputmode="tel" placeholder="(253) 282-1126" required data-phone-field />
               </span>
             </label>
             <label>
@@ -612,7 +612,7 @@ function pageHtml(area, service) {
           provider: {
             "@type": "LocalBusiness",
             name: "Apex Service Group LLC",
-            telephone: "+1-253-317-8546",
+            telephone: "+1-253-282-1126",
             url: `${baseUrl}/`
           },
           areaServed: {
