@@ -221,7 +221,7 @@ if (leadForm) {
       }
 
       trackEvent(
-        "lead_form_submit",
+        "generate_lead",
         {
           lead_service: payload.service || "",
           lead_area: payload.area || "",
