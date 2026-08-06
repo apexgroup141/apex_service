@@ -37,6 +37,7 @@ const mimeTypes = {
 };
 
 const googleTagId = "G-F4H11YXLLS";
+const googleAdsTagId = "AW-18358155203";
 const googleTagSnippet = `<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=${googleTagId}"></script>
 <script>
@@ -44,6 +45,7 @@ const googleTagSnippet = `<!-- Google tag (gtag.js) -->
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
   gtag('config', '${googleTagId}');
+  gtag('config', '${googleAdsTagId}');
 </script>
 <!-- End Google tag -->`;
 
