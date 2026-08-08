@@ -42,7 +42,7 @@ const formatLeadMessage = (lead, request) => {
     "<b>New Apex HVAC request</b>",
     "",
     `<b>Name:</b> ${escapeHtml(lead.name)}`,
-    `<b>Email:</b> ${escapeHtml(lead.email)}`,
+    `<b>Email:</b> ${escapeHtml(lead.email || "Not provided")}`,
     `<b>Phone:</b> ${escapeHtml(lead.phone)}`,
     `<b>Area:</b> ${escapeHtml(lead.area || "Not provided")}`,
     `<b>Service:</b> ${escapeHtml(lead.service || "Not selected")}`,
@@ -163,7 +163,7 @@ const handleLead = async (request, env) => {
   const service = clean(lead.service, 160);
   const message = clean(lead.message, 1600);
 
-  if (!name || !email || !isValidEmail(email) || !phone || !area || !service || !message) {
+  if (!name || (email && !isValidEmail(email)) || !phone || !area || !service) {
     return json({ error: "Missing required fields" }, 400);
   }
 
@@ -527,8 +527,33 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    if (url.protocol === "http:") {
+    const legacyAreaRoutes = {
+      olympia: "/areas/olympia",
+      renton: "/areas/renton"
+    };
+    const legacyArea = url.pathname === "/" ? url.searchParams.get("area")?.toLowerCase() : null;
+
+    if (legacyArea && legacyAreaRoutes[legacyArea]) {
       url.protocol = "https:";
+      url.hostname = "apexgroupwa.com";
+      url.port = "";
+      url.pathname = legacyAreaRoutes[legacyArea];
+      url.search = "";
+      return Response.redirect(url.toString(), 301);
+    }
+
+    if (url.pathname.endsWith(".html")) {
+      url.pathname = url.pathname.slice(0, -5) || "/";
+      url.protocol = "https:";
+      url.hostname = "apexgroupwa.com";
+      url.port = "";
+      return Response.redirect(url.toString(), 301);
+    }
+
+    if (url.protocol === "http:" || url.hostname === "www.apexgroupwa.com") {
+      url.protocol = "https:";
+      url.hostname = "apexgroupwa.com";
+      url.port = "";
       return Response.redirect(url.toString(), 301);
     }
 

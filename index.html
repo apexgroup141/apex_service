@@ -8,6 +8,7 @@
       name="description"
       content="Apex Service Group LLC provides residential HVAC installation, repair, maintenance, heat pumps, mini-splits, furnaces, AC, ductwork and financing from Spanaway across Tacoma, the South Sound and Seattle metro."
     />
+    <link rel="canonical" href="https://apexgroupwa.com/" />
     <meta name="theme-color" content="#061f49" />
     <link rel="icon" type="image/png" href="/assets/apex-icon.png" />
     <link rel="apple-touch-icon" href="/assets/apex-icon.png" />
@@ -56,12 +57,7 @@
             detailed estimates and dependable service across the South Sound and Seattle area.
           </p>
           <div class="hero-actions">
-            <a class="button primary" href="#contact">Get a free estimate</a>
-            <a class="button secondary" href="#services">View services</a>
-            <span class="finance-cta-note">
-              <a class="button secondary" href="https://www.acornfinance.com/pre-qualify/?d=UK5SN&utm_medium=web_pre_qual_banner" target="_blank" rel="noopener noreferrer">Check financing options</a>
-              <small>Checking your rate won't impact your credit score.</small>
-            </span>
+            <a class="button primary" href="/get-estimate">Get a free estimate</a>
           </div>
           <dl class="hero-stats" aria-label="Company highlights">
             <div>
@@ -78,6 +74,12 @@
             </div>
           </dl>
         </div>
+        <aside class="acorn-home-widget" aria-labelledby="acorn-widget-title">
+        <a class="acorn-widget-action" href="https://www.acornfinance.com/pre-qualify/?d=UK5SN&utm_medium=web_pre_qual_banner" target="_blank" rel="noopener noreferrer" aria-label="Check Acorn Finance payment options">
+          <img src="/assets/acorn-finance-qr.jpg" alt="Acorn Finance project financing information and QR code" loading="lazy" />
+          <span><strong id="acorn-widget-title">Scan or click to check payment options</strong><small>Checking your rate won't impact your credit score.</small></span>
+        </a>
+        </aside>
       </section>
 
       <section class="trust-band" aria-label="Service promises">
@@ -304,7 +306,7 @@
           </p>
           <a class="button secondary split-button" href="/rebates-financing">Rebates and financing</a>
         </div>
-        <div class="rebate-panel">
+        <div class="rebate-panel rebate-panel-single">
           <div class="rebate-list" aria-label="Rebate and financing highlights">
             <div>
               <strong>Utility rebates</strong>
@@ -323,11 +325,6 @@
               <span>Help with model numbers, eligibility details and installation documentation.</span>
             </div>
           </div>
-          <a class="acorn-banner acorn-qr-card" href="https://www.acornfinance.com/pre-qualify/?d=UK5SN&utm_medium=web_pre_qual_banner" target="_blank" rel="noopener noreferrer" aria-label="Check Acorn Finance payment options">
-            <img src="/assets/acorn-finance-qr.jpg" alt="Acorn Finance QR code for payment options" loading="lazy" />
-            <span>Scan or check online</span>
-            <small>Checking your rate won't impact your credit score.</small>
-          </a>
         </div>
       </section>
 
@@ -382,7 +379,7 @@
         </ul>
       </section>
 
-      <section class="contact-section" id="contact">
+      <section class="contact-section contact-section-info-only" id="contact">
         <div class="contact-copy">
           <p class="eyebrow">Request service</p>
           <h2>Get a clear repair visit or installation estimate.</h2>
@@ -397,50 +394,6 @@
           </div>
         </div>
 
-        <form class="lead-form" data-lead-form data-endpoint="/api/lead">
-          <label>
-            Name
-            <input name="name" autocomplete="name" required />
-          </label>
-          <label>
-            Email
-            <input name="email" type="email" autocomplete="email" required />
-          </label>
-          <label>
-            Phone
-            <span class="phone-input">
-              <span class="phone-prefix">+1</span>
-              <input name="phone" type="tel" autocomplete="tel-national" inputmode="tel" placeholder="(253) 282-1126" required data-phone-field />
-            </span>
-          </label>
-          <label>
-            City / service area
-            <input name="area" autocomplete="address-level2" required data-area-field />
-          </label>
-          <label>
-            Service needed
-            <select name="service" required>
-              <option value="">Select service</option>
-              <option>Heat pump installation</option>
-              <option>Mini-split installation</option>
-              <option>Furnace repair or replacement</option>
-              <option>AC repair or installation</option>
-              <option>Ductwork</option>
-              <option>Maintenance</option>
-              <option>New construction HVAC</option>
-            </select>
-          </label>
-          <label>
-            Message
-            <textarea name="message" rows="5" placeholder="Tell us about the system, home, and timing." required></textarea>
-          </label>
-          <label class="form-honeypot" aria-hidden="true">
-            Company
-            <input name="company" tabindex="-1" autocomplete="off" />
-          </label>
-          <p class="form-status" aria-live="polite" data-form-status></p>
-          <button class="button primary" type="submit">Request estimate</button>
-        </form>
       </section>
     </main>
 

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Get a Free HVAC Estimate | Apex Service Group</title>
+    <meta name="description" content="Request a free residential HVAC estimate from Apex Service Group for heat pumps, mini splits, air conditioning, furnaces, ductwork, repair or maintenance." />
+    <link rel="canonical" href="https://apexgroupwa.com/get-estimate" />
+    <meta property="og:title" content="Get a Free HVAC Estimate | Apex Service Group" />
+    <meta property="og:description" content="Tell Apex Service Group about your heating or cooling project and request a free estimate." />
+    <meta property="og:url" content="https://apexgroupwa.com/get-estimate" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://apexgroupwa.com/assets/hvac-hero.png" />
+    <meta name="theme-color" content="#061f49" />
+    <link rel="icon" href="/assets/apex-icon.png" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="site-header header-solid" data-header></header>
+    <main class="page-main estimate-page">
+      <section class="estimate-intro">
+        <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><span>Get Free Estimate</span></nav>
+        <p class="eyebrow">Residential HVAC estimate</p>
+        <h1>Request Your Free Estimate</h1>
+        <p>Fields marked with <span aria-hidden="true">*</span> are required. Your information is used only to respond to your HVAC request.</p>
+      </section>
+
+      <section class="estimate-layout" aria-label="Estimate request">
+        <form class="lead-form estimate-form" data-lead-form data-endpoint="/api/lead">
+          <div class="estimate-field-grid">
+            <label>First name <span aria-hidden="true">*</span><input name="first_name" autocomplete="given-name" required /></label>
+            <label>Last name <span aria-hidden="true">*</span><input name="last_name" autocomplete="family-name" required /></label>
+            <label>Phone <span aria-hidden="true">*</span><span class="phone-input"><span class="phone-prefix">+1</span><input name="phone" type="tel" autocomplete="tel-national" inputmode="tel" required data-phone-field /></span></label>
+            <label>Email <span class="optional-label">Optional</span><input name="email" type="email" autocomplete="email" /></label>
+          </div>
+
+          <label>Street address <span class="optional-label">Optional</span><input name="address" autocomplete="street-address" /></label>
+          <div class="estimate-field-grid">
+            <label>City <span class="optional-label">Optional</span><input name="city" autocomplete="address-level2" /></label>
+            <label>ZIP code <span aria-hidden="true">*</span><input name="zip" autocomplete="postal-code" inputmode="numeric" pattern="[0-9]{5}(-[0-9]{4})?" maxlength="10" required /></label>
+          </div>
+
+          <fieldset class="service-choice-group">
+            <legend>Service needed <span aria-hidden="true">*</span></legend>
+            <div class="service-choice-grid">
+              <label><input type="radio" name="service" value="Heat pump installation" required /><span>Heat Pump Installation</span></label>
+              <label><input type="radio" name="service" value="Mini-split installation" /><span>Mini-Split Installation</span></label>
+              <label><input type="radio" name="service" value="Heat pump repair" /><span>Heat Pump Repair</span></label>
+              <label><input type="radio" name="service" value="Furnace service" /><span>Furnace Services</span></label>
+              <label><input type="radio" name="service" value="AC service" /><span>Air Conditioning</span></label>
+              <label><input type="radio" name="service" value="Ductwork" /><span>Ductwork</span></label>
+              <label><input type="radio" name="service" value="Repair and maintenance" /><span>Repair & Maintenance</span></label>
+              <label><input type="radio" name="service" value="Other HVAC service" /><span>Other HVAC Service</span></label>
+            </div>
+          </fieldset>
+
+          <label>Additional notes <span class="optional-label">Optional</span><textarea name="notes" rows="6" placeholder="Tell us about the system, home, timing, or anything else we should know."></textarea></label>
+          <label class="form-honeypot" aria-hidden="true">Company<input name="company" tabindex="-1" autocomplete="off" /></label>
+          <p class="form-status" aria-live="polite" data-form-status></p>
+          <button class="button primary estimate-submit" type="submit">Get My Free Estimate</button>
+        </form>
+
+        <aside class="estimate-sidebar">
+          <section><p class="eyebrow">Prefer to talk?</p><a class="estimate-phone" href="tel:+12532821126">☎ <span>(253) 282-1126</span></a><p>Call Apex Service Group to discuss your HVAC project directly.</p></section>
+          <section><p class="eyebrow">Why homeowners choose Apex</p><ul class="check-list"><li>Washington contractor license APEXSSG746LJ</li><li>Locally owned and owner-operated</li><li>Personal on-site assessments</li><li>Five-year labor warranty on qualifying installations</li><li>Manufacturer warranties up to twelve years depending on equipment</li></ul></section>
+          <section><p class="eyebrow">Service area</p><p>Residential HVAC service across Pierce, King and Thurston Counties.</p><a class="text-link" href="/service-areas">View service areas →</a></section>
+        </aside>
+      </section>
+    </main>
+    <footer class="site-footer"><div><strong>Apex Service Group LLC</strong><span>Licensed HVAC installation, repair and maintenance. License APEXSSG746LJ.</span></div><a href="/">Home</a></footer>
+    <script src="/script.js"></script>
+  </body>
+</html>

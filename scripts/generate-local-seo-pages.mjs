@@ -420,7 +420,7 @@ function landingPageHtml(page) {
               Phone
               <span class="phone-input">
                 <span class="phone-prefix">+1</span>
-                <input name="phone" type="tel" autocomplete="tel-national" inputmode="tel" placeholder="(253) 282-1126" required data-phone-field />
+                <input name="phone" type="tel" autocomplete="tel-national" inputmode="tel" required data-phone-field />
               </span>
             </label>
             <label>

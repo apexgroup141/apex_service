@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { pathForHtmlFile, renderSiteHeader } from "./site-navigation.mjs";
 
 const root = process.cwd();
 const dist = path.join(root, "dist");
@@ -7,15 +8,20 @@ const filesToCopy = [
   "assets",
   "admin.html",
   "admin.js",
+  "about.html",
   "areas",
   "services",
   "index.html",
+  "blog.html",
+  "get-estimate.html",
   "landing",
   "local-hvac-services.html",
   "rebates-financing.html",
+  "projects.html",
   "robots.txt",
   "script.js",
   "service-areas.html",
+  "reviews.html",
   "sitemap.xml",
   "styles.css",
   "thank-you.html"
@@ -83,8 +89,59 @@ function injectGoogleTagIntoHtml(filePath) {
   fs.writeFileSync(filePath, html);
 }
 
+function injectSharedNavigation(filePath) {
+  if (path.basename(filePath) === "admin.html") return;
+  const relativePath = path.relative(dist, filePath);
+  let html = fs.readFileSync(filePath, "utf8");
+  html = html.replace(/<header class="site-header[\s\S]*?<\/header>/i, renderSiteHeader(pathForHtmlFile(relativePath)));
+  fs.writeFileSync(filePath, html);
+}
+
+function injectServiceDiscoveryLinks(filePath) {
+  const route = pathForHtmlFile(path.relative(dist, filePath));
+  const primaryServices = new Set([
+    "/services/heat-pumps",
+    "/services/mini-splits",
+    "/services/air-conditioning",
+    "/services/furnaces",
+    "/services/ductwork",
+    "/services/repair-maintenance"
+  ]);
+  if (!primaryServices.has(route)) return;
+
+  let html = fs.readFileSync(filePath, "utf8");
+  const section = `<section class="service-discovery" aria-labelledby="service-discovery-title"><div><p class="eyebrow">Plan with confidence</p><h2 id="service-discovery-title">Learn more about Apex before requesting an estimate.</h2></div><nav aria-label="Related Apex resources"><a href="/projects">Project portfolio</a><a href="/reviews">Customer reviews</a><a href="/about">About Apex</a><a href="/blog">HVAC guidance</a><a href="/service-areas">Service areas</a></nav></section>`;
+  html = html.replace(/<\/main>/i, `${section}</main>`);
+  fs.writeFileSync(filePath, html);
+}
+
+function connectServiceEstimateButtons(filePath) {
+  const route = pathForHtmlFile(path.relative(dist, filePath));
+  if (!route.startsWith("/services/")) return;
+
+  const serviceByRoute = {
+    "/services/heat-pumps": "Heat pump installation",
+    "/services/mini-splits": "Mini-split installation",
+    "/services/air-conditioning": "AC service",
+    "/services/cooling": "AC service",
+    "/services/furnaces": "Furnace service",
+    "/services/heating": "Furnace service",
+    "/services/ductwork": "Ductwork",
+    "/services/repair-maintenance": "Repair and maintenance",
+    "/services/service": "Repair and maintenance"
+  };
+  const service = serviceByRoute[route] || "Other HVAC service";
+  const estimateUrl = `/get-estimate?service=${encodeURIComponent(service)}`;
+  let html = fs.readFileSync(filePath, "utf8");
+  html = html.replace(/href="\/\#contact"/g, `href="${estimateUrl}"`);
+  fs.writeFileSync(filePath, html);
+}
+
 for (const filePath of listFiles(dist)) {
   if (path.extname(filePath) === ".html") {
+    injectSharedNavigation(filePath);
+    connectServiceEstimateButtons(filePath);
+    injectServiceDiscoveryLinks(filePath);
     injectGoogleTagIntoHtml(filePath);
   }
 }
@@ -125,6 +182,20 @@ function findAsset(pathname) {
 export default {
   async fetch(request) {
     const url = new URL(request.url);
+    const legacyAreaRoutes = { olympia: "/areas/olympia", renton: "/areas/renton" };
+    const legacyArea = url.pathname === "/" ? url.searchParams.get("area")?.toLowerCase() : null;
+
+    if (legacyArea && legacyAreaRoutes[legacyArea]) {
+      url.pathname = legacyAreaRoutes[legacyArea];
+      url.search = "";
+      return Response.redirect(url.toString(), 301);
+    }
+
+    if (url.pathname.endsWith(".html")) {
+      url.pathname = url.pathname.slice(0, -5) || "/";
+      return Response.redirect(url.toString(), 301);
+    }
+
     const asset = findAsset(decodeURIComponent(url.pathname));
 
     if (!asset) {

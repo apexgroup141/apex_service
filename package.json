@@ -2,6 +2,7 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/generate-local-seo-pages.mjs && node scripts/build.mjs",
+    "preview": "node scripts/preview-server.mjs",
     "start": "python3 -m http.server 8080"
   },
   "dependencies": {}

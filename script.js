@@ -1,8 +1,11 @@
 const header = document.querySelector("[data-header]");
 const nav = document.querySelector("[data-nav]");
 const toggle = document.querySelector("[data-nav-toggle]");
+const submenu = document.querySelector(".has-menu");
+const submenuToggle = document.querySelector("[data-submenu-toggle]");
 const areaField = document.querySelector("[data-area-field]");
 const serviceField = document.querySelector('select[name="service"]');
+const serviceRadios = document.querySelectorAll('input[type="radio"][name="service"]');
 const backdrop = document.createElement("button");
 
 backdrop.className = "nav-backdrop";
@@ -24,8 +27,10 @@ const setNavOpen = (isOpen) => {
   nav.classList.toggle("is-open", isOpen);
   header.classList.toggle("is-open", isOpen);
   backdrop.classList.toggle("is-open", isOpen);
+  document.body.classList.toggle("nav-lock", isOpen && window.matchMedia("(max-width: 1320px)").matches);
   if (!isOpen) {
     nav.querySelectorAll(".is-submenu-open").forEach((item) => item.classList.remove("is-submenu-open"));
+    submenuToggle?.setAttribute("aria-expanded", "false");
   }
 };
 
@@ -37,27 +42,33 @@ document.querySelectorAll(".has-menu").forEach((item) => {
   let closeTimer;
 
   item.addEventListener("pointerenter", () => {
-    if (window.matchMedia("(max-width: 980px)").matches) return;
+    if (window.matchMedia("(max-width: 1320px)").matches) return;
     window.clearTimeout(closeTimer);
     item.classList.add("is-submenu-open");
   });
 
   item.addEventListener("pointerleave", () => {
-    if (window.matchMedia("(max-width: 980px)").matches) return;
+    if (window.matchMedia("(max-width: 1320px)").matches) return;
     closeTimer = window.setTimeout(() => {
       item.classList.remove("is-submenu-open");
     }, 320);
   });
 });
 
-nav.addEventListener("click", (event) => {
-  const trigger = event.target.closest(".nav-trigger");
-  if (trigger && window.matchMedia("(max-width: 980px)").matches) {
-    event.preventDefault();
-    trigger.closest(".has-menu")?.classList.toggle("is-submenu-open");
-    return;
-  }
+const setSubmenuOpen = (isOpen) => {
+  submenu?.classList.toggle("is-submenu-open", isOpen);
+  submenuToggle?.setAttribute("aria-expanded", String(isOpen));
+};
 
+submenuToggle?.addEventListener("click", () => {
+  setSubmenuOpen(submenuToggle.getAttribute("aria-expanded") !== "true");
+});
+
+submenuToggle?.addEventListener("focus", () => {
+  if (!window.matchMedia("(max-width: 1320px)").matches) setSubmenuOpen(true);
+});
+
+nav.addEventListener("click", (event) => {
   if (!event.target.closest("a")) return;
   setNavOpen(false);
 });
@@ -67,15 +78,21 @@ backdrop.addEventListener("click", () => {
 });
 
 document.addEventListener("click", (event) => {
-  if (!nav.classList.contains("is-open")) return;
-  if (header.contains(event.target)) return;
-  setNavOpen(false);
+  if (!submenu?.contains(event.target)) setSubmenuOpen(false);
+  if (nav.classList.contains("is-open") && !header.contains(event.target)) setNavOpen(false);
 });
 
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
+    const wasSubmenuOpen = submenu?.classList.contains("is-submenu-open");
+    setSubmenuOpen(false);
     setNavOpen(false);
+    if (wasSubmenuOpen) submenuToggle?.focus();
   }
+});
+
+window.addEventListener("resize", () => {
+  if (!window.matchMedia("(max-width: 1320px)").matches) document.body.classList.remove("nav-lock");
 });
 
 document.querySelectorAll(".area-list li, .area-group li").forEach((item) => {
@@ -131,6 +148,11 @@ if (selectedArea && areaField) {
 
 if (selectedService && serviceField) {
   serviceField.value = selectedService;
+}
+
+if (selectedService && serviceRadios.length) {
+  const matchingService = [...serviceRadios].find((radio) => radio.value === selectedService);
+  if (matchingService) matchingService.checked = true;
 }
 
 document.querySelectorAll('a[href^="/?area="]').forEach((link) => {
@@ -207,6 +229,17 @@ if (leadForm) {
     submitButton.disabled = true;
 
     const payload = Object.fromEntries(new FormData(leadForm).entries());
+    const firstName = String(payload.first_name || "").trim();
+    const lastName = String(payload.last_name || "").trim();
+    if (firstName || lastName) {
+      payload.name = `${firstName} ${lastName}`.trim();
+    }
+    if (payload.zip) {
+      payload.area = [payload.address, payload.city, `WA ${payload.zip}`].filter(Boolean).join(", ");
+    }
+    if (Object.hasOwn(payload, "notes")) {
+      payload.message = payload.notes;
+    }
     payload.phone = `+1${phoneDigits}`;
 
     try {

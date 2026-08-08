@@ -1,0 +1,22 @@
+{
+  "note": "Documentation-only example. This file is not copied into dist and contains no claim of real Apex work.",
+  "projects": [
+    {
+      "published": false,
+      "title": "",
+      "slug": "",
+      "city": "",
+      "serviceArea": "",
+      "category": "Heat Pump Installations",
+      "equipment": "",
+      "description": "",
+      "mainImage": { "src": "", "alt": "" },
+      "gallery": [],
+      "beforeImage": null,
+      "afterImage": null,
+      "completedAt": null,
+      "relatedServiceUrl": "/services/heat-pumps",
+      "ctaLabel": "Request an estimate"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "note": "Documentation-only example. Drafts are not copied into dist or added to sitemap.xml.",
+  "posts": [
+    {
+      "published": false,
+      "title": "",
+      "slug": "",
+      "publicationDate": null,
+      "author": "Apex Service Group",
+      "featuredImage": { "src": "", "alt": "" },
+      "excerpt": "",
+      "content": "",
+      "categories": [],
+      "relatedServiceUrl": "",
+      "seoTitle": "",
+      "metaDescription": "",
+      "openGraphImage": "",
+      "canonicalUrl": "",
+      "structuredData": null
+    }
+  ]
+}
