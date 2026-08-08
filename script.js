@@ -141,6 +141,40 @@ const trackEvent = (eventName, eventData = {}, callback = null) => {
   }
 };
 
+document.querySelectorAll('a[href]').forEach((link) => {
+  let destination;
+  try {
+    destination = new URL(link.href, window.location.href);
+  } catch {
+    return;
+  }
+
+  if (destination.origin !== window.location.origin || destination.pathname !== "/get-estimate") return;
+
+  link.addEventListener("click", (event) => {
+    const eventData = {
+      button_text: link.textContent.trim(),
+      cta_location:
+        link.dataset.ctaLocation ||
+        (link.closest("header") ? "header" : link.closest("footer") ? "footer" : "page"),
+      destination_url: destination.href,
+      page_location: window.location.href
+    };
+    const opensSeparately =
+      event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || link.target === "_blank";
+
+    if (opensSeparately) {
+      trackEvent("estimate_button_click", eventData);
+      return;
+    }
+
+    event.preventDefault();
+    trackEvent("estimate_button_click", eventData, () => {
+      window.location.href = destination.href;
+    });
+  });
+});
+
 if (selectedArea && areaField) {
   areaField.value = selectedArea;
   areaField.closest("label")?.classList.add("is-prefilled");
@@ -185,6 +219,8 @@ if (leadForm) {
   const submitButton = leadForm.querySelector('button[type="submit"]');
   const phoneField = leadForm.querySelector("[data-phone-field]");
   const endpoint = leadForm.dataset.endpoint || "/api/lead";
+  let submissionInProgress = false;
+  let leadEventSent = false;
 
   const getPhoneDigits = () => {
     let digits = (phoneField?.value || "").replace(/\D/g, "");
@@ -215,6 +251,8 @@ if (leadForm) {
   leadForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
+    if (submissionInProgress || leadEventSent) return;
+
     const phoneDigits = getPhoneDigits();
     if (phoneField) {
       phoneField.setCustomValidity(phoneDigits.length === 10 ? "" : "Enter a 10-digit US phone number.");
@@ -226,6 +264,7 @@ if (leadForm) {
     }
 
     setFormStatus("Sending request...");
+    submissionInProgress = true;
     submitButton.disabled = true;
 
     const payload = Object.fromEntries(new FormData(leadForm).entries());
@@ -248,11 +287,13 @@ if (leadForm) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
+      const result = await response.json().catch(() => null);
 
-      if (!response.ok) {
+      if (!response.ok || result?.ok !== true) {
         throw new Error("Request failed");
       }
 
+      leadEventSent = true;
       trackEvent(
         "generate_lead",
         {
@@ -265,9 +306,9 @@ if (leadForm) {
         }
       );
     } catch {
-      setFormStatus("Could not send the request. Please call or email us directly.", "error");
-    } finally {
+      submissionInProgress = false;
       submitButton.disabled = false;
+      setFormStatus("Could not send the request. Please call or email us directly.", "error");
     }
   });
 }
