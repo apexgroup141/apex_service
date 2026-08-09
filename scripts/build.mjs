@@ -18,6 +18,7 @@ const filesToCopy = [
   "local-hvac-services.html",
   "rebates-financing.html",
   "projects.html",
+  "projects",
   "robots.txt",
   "script.js",
   "service-areas.html",

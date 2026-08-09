@@ -507,6 +507,11 @@ function pageHtml(area, service) {
   const pathName = `/areas/${area.slug}-${service.slug}`;
   const requestHref = `/?area=${encodeURIComponent(area.name)}&service=${encodeURIComponent(service.serviceValue)}#contact`;
   const regionalText = regionCopy[area.group];
+  const projectSpotlight = area.slug === "seattle" && service.slug === "mini-split-installation"
+    ? `
+
+      <section class="content-section project-spotlight"><div class="cta-strip"><div><p class="eyebrow">Completed Seattle project</p><h2>See a real 3-zone Mitsubishi mini-split installation.</h2><p>Follow this new-construction project from refrigerant line-set and condensate rough-in through the finished indoor units and outdoor heat pump installation.</p></div><a class="button secondary" href="/projects/mitsubishi-3-zone-mini-split-new-construction">View Seattle Project</a></div></section>`
+    : "";
   const faqJson = service.faq.map(([question, answer]) => ({
     "@type": "Question",
     name: `${question} (${area.name})`,
@@ -542,7 +547,7 @@ function pageHtml(area, service) {
           <a class="button primary" href="${requestHref}">Request ${escapeHtml(area.name)} estimate</a>
           <a class="button secondary" href="${service.pagePath}">View service details</a>
         </div>
-      </section>
+      </section>${projectSpotlight}
 
       <section class="content-section">
         <div class="content-grid">
@@ -712,6 +717,8 @@ function sitemapXml(pages) {
     "/rebates-financing",
     "/service-areas",
     "/local-hvac-services",
+    "/projects",
+    "/projects/mitsubishi-3-zone-mini-split-new-construction",
     ...adLandingPages.map((page) => `/landing/${page.slug}`),
     "/areas/seattle",
     "/areas/bellevue",
