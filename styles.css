@@ -2767,6 +2767,8 @@ h3 {
 .project-card-content { display: flex; padding: clamp(28px, 5vw, 56px); flex-direction: column; align-items: flex-start; justify-content: center; }
 .project-card-content h3 { margin: 8px 0 18px; font-size: clamp(27px, 3vw, 42px); }
 .project-card-content h3 a { color: inherit; }
+.project-card-content .button.secondary { border-color: rgba(6,31,73,.24); background: var(--white); color: var(--ink); box-shadow: 0 8px 20px rgba(6,31,73,.08); }
+.project-card-content .button.secondary:hover { border-color: var(--blue); background: var(--ice); color: var(--blue); }
 .project-type { margin: 0; color: var(--blue); font-size: 12px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; }
 .project-summary-list { display: grid; width: 100%; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 18px 0 26px; }
 .project-summary-list div { padding: 14px; background: var(--paper); }
