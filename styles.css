@@ -2636,7 +2636,11 @@ h3 {
   align-items: center;
 }
 
-.nav-service-links { justify-content: flex-end; }
+.nav-service-links { min-width: 0; justify-content: flex-end; }
+.nav-service-links > a,
+.nav-service-links > .nav-item,
+.nav-service-links > .nav-item > .nav-trigger,
+.nav-actions > a { flex: 0 0 auto; white-space: nowrap; }
 .site-nav a { padding: 9px 6px; }
 .site-nav a[aria-current="page"],
 .has-menu.is-current > .nav-trigger {
