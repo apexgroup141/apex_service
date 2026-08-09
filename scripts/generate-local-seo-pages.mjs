@@ -719,6 +719,7 @@ function sitemapXml(pages) {
     "/local-hvac-services",
     "/projects",
     "/projects/mitsubishi-3-zone-mini-split-new-construction",
+    "/projects/commercial-rooftop-unit-service-tacoma",
     ...adLandingPages.map((page) => `/landing/${page.slug}`),
     "/areas/seattle",
     "/areas/bellevue",
