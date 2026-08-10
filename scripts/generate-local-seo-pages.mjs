@@ -720,6 +720,7 @@ function sitemapXml(pages) {
     "/projects",
     "/projects/mitsubishi-3-zone-mini-split-new-construction",
     "/projects/commercial-rooftop-unit-service-tacoma",
+    "/projects/mitsubishi-heat-pump-air-handler-replacement-kirkland",
     ...adLandingPages.map((page) => `/landing/${page.slug}`),
     "/areas/seattle",
     "/areas/bellevue",
