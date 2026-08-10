@@ -138,9 +138,19 @@ function connectServiceEstimateButtons(filePath) {
   fs.writeFileSync(filePath, html);
 }
 
+function markSharedServiceHero(filePath) {
+  const route = pathForHtmlFile(path.relative(dist, filePath));
+  if (!route.startsWith("/services/")) return;
+
+  let html = fs.readFileSync(filePath, "utf8");
+  html = html.replace(/<section class="page-hero(\s|\")/i, '<section class="page-hero service-page-hero$1');
+  fs.writeFileSync(filePath, html);
+}
+
 for (const filePath of listFiles(dist)) {
   if (path.extname(filePath) === ".html") {
     injectSharedNavigation(filePath);
+    markSharedServiceHero(filePath);
     connectServiceEstimateButtons(filePath);
     injectServiceDiscoveryLinks(filePath);
     injectGoogleTagIntoHtml(filePath);

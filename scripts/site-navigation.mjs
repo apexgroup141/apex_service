@@ -28,6 +28,7 @@ export function renderSiteHeader(pathname = "/") {
   const aboutActive = aboutLinks.some(([, href]) => normalizePath(href) === currentPath);
 
   return `<header class="site-header${isHome ? "" : " header-solid"}" data-header>
+    <div class="site-header-shell">
       <a class="brand" href="/" aria-label="Apex Service Group home"><img class="brand-symbol" src="/assets/apex-icon.png" alt="" aria-hidden="true" /><span class="brand-text"><strong>APEX</strong><small>Service Group LLC</small></span></a>
       <button class="nav-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="site-nav" data-nav-toggle><span></span><span></span><span></span></button>
       <nav class="site-nav" id="site-nav" aria-label="Primary navigation" data-nav>
@@ -41,6 +42,7 @@ export function renderSiteHeader(pathname = "/") {
           <a class="header-cta" href="tel:+12532821126">Call (253) 282-1126</a>
         </div>
       </nav>
+    </div>
     </header>`;
 }
 
