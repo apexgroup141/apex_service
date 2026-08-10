@@ -721,6 +721,7 @@ function sitemapXml(pages) {
     "/projects/mitsubishi-3-zone-mini-split-new-construction",
     "/projects/commercial-rooftop-unit-service-tacoma",
     "/projects/mitsubishi-heat-pump-air-handler-replacement-kirkland",
+    "/projects/mitsubishi-ducted-air-conditioning-hrv-installation-bellevue",
     ...adLandingPages.map((page) => `/landing/${page.slug}`),
     "/areas/seattle",
     "/areas/bellevue",
