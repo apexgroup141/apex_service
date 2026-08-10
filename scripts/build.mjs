@@ -13,6 +13,7 @@ const filesToCopy = [
   "services",
   "index.html",
   "blog.html",
+  "blog",
   "get-estimate.html",
   "landing",
   "local-hvac-services.html",

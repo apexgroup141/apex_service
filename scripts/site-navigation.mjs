@@ -12,7 +12,7 @@ const aboutLinks = [
   ["About Apex Service Group", "/about"],
   ["Our Projects", "/projects"],
   ["Customer Reviews", "/reviews"],
-  ["Blog", "/blog"]
+  ["HVAC Tips & Guides", "/blog"]
 ];
 
 const normalizePath = (pathname) => pathname.replace(/index\.html$/, "").replace(/\.html$/, "") || "/";
