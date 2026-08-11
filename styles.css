@@ -3060,8 +3060,15 @@ h3 {
   .review-grid, .blog-topic-grid { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }
   .review-placeholder, .blog-topic-grid article { flex: 0 0 88%; scroll-snap-align: start; }
   .project-media-placeholder { min-height: 220px; }
-  .acorn-home-widget { position: relative; right: auto; bottom: auto; width: calc(100% - 36px); margin: -150px 18px 22px; padding: 16px; }
-  .hero { padding-bottom: 0; }
+  .hero { display: grid; grid-template-columns: 14px minmax(0, 1fr) 14px; padding: 118px 0 0; }
+  .hero-content { display: contents; }
+  .hero-content > * { position: relative; z-index: 1; grid-column: 2; }
+  .hero-content > .eyebrow { order: 1; }
+  .hero-content > h1 { order: 2; }
+  .hero-content > .hero-copy { order: 3; }
+  .hero-content > .hero-actions { order: 4; margin-bottom: 0; }
+  .acorn-home-widget { position: relative; inset: auto; z-index: 4; grid-column: 2; order: 5; width: min(300px, 100%); margin: 28px auto 26px; padding: 16px; }
+  .hero-content > .hero-stats { order: 6; margin-bottom: 28px; }
   .acorn-widget-action { grid-template-columns: 1fr; min-height: 0; }
   .acorn-widget-action img { width: 156px; height: auto; }
   .estimate-layout, .estimate-field-grid, .service-choice-grid { grid-template-columns: 1fr; }
