@@ -505,7 +505,7 @@ function pageHtml(area, service) {
   const title = `${service.title} ${area.name}, WA | Apex Service Group LLC`;
   const description = `${service.metaVerb} in ${area.name}, WA. Apex Service Group handles diagnostics, planning, clean work, warranty support, financing options and documented HVAC service.`;
   const pathName = `/areas/${area.slug}-${service.slug}`;
-  const requestHref = `/?area=${encodeURIComponent(area.name)}&service=${encodeURIComponent(service.serviceValue)}#contact`;
+  const requestHref = `/get-estimate?area=${encodeURIComponent(area.name)}&service=${encodeURIComponent(service.serviceValue)}`;
   const regionalText = regionCopy[area.group];
   const projectSpotlight = area.slug === "seattle" && service.slug === "mini-split-installation"
     ? `

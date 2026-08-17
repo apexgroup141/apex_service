@@ -527,18 +527,40 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    const legacyAreaRoutes = {
-      olympia: "/areas/olympia",
-      renton: "/areas/renton"
+    const legacyAreaSlugs = new Set([
+      "auburn", "bellevue", "black-diamond", "bonney-lake", "bothell", "burien", "covington", "des-moines",
+      "dupont", "edgewood", "enumclaw", "federal-way", "fife", "gig-harbor", "issaquah", "kent", "kirkland",
+      "lacey", "lakewood", "maple-valley", "mercer-island", "milton", "newcastle", "normandy-park", "olympia",
+      "parkland", "puyallup", "redmond", "renton", "rochester", "sammamish", "seatac", "seattle", "south-seattle",
+      "spanaway", "sumner", "tacoma", "tukwila", "tumwater", "university-place", "west-seattle", "yelm"
+    ]);
+    const legacyServiceSlugs = {
+      "heat pump installation": "heat-pump-installation",
+      "mini-split installation": "mini-split-installation",
+      "furnace repair or replacement": "furnace-repair-replacement",
+      "ac repair or installation": "ac-repair-installation",
+      ductwork: "ductwork",
+      maintenance: "repair-maintenance",
+      "repair and maintenance": "repair-maintenance"
     };
-    const legacyArea = url.pathname === "/" ? url.searchParams.get("area")?.toLowerCase() : null;
+    const legacyArea = url.pathname === "/" ? url.searchParams.get("area")?.trim() : null;
 
-    if (legacyArea && legacyAreaRoutes[legacyArea]) {
+    if (legacyArea) {
+      const areaSlug = legacyArea.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      const legacyService = url.searchParams.get("service")?.trim();
+      const serviceSlug = legacyServiceSlugs[legacyService?.toLowerCase()];
       url.protocol = "https:";
       url.hostname = "apexgroupwa.com";
       url.port = "";
-      url.pathname = legacyAreaRoutes[legacyArea];
-      url.search = "";
+      if (legacyAreaSlugs.has(areaSlug) && serviceSlug) {
+        url.pathname = `/areas/${areaSlug}-${serviceSlug}`;
+        url.search = "";
+      } else if (!legacyService) {
+        url.pathname = "/service-areas";
+        url.search = "";
+      } else {
+        url.pathname = "/get-estimate";
+      }
       return Response.redirect(url.toString(), 301);
     }
 
