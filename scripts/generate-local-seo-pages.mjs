@@ -716,6 +716,7 @@ function sitemapXml(pages) {
     "/services/repair-maintenance",
     "/rebates-financing",
     "/service-areas",
+    "/about",
     "/local-hvac-services",
     "/projects",
     "/reviews",
