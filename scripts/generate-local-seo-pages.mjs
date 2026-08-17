@@ -718,6 +718,7 @@ function sitemapXml(pages) {
     "/service-areas",
     "/local-hvac-services",
     "/projects",
+    "/reviews",
     "/projects/mitsubishi-3-zone-mini-split-new-construction",
     "/projects/commercial-rooftop-unit-service-tacoma",
     "/projects/mitsubishi-heat-pump-air-handler-replacement-kirkland",
