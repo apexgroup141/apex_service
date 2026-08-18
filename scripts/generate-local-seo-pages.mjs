@@ -724,6 +724,7 @@ function sitemapXml(pages) {
     "/projects/commercial-rooftop-unit-service-tacoma",
     "/projects/mitsubishi-heat-pump-air-handler-replacement-kirkland",
     "/projects/mitsubishi-ducted-air-conditioning-hrv-installation-bellevue",
+    "/projects/mini-split-deep-cleaning-seattle",
     "/blog",
     "/blog/why-heat-pumps-work-well-puget-sound",
     ...adLandingPages.map((page) => `/landing/${page.slug}`),
