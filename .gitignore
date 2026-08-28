@@ -3,3 +3,12 @@ dist/
 .DS_Store
 *.log
 node_modules/
+.env
+.env.*
+!.env.example
+.dev.vars
+.dev.vars.*
+.google-business-refresh-token
+*.credentials.json
+*service-account*.json
+*oauth-client*.json

@@ -6,7 +6,14 @@
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
-    "run_worker_first": ["/", "/*.html"]
+    "run_worker_first": ["/", "/reviews", "/*.html"]
+  },
+  "triggers": {
+    "crons": ["17 */3 * * *"]
+  },
+  "vars": {
+    "GOOGLE_BUSINESS_ACCOUNT_ID": "116696538401694307878",
+    "GOOGLE_BUSINESS_LOCATION_ID": "2978863217463563301"
   },
   "d1_databases": [
     {

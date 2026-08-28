@@ -1,3 +1,8 @@
+import {
+  fetchGoogleBusinessReviews,
+  injectGoogleReviewsIntoHtml
+} from "./google-business-reviews.js";
+
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
@@ -204,6 +209,111 @@ const isAuthorizedAdmin = (request, env) => {
   const token = clean(env.ADMIN_TOKEN, 500);
   const authorization = request.headers.get("Authorization") || "";
   return Boolean(token) && authorization === `Bearer ${token}`;
+};
+
+const GOOGLE_REVIEWS_CACHE_KEY = "apex-google-reviews";
+const GOOGLE_REVIEWS_CACHE_TTL_MS = 3 * 60 * 60 * 1000;
+
+const loadGoogleReviewsCache = async (env) => {
+  if (!env.DB) return null;
+
+  try {
+    const row = await env.DB.prepare(
+      `SELECT payload, fetched_at, expires_at, last_attempt_at, last_error
+       FROM google_reviews_cache
+       WHERE cache_key = ?`
+    ).bind(GOOGLE_REVIEWS_CACHE_KEY).first();
+    if (!row?.payload) return null;
+
+    return {
+      ...JSON.parse(row.payload),
+      cache: {
+        fetchedAt: row.fetched_at,
+        expiresAt: row.expires_at,
+        lastAttemptAt: row.last_attempt_at,
+        lastError: row.last_error || ""
+      }
+    };
+  } catch (error) {
+    console.error("Could not load Google reviews cache", error);
+    return null;
+  }
+};
+
+const saveGoogleReviewsCache = async (env, payload) => {
+  if (!env.DB) throw new Error("D1 is not configured");
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + GOOGLE_REVIEWS_CACHE_TTL_MS);
+
+  await env.DB.prepare(
+    `INSERT INTO google_reviews_cache
+       (cache_key, payload, fetched_at, expires_at, last_attempt_at, last_error)
+     VALUES (?, ?, ?, ?, ?, NULL)
+     ON CONFLICT(cache_key) DO UPDATE SET
+       payload = excluded.payload,
+       fetched_at = excluded.fetched_at,
+       expires_at = excluded.expires_at,
+       last_attempt_at = excluded.last_attempt_at,
+       last_error = NULL`
+  ).bind(
+    GOOGLE_REVIEWS_CACHE_KEY,
+    JSON.stringify(payload),
+    now.toISOString(),
+    expiresAt.toISOString(),
+    now.toISOString()
+  ).run();
+};
+
+const recordGoogleReviewsSyncFailure = async (env, error) => {
+  if (!env.DB) return;
+  try {
+    await env.DB.prepare(
+      `UPDATE google_reviews_cache
+       SET last_attempt_at = ?, last_error = ?
+       WHERE cache_key = ?`
+    ).bind(new Date().toISOString(), clean(error?.message || error, 500), GOOGLE_REVIEWS_CACHE_KEY).run();
+  } catch (cacheError) {
+    console.error("Could not record Google reviews sync failure", cacheError);
+  }
+};
+
+const syncGoogleBusinessReviews = async (env) => {
+  try {
+    const payload = await fetchGoogleBusinessReviews(env);
+    await saveGoogleReviewsCache(env, payload);
+    return payload;
+  } catch (error) {
+    await recordGoogleReviewsSyncFailure(env, error);
+    throw error;
+  }
+};
+
+const renderReviewsPage = async (request, env) => {
+  const assetResponse = await env.ASSETS.fetch(request);
+  if (!assetResponse.ok) return assetResponse;
+
+  const cache = await loadGoogleReviewsCache(env);
+  const html = injectGoogleReviewsIntoHtml(await assetResponse.text(), cache);
+  const headers = new Headers(assetResponse.headers);
+  headers.set("Content-Type", "text/html; charset=utf-8");
+  headers.set("Cache-Control", "public, max-age=300, stale-while-revalidate=3600");
+  headers.delete("Content-Length");
+  headers.delete("Content-Encoding");
+  headers.delete("ETag");
+  return new Response(html, { status: assetResponse.status, headers });
+};
+
+const handleGoogleReviewsSync = async (request, env) => {
+  if (!isAuthorizedAdmin(request, env)) return json({ error: "Unauthorized" }, 401);
+  if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
+
+  const payload = await syncGoogleBusinessReviews(env);
+  return json({
+    ok: true,
+    averageRating: payload.averageRating,
+    totalReviewCount: payload.totalReviewCount,
+    loadedReviews: payload.reviews.length
+  });
 };
 
 const first = async (statement, values = []) => {
@@ -606,6 +716,15 @@ export default {
       }
     }
 
+    if (url.pathname === "/api/admin/google-reviews/sync") {
+      try {
+        return await handleGoogleReviewsSync(request, env);
+      } catch (error) {
+        console.error("Could not sync Google reviews", error);
+        return json({ error: "Could not sync Google reviews; the last successful cache was preserved." }, 502);
+      }
+    }
+
     const adminLeadMatch = url.pathname.match(/^\/api\/admin\/leads\/([^/]+)\/(\d+)$/);
     if (adminLeadMatch) {
       try {
@@ -616,6 +735,18 @@ export default {
       }
     }
 
+    if (url.pathname === "/reviews") {
+      return renderReviewsPage(request, env);
+    }
+
     return env.ASSETS.fetch(request);
+  },
+
+  async scheduled(controller, env, ctx) {
+    ctx.waitUntil(
+      syncGoogleBusinessReviews(env).catch((error) => {
+        console.error("Scheduled Google reviews sync failed; serving the last successful cache", error);
+      })
+    );
   }
 };
