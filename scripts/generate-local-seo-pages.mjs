@@ -726,6 +726,7 @@ function sitemapXml(pages) {
     "/projects/mitsubishi-ducted-air-conditioning-hrv-installation-bellevue",
     "/projects/mini-split-deep-cleaning-seattle",
     "/blog",
+    "/blog/ductless-mini-split-for-adu",
     "/blog/why-heat-pumps-work-well-puget-sound",
     ...adLandingPages.map((page) => `/landing/${page.slug}`),
     "/areas/seattle",
