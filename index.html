@@ -12,14 +12,14 @@
     <meta name="theme-color" content="#061f49" />
     <link rel="icon" type="image/png" href="/assets/apex-icon.png" />
     <link rel="apple-touch-icon" href="/assets/apex-icon.png" />
-    <link rel="preload" as="image" href="/assets/hvac-hero-mobile.avif" type="image/avif" media="(max-width: 640px)" />
-    <link rel="preload" as="image" href="/assets/hvac-hero-tablet.avif" type="image/avif" media="(min-width: 641px) and (max-width: 1024px)" />
-    <link rel="preload" as="image" href="/assets/hvac-hero-desktop.webp" type="image/webp" media="(min-width: 1025px)" />
+    <link rel="preload" as="image" href="/assets/hvac-hero-mobile.avif" type="image/avif" media="(max-width: 640px)" fetchpriority="high" />
+    <link rel="preload" as="image" href="/assets/hvac-hero-tablet.avif" type="image/avif" media="(min-width: 641px) and (max-width: 1024px)" fetchpriority="high" />
+    <link rel="preload" as="image" href="/assets/hvac-hero-desktop.webp" type="image/webp" media="(min-width: 1025px)" fetchpriority="high" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <header class="site-header" data-header>
-      <a class="brand" href="/" aria-label="Apex Service Group home"><img class="brand-symbol" src="/assets/apex-icon.png" alt="" aria-hidden="true" /><span class="brand-text"><strong>APEX</strong><small>Service Group LLC</small></span></a>
+      <a class="brand" href="/" aria-label="Apex Service Group home"><img class="brand-symbol" src="/assets/apex-icon-header.webp" width="128" height="128" alt="" aria-hidden="true" /><span class="brand-text"><strong>APEX</strong><small>Service Group LLC</small></span></a>
 
       <button class="nav-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="site-nav" data-nav-toggle>
         <span></span>
@@ -76,7 +76,7 @@
         </div>
         <aside class="acorn-home-widget" aria-labelledby="acorn-widget-title">
         <a class="acorn-widget-action" href="https://www.acornfinance.com/pre-qualify/?d=UK5SN&utm_medium=web_pre_qual_banner" target="_blank" rel="noopener noreferrer" aria-label="Check Acorn Finance payment options">
-          <img src="/assets/acorn-finance-qr.jpg" alt="Acorn Finance project financing information and QR code" loading="lazy" />
+          <img src="/assets/acorn-finance-qr-320.webp" width="320" height="605" fetchpriority="high" alt="Acorn Finance project financing information and QR code" decoding="async" />
           <span><strong id="acorn-widget-title">Scan or click to check payment options</strong><small>Checking your rate won't impact your credit score.</small></span>
         </a>
         </aside>

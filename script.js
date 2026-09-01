@@ -14,7 +14,9 @@ backdrop.setAttribute("aria-label", "Close navigation");
 document.body.append(backdrop);
 
 const syncHeader = () => {
-  header.classList.toggle("is-scrolled", window.scrollY > 18);
+  const shouldBeScrolled = window.scrollY > 18;
+  if (header.classList.contains("is-scrolled") === shouldBeScrolled) return;
+  header.classList.toggle("is-scrolled", shouldBeScrolled);
 };
 
 syncHeader();
