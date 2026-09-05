@@ -726,6 +726,7 @@ function sitemapXml(pages) {
     "/projects/mitsubishi-ducted-air-conditioning-hrv-installation-bellevue",
     "/projects/mini-split-deep-cleaning-seattle",
     "/blog",
+    "/blog/hvac-airflow-balancing-service",
     "/blog/air-conditioner-blowing-warm-air",
     "/blog/furnace-not-blowing-warm-air",
     "/blog/ductless-mini-split-for-adu",
