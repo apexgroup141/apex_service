@@ -726,6 +726,7 @@ function sitemapXml(pages) {
     "/projects/mitsubishi-ducted-air-conditioning-hrv-installation-bellevue",
     "/projects/mini-split-deep-cleaning-seattle",
     "/blog",
+    "/blog/thermostat-causing-hvac-short-cycling",
     "/blog/financing-new-furnace-without-costly-surprises",
     "/blog/ductwork-modification-home-addition",
     "/blog/hvac-airflow-balancing-service",
