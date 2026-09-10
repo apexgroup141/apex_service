@@ -288,12 +288,12 @@ const syncGoogleBusinessReviews = async (env) => {
   }
 };
 
-const renderReviewsPage = async (request, env) => {
+const renderReviewsPage = async (request, env, options = {}) => {
   const assetResponse = await env.ASSETS.fetch(request);
   if (!assetResponse.ok) return assetResponse;
 
   const cache = await loadGoogleReviewsCache(env);
-  const html = injectGoogleReviewsIntoHtml(await assetResponse.text(), cache);
+  const html = injectGoogleReviewsIntoHtml(await assetResponse.text(), cache, options);
   const headers = new Headers(assetResponse.headers);
   headers.set("Content-Type", "text/html; charset=utf-8");
   headers.set("Cache-Control", "public, max-age=300, stale-while-revalidate=3600");
@@ -737,6 +737,10 @@ export default {
 
     if (url.pathname === "/reviews") {
       return renderReviewsPage(request, env);
+    }
+
+    if (url.pathname === "/services/mini-splits") {
+      return renderReviewsPage(request, env, { limit: 3 });
     }
 
     return env.ASSETS.fetch(request);

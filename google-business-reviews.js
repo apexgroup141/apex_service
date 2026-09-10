@@ -189,8 +189,10 @@ const renderReview = (review) => {
   </article>`;
 };
 
-export const renderGoogleReviewsHtml = (payload) => {
-  const reviews = Array.isArray(payload?.reviews) ? payload.reviews : [];
+export const renderGoogleReviewsHtml = (payload, options = {}) => {
+  const sourceReviews = Array.isArray(payload?.reviews) ? payload.reviews : [];
+  const limit = Number(options.limit);
+  const reviews = Number.isInteger(limit) && limit > 0 ? sourceReviews.slice(0, limit) : sourceReviews;
   if (!reviews.length) return null;
 
   const rating = Number(payload.averageRating);
@@ -205,8 +207,8 @@ export const renderGoogleReviewsHtml = (payload) => {
   };
 };
 
-export const injectGoogleReviewsIntoHtml = (html, payload) => {
-  const rendered = renderGoogleReviewsHtml(payload);
+export const injectGoogleReviewsIntoHtml = (html, payload, options = {}) => {
+  const rendered = renderGoogleReviewsHtml(payload, options);
   if (!rendered) return html;
 
   return html

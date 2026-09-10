@@ -118,3 +118,22 @@ test("keeps long owner responses compact until the reader expands them", () => {
   assert.match(rendered, /google-review-reply-preview/);
   assert.match(rendered, new RegExp(longReply.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
 });
+
+test("limits server-rendered reviews for service page previews", () => {
+  const html = '<main data-google-reviews-state="empty"><!-- GOOGLE_REVIEWS_LIST --></main>';
+  const reviews = Array.from({ length: 4 }, (_, index) => ({
+    id: String(index + 1),
+    author: `Customer ${index + 1}`,
+    rating: 5,
+    text: `Review ${index + 1}`,
+    publishedAt: `2026-08-0${index + 1}T00:00:00Z`,
+    updatedAt: `2026-08-0${index + 1}T00:00:00Z`,
+    ownerReply: null,
+    avatarUrl: ""
+  }));
+  const rendered = injectGoogleReviewsIntoHtml(html, { reviews }, { limit: 3 });
+
+  assert.match(rendered, /Customer 1/);
+  assert.match(rendered, /Customer 3/);
+  assert.doesNotMatch(rendered, /Customer 4/);
+});
