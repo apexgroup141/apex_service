@@ -726,6 +726,7 @@ function sitemapXml(pages) {
     "/projects/mitsubishi-ducted-air-conditioning-hrv-installation-bellevue",
     "/projects/mini-split-deep-cleaning-seattle",
     "/blog",
+    "/instant-estimate/mini-split",
     "/blog/how-to-lower-hvac-bills-without-guesswork",
     "/blog/12-questions-to-ask-an-hvac-contractor-first",
     "/blog/hvac-for-new-construction-homes-done-right",

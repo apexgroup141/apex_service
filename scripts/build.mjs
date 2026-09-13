@@ -12,6 +12,8 @@ const filesToCopy = [
   "areas",
   "services",
   "index.html",
+  "instant-estimate",
+  "instant-estimate.js",
   "blog.html",
   "blog",
   "get-estimate.html",

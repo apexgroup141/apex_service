@@ -35,7 +35,92 @@ const escapeHtml = (value) =>
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;");
 
+const miniSplitPriceRanges = {
+  "1": { good: "$3,000–$4,000", better: "$4,000–$5,500", best: "$5,500–$7,000" },
+  "2": { good: "$4,500–$6,500", better: "$6,500–$8,500", best: "$8,500–$11,000" },
+  "3": { good: "$5,500–$8,000", better: "$8,000–$10,500", best: "$10,500–$13,000" },
+  "4_plus": { good: "From $7,000", better: "From $9,000", best: "From $11,000" }
+};
+
+const estimateLabels = {
+  replacement: "Replacement",
+  new_install: "New installation",
+  add_area: "Add another area",
+  not_sure: "Not sure",
+  mini_split: "Mini-Split / Ductless System",
+  central_hvac: "Central HVAC System",
+  baseboard_wall: "Baseboard / Wall Heaters",
+  window_portable_ac: "Window / Portable AC",
+  none: "No existing system",
+  under_500: "Under 500 sq ft",
+  "500_1000": "500–1,000 sq ft",
+  "1000_1500": "1,000–1,500 sq ft",
+  "1500_2000": "1,500–2,000 sq ft",
+  "2000_2500": "2,000–2,500 sq ft",
+  "2500_plus": "2,500+ sq ft",
+  "1": "1",
+  "2": "2",
+  "3": "3",
+  "4_plus": "4+",
+  lower_upfront_cost: "Lower upfront cost",
+  energy_efficiency: "Energy efficiency",
+  quiet_operation: "Quiet operation",
+  cold_weather: "Cold-weather performance",
+  warranty_value: "Warranty & long-term value",
+  good: "Good",
+  better: "Better",
+  best: "Best"
+};
+
+const labelEstimateValue = (value) => estimateLabels[value] || clean(value, 120) || "Not provided";
+
+export const formatInstantEstimateMessage = (lead, request) => {
+  const estimate = lead.estimate;
+  const ranges = miniSplitPriceRanges[estimate.zones] || null;
+  const preferredContact = lead.preferredContactMethods.length === 2
+    ? "Phone and Email"
+    : lead.preferredContactMethods[0] === "phone"
+      ? "Phone"
+      : "Email";
+  const submittedAt = new Date().toLocaleString("en-US", {
+    timeZone: "America/Los_Angeles",
+    dateStyle: "medium",
+    timeStyle: "short"
+  });
+  const contactLines = [
+    `<b>Preferred contact:</b> ${preferredContact}`,
+    lead.phone ? `<b>Phone:</b> ${escapeHtml(lead.phone)}` : "",
+    lead.email ? `<b>Email:</b> ${escapeHtml(lead.email)}` : ""
+  ].filter(Boolean);
+  return [
+    "<b>New Mini-Split Instant Estimate Lead</b>",
+    "",
+    `<b>Project type:</b> ${escapeHtml(labelEstimateValue(estimate.projectType))}`,
+    `<b>Existing system:</b> ${escapeHtml(labelEstimateValue(estimate.existingSystem))}`,
+    `<b>Space size:</b> ${escapeHtml(labelEstimateValue(estimate.spaceSize))}`,
+    `<b>Zones:</b> ${escapeHtml(labelEstimateValue(estimate.zones))}`,
+    `<b>Priorities:</b> ${escapeHtml(estimate.priorities.map(labelEstimateValue).join(", "))}`,
+    "",
+    "<b>Options shown:</b>",
+    `<b>Good:</b> ${escapeHtml(ranges?.good || "Planning level — zones to be confirmed")}`,
+    `<b>Better:</b> ${escapeHtml(ranges?.better || "Planning level — zones to be confirmed")}`,
+    `<b>Best:</b> ${escapeHtml(ranges?.best || "Planning level — zones to be confirmed")}`,
+    "",
+    `<b>Selected option:</b> ${escapeHtml(labelEstimateValue(estimate.selectedTier))}`,
+    "",
+    `<b>First Name:</b> ${escapeHtml(lead.name)}`,
+    ...contactLines,
+    `<b>ZIP Code:</b> ${escapeHtml(lead.area.replace(/^WA\s+/i, ""))}`,
+    "",
+    `<b>Page:</b> ${escapeHtml(request.headers.get("referer") || "Direct visit")}`,
+    `<b>Submitted:</b> ${escapeHtml(submittedAt)}`
+  ].join("\n");
+};
+
 const formatLeadMessage = (lead, request) => {
+  if (lead.source === "mini_split_instant_estimate" && lead.estimate) {
+    return formatInstantEstimateMessage(lead, request);
+  }
   const page = request.headers.get("referer") || "Direct visit";
   const submittedAt = new Date().toLocaleString("en-US", {
     timeZone: "America/Los_Angeles",
@@ -167,18 +252,64 @@ const handleLead = async (request, env) => {
   const area = clean(lead.area, 160);
   const service = clean(lead.service, 160);
   const message = clean(lead.message, 1600);
+  const source = clean(lead.lead_source, 80);
+  const preferredContactMethods = source === "mini_split_instant_estimate"
+    ? [...new Set((Array.isArray(lead.preferred_contact_methods) ? lead.preferred_contact_methods : [lead.preferred_contact_methods])
+      .map((value) => clean(value, 20).toLowerCase())
+      .filter((value) => value === "phone" || value === "email"))]
+    : [];
+  const estimate = source === "mini_split_instant_estimate"
+    ? {
+        projectType: clean(lead.project_type, 80),
+        existingSystem: clean(lead.existing_system, 80),
+        spaceSize: clean(lead.space_size, 80),
+        zones: clean(lead.zones, 80),
+        priorities: (Array.isArray(lead.priorities) ? lead.priorities : [lead.priorities])
+          .map((value) => clean(value, 80))
+          .filter(Boolean)
+          .slice(0, 2),
+        selectedTier: clean(lead.selected_tier, 80) || "not_sure"
+      }
+    : null;
 
-  if (!name || (email && !isValidEmail(email)) || !phone || !area || !service) {
+  const storedMessage = estimate
+    ? [
+        "Mini-Split Instant Estimate",
+        `Project: ${labelEstimateValue(estimate.projectType)}`,
+        `Existing system: ${labelEstimateValue(estimate.existingSystem)}`,
+        `Space size: ${labelEstimateValue(estimate.spaceSize)}`,
+        `Zones: ${labelEstimateValue(estimate.zones)}`,
+        `Priorities: ${estimate.priorities.map(labelEstimateValue).join(", ")}`,
+        `Selected option: ${labelEstimateValue(estimate.selectedTier)}`,
+        `Preferred contact: ${preferredContactMethods.map((value) => value === "phone" ? "Phone" : "Email").join(" and ")}`
+      ].join(" | ")
+    : message;
+  const submittedPhone = source === "mini_split_instant_estimate" && !preferredContactMethods.includes("phone") ? "" : phone;
+  const submittedEmail = source === "mini_split_instant_estimate" && !preferredContactMethods.includes("email") ? "" : email;
+
+  if (source === "mini_split_instant_estimate") {
+    const wantsPhone = preferredContactMethods.includes("phone");
+    const wantsEmail = preferredContactMethods.includes("email");
+    if (!preferredContactMethods.length) {
+      return json({ error: "Please select at least one contact method." }, 400);
+    }
+    if ((wantsPhone && !submittedPhone) || (wantsEmail && (!submittedEmail || !isValidEmail(submittedEmail))) || !name || !area || !service) {
+      return json({ error: "Missing or invalid preferred contact information." }, 400);
+    }
+  } else if (!name || (email && !isValidEmail(email)) || !phone || !area || !service) {
     return json({ error: "Missing required fields" }, 400);
   }
 
   const payload = {
     name,
-    email,
-    phone,
+    email: submittedEmail,
+    phone: submittedPhone,
     service,
     area,
-    message,
+    message: storedMessage,
+    source,
+    estimate,
+    preferredContactMethods,
     page: clean(request.headers.get("referer") || "", 500)
   };
 
