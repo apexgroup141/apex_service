@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { getPriceRanges } from "../instant-estimate.js";
+import { getPriceRanges, HEAT_PUMP_PRICES } from "../instant-estimate.js";
 import { formatInstantEstimateMessage } from "../worker.js";
 import worker from "../worker.js";
 
@@ -10,6 +10,13 @@ test("returns the published Good Better Best ranges for every zone branch", () =
   assert.deepEqual(getPriceRanges("3"), { good: "$5,500–$8,000", better: "$8,000–$10,500", best: "$10,500–$13,000" });
   assert.deepEqual(getPriceRanges("4_plus"), { good: "From $7,000", better: "From $9,000", best: "From $11,000" });
   assert.equal(getPriceRanges("not_sure"), null);
+});
+
+test("returns the approved heat-pump tier ranges and no fabricated unsure range", () => {
+  assert.equal(HEAT_PUMP_PRICES.essential, "$7,500–$13,000");
+  assert.equal(HEAT_PUMP_PRICES.comfort, "$9,000–$16,000");
+  assert.equal(HEAT_PUMP_PRICES.premium, "$11,000–$20,000");
+  assert.equal(HEAT_PUMP_PRICES.not_sure, undefined);
 });
 
 test("formats a readable Telegram message for an instant estimate lead", () => {
@@ -114,6 +121,48 @@ test("accepts an instant-estimate lead through the existing API and sends the en
     assert.match(telegramPayload.text, /New Mini-Split Instant Estimate Lead/);
     assert.match(telegramPayload.text, /Selected option:<\/b> Better/);
     assert.match(telegramPayload.text, /Preferred contact:<\/b> Phone and Email/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("accepts a heat-pump branch lead through the shared API without fabricating unsure pricing", async () => {
+  const messages = [];
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (_url, options) => {
+    messages.push(JSON.parse(options.body));
+    return new Response(JSON.stringify({ ok: true }), { status: 200 });
+  };
+  try {
+    const request = new Request("https://apexgroupwa.com/api/lead", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        lead_source: "hvac_quiz",
+        system_type: "heat_pump",
+        preferred_contact_methods: ["email"],
+        name: "TEST CODEX",
+        phone: "",
+        email: "test@example.com",
+        area: "WA 98387",
+        service: "Heat pump installation",
+        project_type: "replacement",
+        existing_system: "furnace_ac",
+        ductwork: "yes",
+        home_size: "1500_2000",
+        space_size: "1500_2000",
+        system_preference: "dual_fuel",
+        priorities: ["energy_efficiency", "quiet_operation"],
+        selected_tier: "not_sure",
+        price_range: ""
+      })
+    });
+    const response = await worker.fetch(request, { TELEGRAM_BOT_TOKEN: "local-test-token", TELEGRAM_CHAT_ID: "local-test-chat" });
+    assert.equal(response.status, 200);
+    assert.match(messages[0].text, /New HEAT PUMP LEAD/);
+    assert.match(messages[0].text, /Ductwork:<\/b> Yes/);
+    assert.match(messages[0].text, /Price range:<\/b> To be determined after assessment/);
+    assert.doesNotMatch(messages[0].text, /\$7,500|\$9,000|\$11,000/);
   } finally {
     globalThis.fetch = originalFetch;
   }

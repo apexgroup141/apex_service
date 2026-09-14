@@ -1777,6 +1777,100 @@ h3 {
   font-size: clamp(18px, 2vw, 22px);
 }
 
+.page-hero.heat-pump-conversion-hero {
+  position: relative;
+  isolation: isolate;
+  min-height: min(590px, calc(100vh - 76px));
+  padding: clamp(46px, 5.5vw, 74px) clamp(18px, 5vw, 70px) clamp(42px, 5vw, 64px);
+  background-color: var(--deep-2);
+  background-image:
+    linear-gradient(90deg, rgba(3, 21, 54, .92) 0%, rgba(3, 21, 54, .76) 38%, rgba(3, 21, 54, .3) 60%, rgba(3, 21, 54, .04) 82%),
+    url("/assets/heat-pump-installation-puget-sound-hero.webp");
+  background-position: center 52%;
+  background-size: cover;
+}
+
+.page-hero.heat-pump-conversion-hero::before { content: none; }
+
+.heat-pump-conversion-hero .breadcrumb { margin-bottom: 20px; }
+.heat-pump-conversion-hero .eyebrow { margin-bottom: 12px; }
+.heat-pump-conversion-hero h1 { max-width: 720px; margin-bottom: 16px; font-size: clamp(40px, 4.6vw, 66px); line-height: 1.02; }
+.heat-pump-conversion-hero > p:not(.eyebrow) { max-width: 650px; margin-bottom: 0; font-size: clamp(18px, 1.7vw, 22px); line-height: 1.55; }
+.heat-pump-conversion-hero .page-actions { margin-top: 22px; }
+.heat-pump-conversion-hero .page-actions .button { min-width: min(100%, 270px); }
+.page-hero.heat-pump-conversion-hero > p.mini-split-hero-note { margin: 9px 0 0; color: rgba(255,255,255,.76); font-size: clamp(14px,1.15vw,16px); font-weight: 400; letter-spacing: 0; }
+.heat-pump-hero-features { display: flex; max-width: 760px; flex-wrap: wrap; gap: 8px 18px; margin-top: 20px; color: rgba(255,255,255,.92); font-size: 14px; font-weight: 850; }
+.heat-pump-hero-features span { display: inline-flex; align-items: center; }
+.heat-pump-hero-features span::before { margin-right: 8px; color: var(--sun); content: "✓"; font-weight: 950; }
+
+.heat-pump-hero-secondary { max-width: 690px !important; margin-top: -6px !important; color: rgba(255,255,255,.74) !important; font-size: clamp(14px,1.35vw,17px) !important; }
+.heat-pump-article { width: min(900px,100%); margin: 0 auto; color: var(--muted); font-size: clamp(17px,1.45vw,20px); line-height: 1.78; }
+.heat-pump-article h2 { margin: 0 0 24px; color: var(--deep); font-size: clamp(34px,4.2vw,54px); line-height: 1.08; }
+.heat-pump-article h3 { margin: clamp(38px,5vw,58px) 0 15px; color: var(--deep); font-size: clamp(24px,2.7vw,34px); line-height: 1.18; }
+.heat-pump-article p { margin: 0 0 20px; }
+.heat-pump-article p:last-child { margin-bottom: 0; }
+.heat-pump-included-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 18px; }
+.heat-pump-included-grid article { padding: 26px; border: 1px solid var(--line); border-radius: 10px; background: var(--white); box-shadow: 0 14px 36px rgba(6,31,73,.055); }
+.heat-pump-included-grid article > span { display: inline-grid; width: 38px; height: 38px; margin-bottom: 17px; place-items: center; border-radius: 50%; background: #e8f1f8; color: #2f6fa8; font-size: 12px; font-weight: 950; }
+.heat-pump-included-grid h3 { margin: 0 0 14px; }
+.heat-pump-included-grid ul, .heat-pump-price-card ul { padding-left: 19px; margin: 0; color: var(--muted); line-height: 1.65; }
+.heat-pump-price-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 18px; align-items: stretch; }
+.heat-pump-price-card { position: relative; display: flex; min-width: 0; padding: 30px; flex-direction: column; border: 1px solid var(--line); border-radius: 12px; background: var(--white); box-shadow: 0 18px 44px rgba(6,31,73,.07); }
+.heat-pump-price-card.is-featured { border: 2px solid #2f6fa8; box-shadow: 0 22px 52px rgba(47,111,168,.16); }
+.heat-pump-price-card h3 { margin: 0 0 10px; font-size: 25px; }
+.heat-pump-price-card > strong { color: var(--deep); font-size: clamp(26px,2.5vw,36px); line-height: 1.1; }
+.heat-pump-price-card > p { color: var(--muted); }
+.heat-pump-price-card .price-subtitle { color: var(--deep); font-weight: 850; }
+.heat-pump-price-card .price-list-label { margin-bottom: 8px; color: var(--deep); font-size: 13px; font-weight: 900; text-transform: uppercase; letter-spacing: .05em; }
+.heat-pump-price-card dl { margin: 22px 0 16px; padding: 15px; border-radius: 8px; background: #f1f5f8; }
+.heat-pump-price-card dt { color: var(--muted); font-size: 12px; font-weight: 850; text-transform: uppercase; }
+.heat-pump-price-card dd { margin: 4px 0 0; color: var(--deep); font-size: 21px; font-weight: 950; }
+.heat-pump-price-card .price-bottom { margin-top: auto; color: var(--deep); font-weight: 800; }
+.heat-pump-price-badge { position: absolute; top: 18px; right: 18px; padding: 7px 10px; border-radius: 999px; background: #2f6fa8; color: #fff; font-size: 10px; font-weight: 950; letter-spacing: .06em; }
+.price-commitment { display: grid; gap: 7px; padding-top: 18px; margin-top: 18px; border-top: 1px solid var(--line); color: var(--deep); font-size: 13px; font-weight: 800; }
+.price-commitment span::before { margin-right: 7px; color: var(--teal); content: "✓"; }
+.heat-pump-pricing-note { max-width: 960px; margin: 28px auto 0; color: var(--muted); font-size: 14px; text-align: center; }
+.heat-pump-pricing-explanation { max-width: 880px; margin: 28px auto 0; padding: 20px 24px; border-left: 4px solid #2f6fa8; border-radius: 8px; background: #edf3f7; }
+.heat-pump-pricing-explanation h3 { margin: 0 0 8px; font-size: clamp(20px,2vw,26px); }
+.heat-pump-pricing-explanation p { margin: 0; color: var(--muted); line-height: 1.65; }
+.heat-pump-financing, .heat-pump-final-cta { display: flex; gap: 28px; align-items: center; justify-content: space-between; }
+.heat-pump-financing { background: #edf3f7; }
+.heat-pump-financing > div, .heat-pump-final-cta > div:first-child { max-width: 720px; }
+.heat-pump-financing h2, .heat-pump-final-cta h2 { margin-bottom: 10px; }
+.heat-pump-financing p, .heat-pump-final-cta p { color: var(--muted); }
+.heat-pump-financing small { display: block; max-width: 720px; color: var(--muted); line-height: 1.5; }
+.button.heat-pump-blue-button { border-color: #2f6fa8; background: #2f6fa8; color: #fff; }
+.button.heat-pump-blue-button:hover { border-color: #255d8f; background: #255d8f; color: #fff; }
+.heat-pump-final-actions { display: grid; grid-template-columns: repeat(2,minmax(190px,1fr)); gap: 12px; width: min(560px,100%); }
+.heat-pump-final-actions .button { justify-content: center; text-align: center; }
+
+@media (max-width: 900px) {
+  .heat-pump-included-grid, .heat-pump-price-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .heat-pump-price-card:last-child { grid-column: 1 / -1; }
+  .heat-pump-financing, .heat-pump-final-cta { align-items: flex-start; flex-direction: column; }
+}
+
+@media (max-width: 640px) {
+  .page-hero.heat-pump-conversion-hero {
+    min-height: 0;
+    padding-top: 34px;
+    padding-bottom: 38px;
+    background-image:
+      linear-gradient(90deg, rgba(3,21,54,.94) 0%, rgba(3,21,54,.82) 52%, rgba(3,21,54,.42) 100%),
+      url("/assets/heat-pump-installation-puget-sound-hero.webp");
+    background-position: 72% center;
+  }
+  .heat-pump-conversion-hero h1 { font-size: clamp(36px, 10.5vw, 48px); }
+  .heat-pump-conversion-hero .page-actions { display: grid; width: 100%; }
+  .heat-pump-conversion-hero .button { width: 100%; }
+  .heat-pump-hero-features { display: grid; grid-template-columns: 1fr; gap: 8px; }
+  .heat-pump-included-grid, .heat-pump-price-grid, .heat-pump-final-actions { grid-template-columns: 1fr; }
+  .heat-pump-price-card:last-child { grid-column: auto; }
+  .heat-pump-price-card { padding: 24px 20px; }
+  .heat-pump-price-badge { position: static; width: fit-content; margin-bottom: 12px; }
+  .heat-pump-financing .button, .heat-pump-final-actions .button { width: 100%; }
+}
+
 .page-actions {
   display: flex;
   flex-wrap: wrap;
@@ -3222,6 +3316,15 @@ h3 {
 .instant-tier { position: relative; display: flex; flex-direction: column; padding: 26px 22px; border: 2px solid #d9e2eb; border-radius: 12px; background: #fff; transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
 .instant-tier.is-featured { border-color: #2f6fa8; background: #f4f9fe; transform: translateY(-5px); box-shadow: 0 16px 36px rgba(6,31,73,.12); }
 .instant-tier.is-selected { border-color: var(--red); box-shadow: 0 0 0 3px rgba(198,44,51,.15); }
+.instant-tier-grid-step { grid-template-columns: repeat(2,minmax(0,1fr)); }
+.instant-tier-grid-step .instant-tier { cursor: pointer; }
+.instant-tier-grid-step .instant-tier > input { position: absolute; opacity: 0; pointer-events: none; }
+.instant-tier-grid-step .instant-tier > span:not(.instant-popular) { display: grid; gap: 9px; }
+.instant-tier-grid-step .instant-tier b { color: var(--deep); font-size: 24px; }
+.instant-tier-grid-step .instant-tier strong { color: var(--deep); font-size: clamp(22px,2.4vw,30px); }
+.instant-tier-grid-step .instant-tier small { color: var(--muted); font-size: 15px; line-height: 1.5; }
+.instant-tier-grid-step .instant-tier:has(input:checked) { border-color: var(--red); box-shadow: 0 0 0 3px rgba(198,44,51,.15); }
+.instant-tier-grid-step .instant-tier:has(input:focus-visible) { outline: 3px solid rgba(47,111,168,.3); outline-offset: 3px; }
 .instant-popular { position: absolute; top: -14px; left: 20px; padding: 6px 11px; border-radius: 999px; background: #2f6fa8; color: #fff; font-size: 11px; font-weight: 900; letter-spacing: .08em; }
 .instant-tier-kicker { margin: 0 0 5px; color: #2f6fa8; font-size: 13px; font-weight: 900; letter-spacing: .12em; }
 .instant-tier h3 { margin: 0 0 16px; font-size: 25px; }

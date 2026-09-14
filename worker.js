@@ -69,13 +69,26 @@ const estimateLabels = {
   warranty_value: "Warranty & long-term value",
   good: "Good",
   better: "Better",
-  best: "Best"
+  best: "Best",
+  furnace_ac: "Furnace + central A/C",
+  furnace_only: "Furnace only",
+  electric_baseboard: "Electric heat / baseboard",
+  propane_oil: "Propane or oil heating",
+  yes: "Yes",
+  no: "No",
+  under_1000: "Under 1,000 sq ft",
+  all_electric: "All-electric heat pump",
+  dual_fuel: "Heat pump + furnace (dual fuel)",
+  comfort: "Comfort",
+  essential: "Essential",
+  premium: "Premium"
 };
 
 const labelEstimateValue = (value) => estimateLabels[value] || clean(value, 120) || "Not provided";
 
 export const formatInstantEstimateMessage = (lead, request) => {
   const estimate = lead.estimate;
+  const isHeatPump = estimate.systemType === "heat_pump";
   const ranges = miniSplitPriceRanges[estimate.zones] || null;
   const preferredContact = lead.preferredContactMethods.length === 2
     ? "Phone and Email"
@@ -93,18 +106,19 @@ export const formatInstantEstimateMessage = (lead, request) => {
     lead.email ? `<b>Email:</b> ${escapeHtml(lead.email)}` : ""
   ].filter(Boolean);
   return [
-    "<b>New Mini-Split Instant Estimate Lead</b>",
+    isHeatPump ? "<b>New HEAT PUMP LEAD</b>" : "<b>New Mini-Split Instant Estimate Lead</b>",
     "",
     `<b>Project type:</b> ${escapeHtml(labelEstimateValue(estimate.projectType))}`,
     `<b>Existing system:</b> ${escapeHtml(labelEstimateValue(estimate.existingSystem))}`,
-    `<b>Space size:</b> ${escapeHtml(labelEstimateValue(estimate.spaceSize))}`,
-    `<b>Zones:</b> ${escapeHtml(labelEstimateValue(estimate.zones))}`,
+    isHeatPump ? `<b>Ductwork:</b> ${escapeHtml(labelEstimateValue(estimate.ductwork))}` : "",
+    `<b>${isHeatPump ? "Home" : "Space"} size:</b> ${escapeHtml(labelEstimateValue(estimate.spaceSize))}`,
+    isHeatPump ? `<b>System preference:</b> ${escapeHtml(labelEstimateValue(estimate.systemPreference))}` : `<b>Zones:</b> ${escapeHtml(labelEstimateValue(estimate.zones))}`,
     `<b>Priorities:</b> ${escapeHtml(estimate.priorities.map(labelEstimateValue).join(", "))}`,
     "",
-    "<b>Options shown:</b>",
-    `<b>Good:</b> ${escapeHtml(ranges?.good || "Planning level — zones to be confirmed")}`,
-    `<b>Better:</b> ${escapeHtml(ranges?.better || "Planning level — zones to be confirmed")}`,
-    `<b>Best:</b> ${escapeHtml(ranges?.best || "Planning level — zones to be confirmed")}`,
+    isHeatPump ? (estimate.priceRange ? `<b>Selected price range:</b> ${escapeHtml(estimate.priceRange)}` : "<b>Price range:</b> To be determined after assessment") : "<b>Options shown:</b>",
+    isHeatPump ? "" : `<b>Good:</b> ${escapeHtml(ranges?.good || "Planning level — zones to be confirmed")}`,
+    isHeatPump ? "" : `<b>Better:</b> ${escapeHtml(ranges?.better || "Planning level — zones to be confirmed")}`,
+    isHeatPump ? "" : `<b>Best:</b> ${escapeHtml(ranges?.best || "Planning level — zones to be confirmed")}`,
     "",
     `<b>Selected option:</b> ${escapeHtml(labelEstimateValue(estimate.selectedTier))}`,
     "",
@@ -114,11 +128,11 @@ export const formatInstantEstimateMessage = (lead, request) => {
     "",
     `<b>Page:</b> ${escapeHtml(request.headers.get("referer") || "Direct visit")}`,
     `<b>Submitted:</b> ${escapeHtml(submittedAt)}`
-  ].join("\n");
+  ].filter((line) => line !== "").join("\n");
 };
 
 const formatLeadMessage = (lead, request) => {
-  if (lead.source === "mini_split_instant_estimate" && lead.estimate) {
+  if ((lead.source === "mini_split_instant_estimate" || lead.source === "hvac_quiz") && lead.estimate) {
     return formatInstantEstimateMessage(lead, request);
   }
   const page = request.headers.get("referer") || "Direct visit";
@@ -253,28 +267,33 @@ const handleLead = async (request, env) => {
   const service = clean(lead.service, 160);
   const message = clean(lead.message, 1600);
   const source = clean(lead.lead_source, 80);
-  const preferredContactMethods = source === "mini_split_instant_estimate"
+  const isInstantEstimate = source === "mini_split_instant_estimate" || source === "hvac_quiz";
+  const preferredContactMethods = isInstantEstimate
     ? [...new Set((Array.isArray(lead.preferred_contact_methods) ? lead.preferred_contact_methods : [lead.preferred_contact_methods])
       .map((value) => clean(value, 20).toLowerCase())
       .filter((value) => value === "phone" || value === "email"))]
     : [];
-  const estimate = source === "mini_split_instant_estimate"
+  const estimate = isInstantEstimate
     ? {
+        systemType: clean(lead.system_type, 40) || "mini_split",
         projectType: clean(lead.project_type, 80),
         existingSystem: clean(lead.existing_system, 80),
-        spaceSize: clean(lead.space_size, 80),
+        spaceSize: clean(lead.space_size || lead.home_size, 80),
         zones: clean(lead.zones, 80),
+        ductwork: clean(lead.ductwork, 80),
+        systemPreference: clean(lead.system_preference, 80),
         priorities: (Array.isArray(lead.priorities) ? lead.priorities : [lead.priorities])
           .map((value) => clean(value, 80))
           .filter(Boolean)
           .slice(0, 2),
-        selectedTier: clean(lead.selected_tier, 80) || "not_sure"
+        selectedTier: clean(lead.selected_tier, 80) || "not_sure",
+        priceRange: clean(lead.price_range, 80)
       }
     : null;
 
   const storedMessage = estimate
     ? [
-        "Mini-Split Instant Estimate",
+        estimate.systemType === "heat_pump" ? "Heat Pump Instant Estimate" : "Mini-Split Instant Estimate",
         `Project: ${labelEstimateValue(estimate.projectType)}`,
         `Existing system: ${labelEstimateValue(estimate.existingSystem)}`,
         `Space size: ${labelEstimateValue(estimate.spaceSize)}`,
@@ -284,10 +303,10 @@ const handleLead = async (request, env) => {
         `Preferred contact: ${preferredContactMethods.map((value) => value === "phone" ? "Phone" : "Email").join(" and ")}`
       ].join(" | ")
     : message;
-  const submittedPhone = source === "mini_split_instant_estimate" && !preferredContactMethods.includes("phone") ? "" : phone;
-  const submittedEmail = source === "mini_split_instant_estimate" && !preferredContactMethods.includes("email") ? "" : email;
+  const submittedPhone = isInstantEstimate && !preferredContactMethods.includes("phone") ? "" : phone;
+  const submittedEmail = isInstantEstimate && !preferredContactMethods.includes("email") ? "" : email;
 
-  if (source === "mini_split_instant_estimate") {
+  if (isInstantEstimate) {
     const wantsPhone = preferredContactMethods.includes("phone");
     const wantsEmail = preferredContactMethods.includes("email");
     if (!preferredContactMethods.length) {

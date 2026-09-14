@@ -103,7 +103,7 @@ function injectSharedNavigation(filePath) {
 
 function injectServiceDiscoveryLinks(filePath) {
   const route = pathForHtmlFile(path.relative(dist, filePath));
-  if (route === "/services/mini-splits") return;
+  if (route === "/services/mini-splits" || route === "/services/heat-pumps") return;
   const primaryServices = new Set([
     "/services/heat-pumps",
     "/services/mini-splits",
