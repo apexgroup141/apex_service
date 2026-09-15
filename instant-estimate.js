@@ -6,7 +6,7 @@ export const PRICE_RANGES = {
 };
 
 export const getPriceRanges = (zones) => PRICE_RANGES[zones] || null;
-export const GOOGLE_ADS_LEAD_DESTINATION = "AW-18358155203/eht5CKv_lvgcEMPv7LPE";
+export const GOOGLE_ADS_LEAD_DESTINATION = "AW-18358155203/eht5CKv_lvgcEMPv7LFE";
 
 const root = typeof document === "undefined" ? null : document.querySelector("[data-instant-estimate]");
 

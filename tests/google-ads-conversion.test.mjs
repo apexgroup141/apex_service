@@ -4,7 +4,7 @@ import test from "node:test";
 
 const classicSource = fs.readFileSync(new URL("../script.js", import.meta.url), "utf8");
 const quizSource = fs.readFileSync(new URL("../instant-estimate.js", import.meta.url), "utf8");
-const destination = "AW-18358155203/eht5CKv_lvgcEMPv7LPE";
+const destination = "AW-18358155203/eht5CKv_lvgcEMPv7LFE";
 
 test("uses the approved Google Ads lead destination in both lead handlers", () => {
   assert.match(classicSource, new RegExp(destination.replace("/", "\\/")));
