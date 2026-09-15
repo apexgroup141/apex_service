@@ -37,9 +37,21 @@ const initHeatPumpQuiz = (quizRoot) => {
   let submissionInProgress = false;
   let leadEventSent = false;
 
-  const track = (name, payload = {}) => {
-    if (typeof window.gtag === "function") window.gtag("event", name, payload);
-    else { window.dataLayer = window.dataLayer || []; window.dataLayer.push({ event: name, ...payload }); }
+  const track = (name, payload = {}, callback = null, callbackTimeout = 2000) => {
+    let callbackCalled = false;
+    const runCallback = () => {
+      if (callbackCalled || typeof callback !== "function") return;
+      callbackCalled = true;
+      callback();
+    };
+    const eventPayload = { ...payload };
+    if (typeof callback === "function") {
+      eventPayload.event_callback = runCallback;
+      eventPayload.event_timeout = Math.max(0, callbackTimeout - 100);
+    }
+    if (typeof window.gtag === "function") window.gtag("event", name, eventPayload);
+    else { window.dataLayer = window.dataLayer || []; window.dataLayer.push({ event: name, ...eventPayload }); }
+    if (typeof callback === "function") window.setTimeout(runCallback, callbackTimeout);
   };
   const showStep = (number, focus = true) => {
     state.currentStep = number;
@@ -109,7 +121,7 @@ const initHeatPumpQuiz = (quizRoot) => {
     const tier = state.answers.selected_tier || "not_sure";
     const payload = { lead_source: "hvac_quiz", system_type: "heat_pump", project_type: state.answers.project_type, existing_system: state.answers.existing_system, ductwork: state.answers.ductwork, home_size: state.answers.home_size, space_size: state.answers.home_size, system_preference: state.answers.system_preference, priorities: state.answers.priorities, selected_tier: tier, price_range: HEAT_PUMP_PRICES[tier] || "", page: "instant-estimate-heat-pump", first_name: String(fields.first_name || "").trim(), name: String(fields.first_name || "").trim(), preferred_contact_methods: [digits ? "phone" : "", email ? "email" : ""].filter(Boolean), phone: digits ? `+1${digits}` : "", email, zip: String(fields.zip || "").trim(), area: `WA ${String(fields.zip || "").trim()}`, service: "Heat pump installation" };
     const button = leadForm.querySelector('button[type="submit"]'); submissionInProgress = true; button.disabled = true; status.textContent = "Sending request...";
-    try { const response = await fetch(leadForm.dataset.endpoint || "/api/lead", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }); const data = await response.json().catch(() => null); if (!response.ok || data?.ok !== true) throw new Error("Request failed"); leadEventSent = true; track("instant_estimate_lead", { system_type: "heat_pump", selected_tier: tier }); track("conversion", { send_to: GOOGLE_ADS_LEAD_DESTINATION }); track("generate_lead", { lead_service: payload.service, lead_area: payload.area, page_location: window.location.href, system_type: "heat_pump" }); window.location.href = "/thank-you"; }
+    try { const response = await fetch(leadForm.dataset.endpoint || "/api/lead", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }); const data = await response.json().catch(() => null); if (!response.ok || data?.ok !== true) throw new Error("Request failed"); leadEventSent = true; track("instant_estimate_lead", { system_type: "heat_pump", selected_tier: tier }); track("generate_lead", { lead_service: payload.service, lead_area: payload.area, page_location: window.location.href, system_type: "heat_pump" }); track("conversion", { send_to: GOOGLE_ADS_LEAD_DESTINATION }, () => { window.location.href = "/thank-you"; }); }
     catch { submissionInProgress = false; button.disabled = false; status.textContent = "Could not send the request. Please call or email us directly."; status.className = "form-status is-error"; }
   });
   track("instant_estimate_start", { system_type: "heat_pump" });
@@ -145,12 +157,24 @@ if (root?.dataset.systemType === "heat_pump") {
   let submissionInProgress = false;
   let advanceTimer = null;
 
-  const track = (eventName, payload = {}) => {
-    if (typeof window.gtag === "function") window.gtag("event", eventName, payload);
+  const track = (eventName, payload = {}, callback = null, callbackTimeout = 2000) => {
+    let callbackCalled = false;
+    const runCallback = () => {
+      if (callbackCalled || typeof callback !== "function") return;
+      callbackCalled = true;
+      callback();
+    };
+    const eventPayload = { ...payload };
+    if (typeof callback === "function") {
+      eventPayload.event_callback = runCallback;
+      eventPayload.event_timeout = Math.max(0, callbackTimeout - 100);
+    }
+    if (typeof window.gtag === "function") window.gtag("event", eventName, eventPayload);
     else {
       window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({ event: eventName, ...payload });
+      window.dataLayer.push({ event: eventName, ...eventPayload });
     }
+    if (typeof callback === "function") window.setTimeout(runCallback, callbackTimeout);
   };
 
   const showStep = (number, { focus = true } = {}) => {
@@ -348,9 +372,8 @@ if (root?.dataset.systemType === "heat_pump") {
       const result = await response.json().catch(() => null);
       if (!response.ok || result?.ok !== true) throw new Error("Request failed");
       track("instant_estimate_lead", { system_type: "mini_split", zones: state.answers.zones, selected_tier: state.selectedTier });
-      track("conversion", { send_to: GOOGLE_ADS_LEAD_DESTINATION });
       track("generate_lead", { lead_service: payload.service, lead_area: payload.area, page_location: window.location.href });
-      window.location.href = "/thank-you";
+      track("conversion", { send_to: GOOGLE_ADS_LEAD_DESTINATION }, () => { window.location.href = "/thank-you"; });
     } catch {
       submissionInProgress = false;
       leadForm.querySelector('button[type="submit"]').disabled = false;

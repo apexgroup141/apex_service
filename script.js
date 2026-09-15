@@ -121,7 +121,7 @@ const estimateServiceAliases = {
 const normalizedSelectedService = estimateServiceAliases[selectedService] || selectedService;
 const googleAdsLeadDestination = "AW-18358155203/eht5CKv_lvgcEMPv7LFE";
 
-const trackEvent = (eventName, eventData = {}, callback = null) => {
+const trackEvent = (eventName, eventData = {}, callback = null, callbackTimeout = 1300) => {
   let callbackCalled = false;
   const runCallback = () => {
     if (callbackCalled || typeof callback !== "function") return;
@@ -129,11 +129,11 @@ const trackEvent = (eventName, eventData = {}, callback = null) => {
     callback();
   };
 
-  const eventPayload = {
-    ...eventData,
-    event_callback: runCallback,
-    event_timeout: 1200
-  };
+  const eventPayload = { ...eventData };
+  if (typeof callback === "function") {
+    eventPayload.event_callback = runCallback;
+    eventPayload.event_timeout = Math.max(0, callbackTimeout - 100);
+  }
 
   if (typeof window.gtag === "function") {
     window.gtag("event", eventName, eventPayload);
@@ -146,7 +146,7 @@ const trackEvent = (eventName, eventData = {}, callback = null) => {
   }
 
   if (typeof callback === "function") {
-    window.setTimeout(runCallback, 1300);
+    window.setTimeout(runCallback, callbackTimeout);
   }
 };
 
@@ -280,17 +280,21 @@ if (leadForm) {
       }
 
       leadEventSent = true;
-      trackEvent("conversion", { send_to: googleAdsLeadDestination });
       trackEvent(
         "generate_lead",
         {
           lead_service: payload.service || "",
           lead_area: payload.area || "",
           page_location: window.location.href
-        },
+        }
+      );
+      trackEvent(
+        "conversion",
+        { send_to: googleAdsLeadDestination },
         () => {
           window.location.href = "/thank-you";
-        }
+        },
+        2000
       );
     } catch {
       submissionInProgress = false;
