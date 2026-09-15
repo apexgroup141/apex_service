@@ -120,6 +120,7 @@ const estimateServiceAliases = {
 };
 const normalizedSelectedService = estimateServiceAliases[selectedService] || selectedService;
 const googleAdsLeadDestination = "AW-18358155203/eht5CKv_lvgcEMPv7LFE";
+const googleAdsLeadPendingKey = "apex_google_ads_lead_pending";
 
 const trackEvent = (eventName, eventData = {}, callback = null, callbackTimeout = 1300) => {
   let callbackCalled = false;
@@ -149,6 +150,17 @@ const trackEvent = (eventName, eventData = {}, callback = null, callbackTimeout 
     window.setTimeout(runCallback, callbackTimeout);
   }
 };
+
+if (window.location.pathname === "/thank-you" || window.location.pathname === "/thank-you.html") {
+  try {
+    if (window.sessionStorage.getItem(googleAdsLeadPendingKey) === "1" && typeof window.gtag === "function") {
+      window.gtag("event", "conversion", { send_to: googleAdsLeadDestination });
+      window.sessionStorage.removeItem(googleAdsLeadPendingKey);
+    }
+  } catch {
+    // Keep the confirmation page usable if session storage is unavailable.
+  }
+}
 
 document.querySelectorAll('a[href]').forEach((link) => {
   let destination;
@@ -288,14 +300,12 @@ if (leadForm) {
           page_location: window.location.href
         }
       );
-      trackEvent(
-        "conversion",
-        { send_to: googleAdsLeadDestination },
-        () => {
-          window.location.href = "/thank-you";
-        },
-        2000
-      );
+      try {
+        window.sessionStorage.setItem(googleAdsLeadPendingKey, "1");
+      } catch {
+        // Continue to the confirmation page if session storage is unavailable.
+      }
+      window.location.href = "/thank-you";
     } catch {
       submissionInProgress = false;
       submitButton.disabled = false;
