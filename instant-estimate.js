@@ -6,6 +6,7 @@ export const PRICE_RANGES = {
 };
 
 export const getPriceRanges = (zones) => PRICE_RANGES[zones] || null;
+export const GOOGLE_ADS_LEAD_DESTINATION = "AW-18358155203/eht5CKv_lvgcEMPv7LPE";
 
 const root = typeof document === "undefined" ? null : document.querySelector("[data-instant-estimate]");
 
@@ -33,6 +34,8 @@ const initHeatPumpQuiz = (quizRoot) => {
   const state = { currentStep: 1, answers: {} };
   const labels = ["Project plan", "Existing system", "Ductwork", "Home size", "System setup", "Priorities", "System level"];
   let advanceTimer = null;
+  let submissionInProgress = false;
+  let leadEventSent = false;
 
   const track = (name, payload = {}) => {
     if (typeof window.gtag === "function") window.gtag("event", name, payload);
@@ -98,15 +101,16 @@ const initHeatPumpQuiz = (quizRoot) => {
 
   leadForm.addEventListener("submit", async (event) => {
     event.preventDefault();
+    if (submissionInProgress || leadEventSent) return;
     const fields = Object.fromEntries(new FormData(leadForm).entries());
     const digits = phoneDigits(); const email = String(fields.email || "").trim();
     if ((!digits && !email) || (digits && digits.length !== 10) || !emailValid() || !leadForm.reportValidity()) { contactError.textContent = "Enter a valid phone number, email address, or both."; return; }
     contactError.textContent = "";
     const tier = state.answers.selected_tier || "not_sure";
     const payload = { lead_source: "hvac_quiz", system_type: "heat_pump", project_type: state.answers.project_type, existing_system: state.answers.existing_system, ductwork: state.answers.ductwork, home_size: state.answers.home_size, space_size: state.answers.home_size, system_preference: state.answers.system_preference, priorities: state.answers.priorities, selected_tier: tier, price_range: HEAT_PUMP_PRICES[tier] || "", page: "instant-estimate-heat-pump", first_name: String(fields.first_name || "").trim(), name: String(fields.first_name || "").trim(), preferred_contact_methods: [digits ? "phone" : "", email ? "email" : ""].filter(Boolean), phone: digits ? `+1${digits}` : "", email, zip: String(fields.zip || "").trim(), area: `WA ${String(fields.zip || "").trim()}`, service: "Heat pump installation" };
-    const button = leadForm.querySelector('button[type="submit"]'); button.disabled = true; status.textContent = "Sending request...";
-    try { const response = await fetch(leadForm.dataset.endpoint || "/api/lead", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }); const data = await response.json().catch(() => null); if (!response.ok || data?.ok !== true) throw new Error("Request failed"); track("instant_estimate_lead", { system_type: "heat_pump", selected_tier: tier }); track("generate_lead", { lead_service: payload.service, lead_area: payload.area, page_location: window.location.href, system_type: "heat_pump" }); window.location.href = "/thank-you"; }
-    catch { button.disabled = false; status.textContent = "Could not send the request. Please call or email us directly."; status.className = "form-status is-error"; }
+    const button = leadForm.querySelector('button[type="submit"]'); submissionInProgress = true; button.disabled = true; status.textContent = "Sending request...";
+    try { const response = await fetch(leadForm.dataset.endpoint || "/api/lead", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }); const data = await response.json().catch(() => null); if (!response.ok || data?.ok !== true) throw new Error("Request failed"); leadEventSent = true; track("instant_estimate_lead", { system_type: "heat_pump", selected_tier: tier }); track("conversion", { send_to: GOOGLE_ADS_LEAD_DESTINATION }); track("generate_lead", { lead_service: payload.service, lead_area: payload.area, page_location: window.location.href, system_type: "heat_pump" }); window.location.href = "/thank-you"; }
+    catch { submissionInProgress = false; button.disabled = false; status.textContent = "Could not send the request. Please call or email us directly."; status.className = "form-status is-error"; }
   });
   track("instant_estimate_start", { system_type: "heat_pump" });
   showStep(1, false);
@@ -344,6 +348,7 @@ if (root?.dataset.systemType === "heat_pump") {
       const result = await response.json().catch(() => null);
       if (!response.ok || result?.ok !== true) throw new Error("Request failed");
       track("instant_estimate_lead", { system_type: "mini_split", zones: state.answers.zones, selected_tier: state.selectedTier });
+      track("conversion", { send_to: GOOGLE_ADS_LEAD_DESTINATION });
       track("generate_lead", { lead_service: payload.service, lead_area: payload.area, page_location: window.location.href });
       window.location.href = "/thank-you";
     } catch {

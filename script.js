@@ -119,6 +119,7 @@ const estimateServiceAliases = {
   Maintenance: "Repair and maintenance"
 };
 const normalizedSelectedService = estimateServiceAliases[selectedService] || selectedService;
+const googleAdsLeadDestination = "AW-18358155203/eht5CKv_lvgcEMPv7LPE";
 
 const trackEvent = (eventName, eventData = {}, callback = null) => {
   let callbackCalled = false;
@@ -279,6 +280,7 @@ if (leadForm) {
       }
 
       leadEventSent = true;
+      trackEvent("conversion", { send_to: googleAdsLeadDestination });
       trackEvent(
         "generate_lead",
         {
