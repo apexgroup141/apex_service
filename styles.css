@@ -1783,14 +1783,12 @@ h3 {
   min-height: min(590px, calc(100vh - 76px));
   padding: clamp(46px, 5.5vw, 74px) clamp(18px, 5vw, 70px) clamp(42px, 5vw, 64px);
   background-color: var(--deep-2);
-  background-image:
-    linear-gradient(90deg, rgba(3, 21, 54, .92) 0%, rgba(3, 21, 54, .76) 38%, rgba(3, 21, 54, .3) 60%, rgba(3, 21, 54, .04) 82%),
-    url("/assets/heat-pump-installation-puget-sound-hero.webp");
-  background-position: center 52%;
-  background-size: cover;
 }
 
-.page-hero.heat-pump-conversion-hero::before { content: none; }
+.page-hero.heat-pump-conversion-hero::before { z-index: -1; background: linear-gradient(90deg, rgba(3, 21, 54, .92) 0%, rgba(3, 21, 54, .76) 38%, rgba(3, 21, 54, .3) 60%, rgba(3, 21, 54, .04) 82%); content: ""; }
+.page-hero .service-hero-media, .mini-split-conversion-hero .service-hero-media { position: absolute; z-index: -2; inset: 0; display: block; overflow: hidden; }
+.service-hero-media img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.heat-pump-conversion-hero .service-hero-media img { object-position: center 52%; }
 
 .heat-pump-conversion-hero .breadcrumb { margin-bottom: 20px; }
 .heat-pump-conversion-hero .eyebrow { margin-bottom: 12px; }
@@ -1855,11 +1853,9 @@ h3 {
     min-height: 0;
     padding-top: 34px;
     padding-bottom: 38px;
-    background-image:
-      linear-gradient(90deg, rgba(3,21,54,.94) 0%, rgba(3,21,54,.82) 52%, rgba(3,21,54,.42) 100%),
-      url("/assets/heat-pump-installation-puget-sound-hero.webp");
-    background-position: 72% center;
   }
+  .page-hero.heat-pump-conversion-hero::before { background: linear-gradient(90deg, rgba(3,21,54,.94) 0%, rgba(3,21,54,.82) 52%, rgba(3,21,54,.42) 100%); }
+  .heat-pump-conversion-hero .service-hero-media img { object-position: 72% center; }
   .heat-pump-conversion-hero h1 { font-size: clamp(36px, 10.5vw, 48px); }
   .heat-pump-conversion-hero .page-actions { display: grid; width: 100%; }
   .heat-pump-conversion-hero .button { width: 100%; }
@@ -2972,8 +2968,9 @@ h3 {
   .google-review-reply-expandable summary { grid-template-columns: 1fr; gap: 8px; }
 }
 
-.mini-split-conversion-hero { position: relative; isolation: isolate; overflow: hidden; padding: clamp(42px, 5vw, 64px) clamp(18px, 5vw, 70px) clamp(30px, 4vw, 44px); background-color: var(--deep-2); background-image: url("/assets/mini-split-hero-concept-v1.png"); background-position: center 48%; background-size: cover; color: var(--white); }
+.mini-split-conversion-hero { position: relative; isolation: isolate; overflow: hidden; padding: clamp(42px, 5vw, 64px) clamp(18px, 5vw, 70px) clamp(30px, 4vw, 44px); background-color: var(--deep-2); color: var(--white); }
 .mini-split-conversion-hero::before { position: absolute; z-index: -1; inset: 0; background: linear-gradient(90deg, rgba(3,21,54,.9) 0%, rgba(3,21,54,.78) 48%, rgba(3,21,54,.35) 76%, rgba(3,21,54,.18) 100%); content: ""; }
+.mini-split-conversion-hero .service-hero-media img { object-position: center 48%; }
 .mini-split-conversion-hero h1 { max-width: 820px; margin-top: 0; margin-bottom: 14px; }
 .mini-split-conversion-hero > p:not(.eyebrow) { max-width: 820px; color: rgba(255,255,255,.84); font-size: clamp(18px, 2vw, 22px); }
 .mini-split-conversion-hero .page-actions { margin-top: 18px; }
