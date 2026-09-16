@@ -1785,6 +1785,11 @@ h3 {
   background-color: var(--deep-2);
 }
 
+.service-page-hero.heat-pump-conversion-hero,
+.service-page-hero.mini-split-conversion-hero {
+  background-image: none;
+}
+
 .page-hero.heat-pump-conversion-hero::before { z-index: -1; background: linear-gradient(90deg, rgba(3, 21, 54, .92) 0%, rgba(3, 21, 54, .76) 38%, rgba(3, 21, 54, .3) 60%, rgba(3, 21, 54, .04) 82%); content: ""; }
 .page-hero .service-hero-media, .mini-split-conversion-hero .service-hero-media { position: absolute; z-index: -2; inset: 0; display: block; overflow: hidden; }
 .service-hero-media img { display: block; width: 100%; height: 100%; object-fit: cover; }
@@ -3413,6 +3418,17 @@ h3 {
 .home-services, .home-projects, .home-rebates, .home-areas { background: var(--white); }
 .home-install-options, .home-process, .home-guides { background: var(--paper); }
 .home-owner-section, .home-reviews, .home-final-cta { background: var(--ice); }
+.home-services .eyebrow,
+.home-install-options .eyebrow,
+.home-financing-transition .eyebrow,
+.home-owner-section .eyebrow,
+.home-process .eyebrow,
+.home-projects .eyebrow,
+.home-reviews .eyebrow,
+.home-rebates .eyebrow,
+.home-guides .eyebrow,
+.home-areas .eyebrow,
+.home-final-cta .eyebrow { color: #c62c33; }
 .home-service-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 34px; }
 .home-service-card { display: flex; min-height: 205px; padding: 28px; flex-direction: column; align-items: flex-start; border: 1px solid var(--line); border-radius: 10px; background: var(--white); box-shadow: 0 12px 30px rgba(6,31,73,.06); }
 .home-service-card h3 { margin-bottom: 12px; }
