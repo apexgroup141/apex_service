@@ -3458,7 +3458,9 @@ h3 {
 
 .home-reviews { padding-block: clamp(52px, 6vw, 76px); }
 .home-reviews h2 { font-size: clamp(30px, 3.4vw, 44px); }
-.home-reviews .google-rating-summary { margin: 22px 0 18px; }
+.home-reviews .google-rating-summary { width: 100%; margin: 22px 0 18px; }
+.home-reviews .google-rating-summary .home-reviews-cta { margin-left: auto; border-color: rgba(6,31,73,.22); background: var(--white); color: var(--ink); }
+.home-reviews .google-rating-summary .home-reviews-cta:hover { border-color: var(--blue); background: var(--ice); color: var(--blue); }
 .home-reviews .google-reviews-grid { margin-top: 20px; }
 .home-reviews .google-review-card { min-height: 0; }
 .home-reviews-fallback { display: flex; max-width: none; gap: 24px; align-items: center; justify-content: space-between; margin: 22px 0 0; padding: 22px 24px; text-align: left; }
@@ -3520,6 +3522,7 @@ h3 {
   .home-guide-media { height: 210px; }
   .home-final-grid article { text-align: center; }
   .home-reviews h2 { font-size: clamp(29px, 9vw, 36px); }
+  .home-reviews .google-rating-summary .home-reviews-cta { width: 100%; margin-left: 0; }
   .home-reviews-fallback { align-items: stretch; flex-direction: column; padding: 20px; }
   .home-reviews-fallback .button { width: 100%; }
   .home-rebates { gap: 22px; }

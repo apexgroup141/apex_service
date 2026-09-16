@@ -197,8 +197,11 @@ export const renderGoogleReviewsHtml = (payload, options = {}) => {
 
   const rating = Number(payload.averageRating);
   const count = Number(payload.totalReviewCount);
+  const summaryCta = options.summaryCta
+    ? `<a class="button secondary home-reviews-cta" href="/reviews">Read All Reviews</a>`
+    : "";
   const summary = Number.isFinite(rating) && Number.isFinite(count)
-    ? `<div class="google-rating-summary"><strong>${escapeHtml(rating.toFixed(1))}</strong>${renderStars(Math.round(rating))}<span>Based on ${escapeHtml(count.toLocaleString("en-US"))} Google reviews</span></div>`
+    ? `<div class="google-rating-summary"><strong>${escapeHtml(rating.toFixed(1))}</strong>${renderStars(Math.round(rating))}<span>Based on ${escapeHtml(count.toLocaleString("en-US"))} Google reviews</span>${summaryCta}</div>`
     : "";
 
   return {

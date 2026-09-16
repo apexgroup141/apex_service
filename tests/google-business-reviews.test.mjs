@@ -137,3 +137,24 @@ test("limits server-rendered reviews for service page previews", () => {
   assert.match(rendered, /Customer 3/);
   assert.doesNotMatch(rendered, /Customer 4/);
 });
+
+test("adds the single visible reviews CTA to the home rating summary when requested", () => {
+  const html = '<main data-google-reviews-state="empty"><!-- GOOGLE_REVIEWS_SUMMARY --><!-- GOOGLE_REVIEWS_LIST --><div class="google-reviews-empty"><a href="/reviews">Read All Reviews</a></div></main>';
+  const rendered = injectGoogleReviewsIntoHtml(html, {
+    averageRating: 5,
+    totalReviewCount: 1,
+    reviews: [{
+      id: "1",
+      author: "Customer",
+      rating: 5,
+      text: "Great service",
+      publishedAt: "2026-08-01T00:00:00Z",
+      updatedAt: "2026-08-01T00:00:00Z",
+      ownerReply: null,
+      avatarUrl: ""
+    }]
+  }, { limit: 3, summaryCta: true });
+
+  assert.match(rendered, /google-rating-summary[\s\S]*home-reviews-cta/);
+  assert.match(rendered, /href="\/reviews">Read All Reviews<\/a>/);
+});

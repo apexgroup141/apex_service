@@ -890,7 +890,7 @@ export default {
     }
 
     if (url.pathname === "/") {
-      return renderReviewsPage(request, env, { limit: 3 });
+      return renderReviewsPage(request, env, { limit: 3, summaryCta: true });
     }
 
     if (url.pathname === "/services/mini-splits") {
