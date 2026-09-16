@@ -889,6 +889,10 @@ export default {
       return renderReviewsPage(request, env);
     }
 
+    if (url.pathname === "/") {
+      return renderReviewsPage(request, env, { limit: 3 });
+    }
+
     if (url.pathname === "/services/mini-splits") {
       return renderReviewsPage(request, env, { limit: 3 });
     }

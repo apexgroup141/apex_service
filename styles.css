@@ -3401,3 +3401,126 @@ h3 {
   html { scroll-behavior: auto; }
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
+
+/* Home page structure */
+.home-hero { min-height: min(760px, 100svh); }
+.home-hero .hero-content { width: min(820px, calc(100% - 36px)); padding-top: clamp(150px, 17vh, 190px); }
+.home-hero .hero-actions { margin-bottom: 22px; }
+.home-hero .button.secondary { background: rgba(6,31,73,.32); backdrop-filter: blur(8px); }
+.home-hero-trust { display: flex; max-width: 820px; flex-wrap: wrap; gap: 6px 10px; margin: 0; color: rgba(255,255,255,.88); font-size: 13px; font-weight: 800; }
+.home-hero-trust span { color: #ff6971; }
+
+.home-services, .home-projects, .home-rebates, .home-areas { background: var(--white); }
+.home-install-options, .home-process, .home-guides { background: var(--paper); }
+.home-owner-section, .home-reviews, .home-final-cta { background: var(--ice); }
+.home-service-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 34px; }
+.home-service-card { display: flex; min-height: 205px; padding: 28px; flex-direction: column; align-items: flex-start; border: 1px solid var(--line); border-radius: 10px; background: var(--white); box-shadow: 0 12px 30px rgba(6,31,73,.06); }
+.home-service-card h3 { margin-bottom: 12px; }
+.home-service-card p { margin-bottom: 22px; color: var(--muted); }
+.home-service-card .text-link { margin-top: auto; }
+.home-service-card:hover { border-color: rgba(9,101,216,.32); box-shadow: 0 18px 36px rgba(6,31,73,.1); transform: translateY(-2px); }
+
+.home-install-grid, .home-rebate-grid, .home-final-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; margin-top: 34px; }
+.home-install-grid article, .home-rebate-grid article, .home-final-grid article { padding: clamp(26px, 4vw, 42px); border: 1px solid var(--line); border-radius: 10px; background: var(--white); box-shadow: 0 14px 34px rgba(6,31,73,.07); }
+.home-install-grid h3 { margin: 8px 0 12px; font-size: clamp(30px, 3vw, 42px); }
+.home-install-grid article > p:not(.home-card-label), .home-rebate-grid article > p { color: var(--muted); }
+.home-install-grid .button.secondary, .home-rebate-grid .button.secondary, .home-heading-row .button.secondary, .home-areas .button.secondary, .home-final-grid .button.secondary { border-color: rgba(6,31,73,.22); background: var(--white); color: var(--ink); }
+.home-install-grid .button.secondary:hover, .home-rebate-grid .button.secondary:hover, .home-heading-row .button.secondary:hover, .home-areas .button.secondary:hover, .home-final-grid .button.secondary:hover { border-color: var(--blue); background: var(--ice); color: var(--blue); }
+.home-card-label { margin-bottom: 8px; color: var(--blue); font-size: 12px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; }
+
+.home-financing-transition { display: flex; gap: 28px; align-items: center; justify-content: space-between; padding: 34px clamp(18px, 5vw, 70px); background: var(--deep); color: var(--white); }
+.home-financing-transition > div { max-width: 850px; }
+.home-financing-transition h2 { margin-bottom: 9px; font-size: clamp(27px, 3vw, 38px); }
+.home-financing-transition p { margin-bottom: 7px; color: rgba(255,255,255,.84); }
+.home-financing-transition small { color: rgba(255,255,255,.7); }
+.home-financing-transition .button { flex: 0 0 auto; }
+
+.home-owner-section { display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, .75fr); gap: clamp(28px, 6vw, 80px); align-items: center; }
+.home-owner-copy { max-width: 720px; }
+.home-owner-copy > p:not(.eyebrow) { color: var(--muted); font-size: 17px; line-height: 1.7; }
+.home-owner-copy .home-owner-lead { color: var(--ink); font-size: clamp(20px, 2vw, 25px); font-weight: 800; line-height: 1.45; }
+.home-benefit-grid { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.home-benefit-grid li { position: relative; padding: 17px 18px 17px 48px; border: 1px solid var(--line); border-radius: 8px; background: var(--white); font-weight: 800; }
+.home-benefit-grid li::before { position: absolute; top: 17px; left: 18px; color: var(--blue); content: "✓"; font-weight: 950; }
+
+.home-heading-row { display: flex; max-width: none; gap: 24px; align-items: end; justify-content: space-between; }
+.home-heading-row h2 { margin-bottom: 0; }
+.home-project-grid, .home-guide-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; margin-top: 34px; }
+.home-project-grid article, .home-guide-grid article { overflow: hidden; border: 1px solid var(--line); border-radius: 10px; background: var(--white); box-shadow: 0 14px 34px rgba(6,31,73,.07); }
+.home-project-grid article > div, .home-guide-grid article > div { padding: 24px; }
+.home-project-grid h3, .home-guide-grid h3 { font-size: 22px; }
+.home-project-grid article > div > p:not(.home-card-label), .home-guide-grid p { color: var(--muted); }
+.home-project-media, .home-guide-media { display: block; height: 270px; overflow: hidden; background: var(--ice); }
+.home-project-media img, .home-guide-media img { width: 100%; height: 100%; object-fit: cover; transition: transform 180ms ease; }
+.home-project-media:hover img, .home-guide-media:hover img { transform: scale(1.02); }
+.home-project-grid article:first-child img { object-position: center 62%; }
+.home-guide-media { height: 210px; }
+
+.home-reviews { padding-block: clamp(52px, 6vw, 76px); }
+.home-reviews h2 { font-size: clamp(30px, 3.4vw, 44px); }
+.home-reviews .google-rating-summary { margin: 22px 0 18px; }
+.home-reviews .google-reviews-grid { margin-top: 20px; }
+.home-reviews .google-review-card { min-height: 0; }
+.home-reviews-fallback { display: flex; max-width: none; gap: 24px; align-items: center; justify-content: space-between; margin: 22px 0 0; padding: 22px 24px; text-align: left; }
+.home-reviews-fallback > div { display: grid; gap: 4px; }
+.home-reviews-fallback strong { font-size: 18px; }
+.home-reviews-fallback p { margin: 0; color: var(--muted); }
+.home-review-stars { color: #e3a008; font-size: 19px; letter-spacing: 2px; }
+.home-reviews-fallback .button.secondary { border-color: rgba(6,31,73,.22); background: var(--white); color: var(--ink); }
+.home-reviews-fallback .button.secondary:hover { border-color: var(--blue); background: var(--ice); color: var(--blue); }
+.home-supporting-copy { font-size: 13px; line-height: 1.55; }
+.home-rebate-grid article { display: flex; flex-direction: column; align-items: flex-start; }
+.home-rebate-grid .button { margin-top: auto; }
+
+.home-rebates { display: flex; gap: 30px; align-items: center; justify-content: space-between; padding-block: clamp(52px, 6vw, 76px); }
+.home-rebates > div { max-width: 760px; }
+.home-rebates > div p:last-child { margin-bottom: 0; color: var(--muted); font-size: 18px; }
+.home-rebates .button.secondary { flex: 0 0 auto; border-color: rgba(6,31,73,.22); background: var(--white); color: var(--ink); }
+.home-rebates .button.secondary:hover { border-color: var(--blue); background: var(--ice); color: var(--blue); }
+
+.home-areas { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(320px, .9fr) auto; gap: 34px; align-items: center; }
+.home-areas > div { max-width: 680px; }
+.home-areas > div p:last-child { color: var(--muted); font-size: 18px; }
+.home-areas ul { display: flex; flex-wrap: wrap; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.home-areas li { padding: 9px 13px; border: 1px solid var(--line); border-radius: 999px; background: var(--paper); font-size: 13px; font-weight: 800; }
+.home-final-cta { text-align: center; }
+.home-final-cta .section-heading { margin-inline: auto; }
+.home-final-grid { max-width: 1000px; margin-inline: auto; text-align: left; }
+.home-final-phone { display: inline-block; margin-top: 30px; color: var(--blue); font-size: clamp(20px, 2vw, 26px); font-weight: 900; }
+
+@media (max-width: 980px) {
+  .home-service-grid, .home-project-grid, .home-guide-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .home-owner-section { grid-template-columns: 1fr; }
+  .home-areas { grid-template-columns: 1fr; }
+  .home-areas .button { width: fit-content; }
+  .home-financing-transition, .home-rebates { align-items: flex-start; flex-direction: column; }
+}
+
+@media (max-width: 700px) {
+  .home-hero { display: block; min-height: 700px; padding: 0; }
+  .home-hero .hero-content { display: block; width: auto; padding: 126px 18px 38px; margin: 0; }
+  .home-hero h1 { font-size: clamp(39px, 12vw, 52px); }
+  .home-hero .hero-actions { display: grid; grid-template-columns: 1fr; }
+  .home-hero .hero-actions .button { width: 100%; }
+  .home-hero-trust { margin-top: 18px; gap: 7px; font-size: 12px; }
+  .home-service-grid, .home-install-grid, .home-project-grid, .home-rebate-grid, .home-guide-grid, .home-final-grid { grid-template-columns: 1fr; }
+  .home-services, .home-install-options, .home-owner-section, .home-process, .home-projects, .home-reviews, .home-rebates, .home-guides, .home-areas, .home-final-cta { padding: 50px 18px; }
+  .home-install-options { padding-bottom: 34px; }
+  .home-financing-transition { padding: 28px 18px; }
+  .home-financing-transition .button, .home-rebates .button { width: 100%; }
+  .home-service-card { min-height: 0; }
+  .home-service-card, .home-install-grid article, .home-rebate-grid article, .home-final-grid article { padding: 24px 20px; }
+  .home-service-grid, .home-install-grid, .home-project-grid, .home-guide-grid, .home-final-grid { margin-top: 26px; }
+  .home-owner-section { gap: 24px; }
+  .home-benefit-grid li { padding-block: 14px; }
+  .home-process .process-grid article { min-height: 0; padding: 22px 18px; }
+  .home-heading-row { align-items: flex-start; flex-direction: column; }
+  .home-heading-row .button { width: 100%; }
+  .home-project-media { height: 245px; }
+  .home-guide-media { height: 210px; }
+  .home-final-grid article { text-align: center; }
+  .home-reviews h2 { font-size: clamp(29px, 9vw, 36px); }
+  .home-reviews-fallback { align-items: stretch; flex-direction: column; padding: 20px; }
+  .home-reviews-fallback .button { width: 100%; }
+  .home-rebates { gap: 22px; }
+}
