@@ -1,11 +1,7 @@
-export const PRICE_RANGES = {
-  "1": { good: "$3,000–$4,000", better: "$4,000–$5,500", best: "$5,500–$7,000" },
-  "2": { good: "$4,500–$6,500", better: "$6,500–$8,500", best: "$8,500–$11,000" },
-  "3": { good: "$5,500–$8,000", better: "$8,000–$10,500", best: "$10,500–$13,000" },
-  "4_plus": { good: "From $7,000", better: "From $9,000", best: "From $11,000" }
-};
+import { MINI_SPLIT_PRICE_RANGES, getMiniSplitPriceRanges } from "./mini-split-pricing.js";
 
-export const getPriceRanges = (zones) => PRICE_RANGES[zones] || null;
+export const PRICE_RANGES = MINI_SPLIT_PRICE_RANGES;
+export const getPriceRanges = getMiniSplitPriceRanges;
 const GOOGLE_ADS_LEAD_PENDING_KEY = "apex_google_ads_lead_pending";
 
 const root = typeof document === "undefined" ? null : document.querySelector("[data-instant-estimate]");

@@ -14,6 +14,7 @@ const filesToCopy = [
   "index.html",
   "instant-estimate",
   "instant-estimate.js",
+  "mini-split-pricing.js",
   "blog.html",
   "blog",
   "get-estimate.html",

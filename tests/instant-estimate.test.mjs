@@ -5,10 +5,10 @@ import { formatInstantEstimateMessage } from "../worker.js";
 import worker from "../worker.js";
 
 test("returns the published Good Better Best ranges for every zone branch", () => {
-  assert.deepEqual(getPriceRanges("1"), { good: "$3,000–$4,000", better: "$4,000–$5,500", best: "$5,500–$7,000" });
-  assert.deepEqual(getPriceRanges("2"), { good: "$4,500–$6,500", better: "$6,500–$8,500", best: "$8,500–$11,000" });
-  assert.deepEqual(getPriceRanges("3"), { good: "$5,500–$8,000", better: "$8,000–$10,500", best: "$10,500–$13,000" });
-  assert.deepEqual(getPriceRanges("4_plus"), { good: "From $7,000", better: "From $9,000", best: "From $11,000" });
+  assert.deepEqual(getPriceRanges("1"), { good: "$5,000–$6,000", better: "$6,000–$7,000", best: "$7,000+" });
+  assert.deepEqual(getPriceRanges("2"), { good: "$6,500–$8,000", better: "$8,000–$9,500", best: "$9,500–$11,000" });
+  assert.deepEqual(getPriceRanges("3"), { good: "$8,000–$9,500", better: "$9,500–$11,000", best: "$11,000–$13,000" });
+  assert.deepEqual(getPriceRanges("4_plus"), { good: "From $11,000", better: "From $13,000", best: "From $15,000" });
   assert.equal(getPriceRanges("not_sure"), null);
 });
 
@@ -39,7 +39,7 @@ test("formats a readable Telegram message for an instant estimate lead", () => {
   assert.match(message, /New Mini-Split Instant Estimate Lead/);
   assert.match(message, /Project type:<\/b> New installation/);
   assert.match(message, /New installation/);
-  assert.match(message, /Good:<\/b> \$4,500–\$6,500/);
+  assert.match(message, /Good:<\/b> \$6,500–\$8,000/);
   assert.match(message, /Selected option:<\/b> Better/);
   assert.match(message, /First Name:<\/b> John/);
   assert.match(message, /ZIP Code:<\/b> 98402/);
