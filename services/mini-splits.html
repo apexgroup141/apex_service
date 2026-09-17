@@ -9,6 +9,7 @@
     <meta name="theme-color" content="#061f49" />
     <link rel="icon" type="image/png" href="/assets/apex-icon.png" />
     <link rel="apple-touch-icon" href="/assets/apex-icon.png" />
+    <link rel="preload" as="image" href="/assets/mini-split-hero-concept-v1-960.avif" imagesrcset="/assets/mini-split-hero-concept-v1-960.avif 960w, /assets/mini-split-hero-concept-v1-1672.avif 1672w" imagesizes="100vw" type="image/avif" fetchpriority="high" />
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
@@ -21,8 +22,9 @@
     <main class="page-main mini-split-landing">
       <section class="mini-split-conversion-hero">
         <picture class="service-hero-media" aria-hidden="true">
-          <source media="(max-width: 640px)" srcset="/assets/mini-split-hero-concept-v1-960.webp" />
-          <img src="/assets/mini-split-hero-concept-v1.webp" srcset="/assets/mini-split-hero-concept-v1-960.webp 960w, /assets/mini-split-hero-concept-v1.webp 1672w" sizes="100vw" width="1672" height="941" alt="" fetchpriority="high" decoding="async" />
+          <source type="image/avif" srcset="/assets/mini-split-hero-concept-v1-960.avif 960w, /assets/mini-split-hero-concept-v1-1672.avif 1672w" sizes="100vw" />
+          <source type="image/webp" srcset="/assets/mini-split-hero-concept-v1-960.webp 960w, /assets/mini-split-hero-concept-v1.webp 1672w" sizes="100vw" />
+          <img src="/assets/mini-split-hero-concept-v1.webp" width="1672" height="941" alt="" fetchpriority="high" decoding="sync" />
         </picture>
         <h1>Ductless Mini-Split Systems for Your Home</h1>
         <p>Take one minute to tell us about your home and see personalized system options with estimated price ranges.</p>

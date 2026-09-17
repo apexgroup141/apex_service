@@ -93,6 +93,15 @@ function injectGoogleTagIntoHtml(filePath) {
   fs.writeFileSync(filePath, html);
 }
 
+function useOptimizedBrowserIcon(filePath) {
+  let html = fs.readFileSync(filePath, "utf8");
+  html = html.replace(
+    /<link\s+rel="icon"(?:\s+type="image\/png")?\s+href="\/assets\/apex-icon\.png"\s*\/>/gi,
+    '<link rel="icon" type="image/png" sizes="64x64" href="/assets/apex-favicon-64.png" />'
+  );
+  fs.writeFileSync(filePath, html);
+}
+
 function injectSharedNavigation(filePath) {
   if (path.basename(filePath) === "admin.html") return;
   const relativePath = path.relative(dist, filePath);
@@ -153,6 +162,7 @@ function markSharedServiceHero(filePath) {
 
 for (const filePath of listFiles(dist)) {
   if (path.extname(filePath) === ".html") {
+    useOptimizedBrowserIcon(filePath);
     injectSharedNavigation(filePath);
     markSharedServiceHero(filePath);
     connectServiceEstimateButtons(filePath);
