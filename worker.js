@@ -893,6 +893,10 @@ export default {
       return renderReviewsPage(request, env, { limit: 3 });
     }
 
+    if (url.pathname === "/about") {
+      return renderReviewsPage(request, env, { limit: 3 });
+    }
+
     return env.ASSETS.fetch(request);
   },
 
