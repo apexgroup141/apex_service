@@ -3283,6 +3283,77 @@ h3 {
 .mini-split-estimator-cta { margin-top: 20px; padding: clamp(22px, 4vw, 34px); border: 1px solid #c8d9ea; border-radius: 10px; background: linear-gradient(135deg, #eef6fc, #fff); display: flex; align-items: center; justify-content: space-between; gap: 28px; }
 .mini-split-estimator-cta p { margin: 6px 0 0; color: var(--muted); }
 .mini-split-estimator-cta .button { flex: 0 0 auto; }
+
+/* Furnace installation and replacement landing page */
+.furnace-conversion-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: min(690px, calc(100vh - 88px));
+  padding: clamp(52px, 7vw, 96px) clamp(18px, 6vw, 86px) clamp(38px, 5vw, 64px);
+  background: var(--deep-2);
+  color: var(--white);
+}
+.furnace-conversion-hero::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(3,21,54,.96) 0%, rgba(3,21,54,.88) 38%, rgba(3,21,54,.48) 64%, rgba(3,21,54,.16) 100%);
+  content: "";
+}
+.furnace-conversion-hero .service-hero-media { position: absolute; z-index: -2; inset: 0; overflow: hidden; }
+.furnace-conversion-hero .service-hero-media img { width: 100%; height: 100%; object-fit: cover; object-position: center center; }
+.furnace-conversion-hero .eyebrow { margin-bottom: 12px; color: #ffcbcc; }
+.furnace-conversion-hero h1 { max-width: 760px; margin: 0 0 18px; color: var(--white); font-size: clamp(42px, 5vw, 72px); line-height: 1.02; }
+.furnace-conversion-hero > p:not(.eyebrow) { max-width: 650px; margin: 0; color: rgba(255,255,255,.88); font-size: clamp(18px,1.7vw,22px); line-height: 1.55; }
+.furnace-conversion-hero .page-actions { display: flex; max-width: 650px; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+.furnace-conversion-hero .button { min-height: 54px; }
+.furnace-hero-secondary { border-color: rgba(255,255,255,.72); background: rgba(3,21,54,.5); color: var(--white); }
+.furnace-hero-secondary:hover { border-color: var(--white); background: rgba(255,255,255,.12); color: var(--white); }
+.furnace-conversion-hero .mini-split-trust-line { max-width: 780px; margin-top: 24px; }
+.furnace-card-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 18px; margin-top: 32px; }
+.furnace-card-grid .mini-card { height: 100%; }
+.furnace-card-grid .mini-card h3 { margin-bottom: 10px; }
+.furnace-card-grid .mini-card p { margin-bottom: 0; }
+.furnace-expectations .mini-split-information-copy h3 { margin: 0 0 8px; color: var(--deep); font-size: clamp(21px,2vw,27px); }
+.furnace-expectations .mini-split-information-copy p { margin: 0 0 26px; }
+.furnace-scope-note { margin: 24px 0 0; color: var(--muted); font-size: 14px; line-height: 1.65; }
+.furnace-price-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 20px; max-width: 980px; margin: 32px auto 0; }
+.furnace-price-card { position: relative; display: flex; min-width: 0; padding: clamp(26px,4vw,38px); flex-direction: column; border: 1px solid var(--line); border-top: 4px solid var(--blue); border-radius: 12px; background: var(--white); box-shadow: 0 18px 44px rgba(6,31,73,.07); }
+.furnace-price-card.is-featured { border: 2px solid #2f6fa8; border-top-width: 4px; box-shadow: 0 22px 52px rgba(47,111,168,.15); }
+.furnace-price-card h3 { max-width: 430px; margin: 0 0 14px; font-size: clamp(23px,2.5vw,31px); }
+.furnace-price-card strong { display: block; margin-bottom: 16px; color: var(--deep); font-size: clamp(34px,4vw,48px); line-height: 1.05; white-space: nowrap; }
+.furnace-price-card p { margin: 0 0 26px; color: var(--muted); line-height: 1.65; }
+.furnace-price-card .button { width: fit-content; margin-top: auto; }
+.furnace-price-badge { width: fit-content; margin-bottom: 14px; padding: 7px 10px; border-radius: 999px; background: #2f6fa8; color: var(--white); font-size: 10px; font-weight: 950; letter-spacing: .06em; }
+.furnace-brand-grid { grid-template-columns: repeat(4,minmax(0,1fr)); }
+.furnace-why-list { display: grid; max-width: 980px; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px 28px; }
+.furnace-final-actions { display: grid; max-width: 780px; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 14px; margin: 28px auto 0; }
+.furnace-final-actions .button { width: 100%; min-height: 56px; }
+
+@media (max-width: 900px) {
+  .furnace-card-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .furnace-brand-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .furnace-final-actions { grid-template-columns: 1fr; max-width: 520px; }
+}
+
+@media (max-width: 700px) {
+  .furnace-landing { overflow-x: clip; }
+  .furnace-landing .content-section, .furnace-landing .section-heading, .furnace-landing .content-grid > *, .furnace-conversion-hero > * { min-width: 0; max-width: 100%; }
+  .furnace-conversion-hero { min-height: 0; padding-top: 36px; padding-bottom: 30px; }
+  .furnace-conversion-hero::before { background: rgba(3,21,54,.82); }
+  .furnace-conversion-hero .service-hero-media img { object-position: 68% center; }
+  .furnace-conversion-hero .eyebrow, .furnace-conversion-hero h1, .furnace-landing .section-heading h2 { overflow-wrap: anywhere; }
+  .furnace-conversion-hero h1 { font-size: clamp(34px,10vw,46px); }
+  .furnace-conversion-hero .page-actions { display: grid; width: 100%; }
+  .furnace-conversion-hero .button { width: 100%; }
+  .furnace-conversion-hero .mini-split-trust-line { grid-template-columns: repeat(2,minmax(0,1fr)); font-size: 12px; }
+  .furnace-conversion-hero .mini-split-trust-line span { min-width: 0; }
+  .furnace-card-grid, .furnace-price-grid, .furnace-why-list { grid-template-columns: 1fr; }
+  .furnace-price-card { padding: 26px 22px; }
+  .furnace-price-card strong { white-space: normal; }
+  .furnace-price-card .button { width: 100%; }
+}
 .instant-estimate-page { background: #f4f7fa; }
 .instant-estimate-intro { padding: clamp(54px, 8vw, 96px) max(24px, calc((100vw - 1180px) / 2)); background: var(--deep); color: var(--white); }
 .instant-estimate-intro .breadcrumb { margin-bottom: 28px; }
