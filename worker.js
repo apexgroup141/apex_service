@@ -894,7 +894,10 @@ export default {
     }
 
     if (url.pathname === "/services/heat-pumps") {
-      return renderReviewsPage(request, env, { limit: 3 });
+      return renderReviewsPage(request, env, {
+        limit: 3,
+        priorityKeywords: ["heat pump", "central heating", "entire system installation", "ducted system", "system replacement", "new heating", "new cooling"]
+      });
     }
 
     if (url.pathname === "/about") {

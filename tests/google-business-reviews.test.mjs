@@ -138,6 +138,20 @@ test("limits server-rendered reviews for service page previews", () => {
   assert.doesNotMatch(rendered, /Customer 4/);
 });
 
+test("prioritizes relevant real reviews for a service page without rewriting them", () => {
+  const html = '<main data-google-reviews-state="empty"><!-- GOOGLE_REVIEWS_LIST --></main>';
+  const reviews = [
+    { id: "1", author: "Newest", rating: 5, text: "Great furnace maintenance", publishedAt: "2026-08-03T00:00:00Z", updatedAt: "2026-08-03T00:00:00Z", ownerReply: null, avatarUrl: "" },
+    { id: "2", author: "Heat Pump Customer", rating: 5, text: "Our new heat pump installation works perfectly", publishedAt: "2026-08-02T00:00:00Z", updatedAt: "2026-08-02T00:00:00Z", ownerReply: null, avatarUrl: "" },
+    { id: "3", author: "Ducted Customer", rating: 5, text: "The ducted system installation was professional", publishedAt: "2026-08-01T00:00:00Z", updatedAt: "2026-08-01T00:00:00Z", ownerReply: null, avatarUrl: "" }
+  ];
+  const rendered = injectGoogleReviewsIntoHtml(html, { reviews }, { limit: 2, priorityKeywords: ["heat pump", "ducted system"] });
+
+  assert.match(rendered, /Heat Pump Customer/);
+  assert.match(rendered, /Ducted Customer/);
+  assert.doesNotMatch(rendered, /Newest/);
+});
+
 test("adds the single visible reviews CTA to the home rating summary when requested", () => {
   const html = '<main data-google-reviews-state="empty"><!-- GOOGLE_REVIEWS_SUMMARY --><!-- GOOGLE_REVIEWS_LIST --><div class="google-reviews-empty"><a href="/reviews">Read All Reviews</a></div></main>';
   const rendered = injectGoogleReviewsIntoHtml(html, {

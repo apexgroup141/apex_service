@@ -1801,8 +1801,8 @@ h3 {
 .heat-pump-conversion-hero > p:not(.eyebrow) { max-width: 650px; margin-bottom: 0; font-size: clamp(18px, 1.7vw, 22px); line-height: 1.55; }
 .heat-pump-conversion-hero .page-actions { margin-top: 22px; }
 .heat-pump-conversion-hero .page-actions .button { min-width: min(100%, 270px); }
-.heat-pump-conversion-hero .heat-pump-hero-estimate { border-color: rgba(255,255,255,.8); background: rgba(255,255,255,.12); color: #fff; }
-.heat-pump-conversion-hero .heat-pump-hero-estimate:hover { border-color: #fff; background: #fff; color: var(--deep); }
+.heat-pump-conversion-hero .heat-pump-hero-estimate { border-color: rgba(255,255,255,.42); background: #bc1524; color: #fff; box-shadow: 0 10px 24px rgba(188,21,36,.24); }
+.heat-pump-conversion-hero .heat-pump-hero-estimate:hover { border-color: rgba(255,255,255,.68); background: #a9111f; color: #fff; }
 .page-hero.heat-pump-conversion-hero > p.mini-split-hero-note { margin: 9px 0 0; color: rgba(255,255,255,.76); font-size: clamp(14px,1.15vw,16px); font-weight: 400; letter-spacing: 0; }
 .heat-pump-hero-features { display: flex; max-width: 760px; flex-wrap: wrap; gap: 8px 18px; margin-top: 20px; color: rgba(255,255,255,.92); font-size: 14px; font-weight: 850; }
 .heat-pump-hero-features span { display: inline-flex; align-items: center; }
@@ -1862,6 +1862,8 @@ h3 {
 .heat-pump-project-card > div { display: flex; padding: clamp(28px,5vw,54px); flex-direction: column; justify-content: center; }
 .heat-pump-project-card h3 { margin: 7px 0 15px; font-size: clamp(28px,3vw,42px); }
 .heat-pump-project-card p:not(.eyebrow) { color: var(--muted); line-height: 1.7; }
+.heat-pump-project-card .heat-pump-project-secondary { border-color: rgba(6,31,73,.24); background: var(--white); color: var(--deep); box-shadow: 0 8px 20px rgba(6,31,73,.08); }
+.heat-pump-project-card .heat-pump-project-secondary:hover { border-color: var(--blue); background: var(--ice); color: var(--blue); }
 .heat-pump-reviews .google-reviews-grid { margin-top: 28px; }
 .heat-pump-reviews .google-review-card { min-height: 0; }
 .heat-pump-education .mini-split-information-copy h3 { margin: 0 0 18px; color: var(--deep); font-size: clamp(24px,2.7vw,34px); }

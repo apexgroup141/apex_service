@@ -191,8 +191,21 @@ const renderReview = (review) => {
 
 export const renderGoogleReviewsHtml = (payload, options = {}) => {
   const sourceReviews = Array.isArray(payload?.reviews) ? payload.reviews : [];
+  const priorityKeywords = Array.isArray(options.priorityKeywords)
+    ? options.priorityKeywords.map((keyword) => String(keyword).trim().toLowerCase()).filter(Boolean)
+    : [];
+  const prioritizedReviews = priorityKeywords.length
+    ? sourceReviews
+        .map((review, index) => ({
+          review,
+          index,
+          priority: priorityKeywords.some((keyword) => String(review?.text || "").toLowerCase().includes(keyword)) ? 1 : 0
+        }))
+        .sort((left, right) => right.priority - left.priority || left.index - right.index)
+        .map(({ review }) => review)
+    : sourceReviews;
   const limit = Number(options.limit);
-  const reviews = Number.isInteger(limit) && limit > 0 ? sourceReviews.slice(0, limit) : sourceReviews;
+  const reviews = Number.isInteger(limit) && limit > 0 ? prioritizedReviews.slice(0, limit) : prioritizedReviews;
   if (!reviews.length) return null;
 
   const rating = Number(payload.averageRating);
