@@ -893,6 +893,10 @@ export default {
       return renderReviewsPage(request, env, { limit: 3 });
     }
 
+    if (url.pathname === "/services/heat-pumps") {
+      return renderReviewsPage(request, env, { limit: 3 });
+    }
+
     if (url.pathname === "/about") {
       return renderReviewsPage(request, env, { limit: 3 });
     }
