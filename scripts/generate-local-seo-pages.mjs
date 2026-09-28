@@ -510,7 +510,11 @@ function pageHtml(area, service) {
   const projectSpotlight = area.slug === "seattle" && service.slug === "mini-split-installation"
     ? `
 
-      <section class="content-section project-spotlight"><div class="cta-strip"><div><p class="eyebrow">Completed Seattle project</p><h2>See a real 3-zone Mitsubishi mini-split installation.</h2><p>Follow this new-construction project from refrigerant line-set and condensate rough-in through the finished indoor units and outdoor heat pump installation.</p></div><a class="button secondary" href="/projects/mitsubishi-3-zone-mini-split-new-construction">View Seattle Project</a></div></section>`
+      <section class="content-section project-spotlight project-spotlight-stack" aria-labelledby="seattle-projects-title">
+        <div class="section-heading"><p class="eyebrow">Completed Seattle projects</p><h2 id="seattle-projects-title">See real mini-split work completed by Apex.</h2></div>
+        <div class="cta-strip"><div><p class="eyebrow">Mini-split installation</p><h3>3-zone Mitsubishi mini-split installation</h3><p>Follow this new-construction project from refrigerant line-set and condensate rough-in through the finished indoor units and outdoor heat pump installation.</p></div><a class="button secondary" href="/projects/mitsubishi-3-zone-mini-split-new-construction">View Installation Project</a></div>
+        <div class="cta-strip"><div><p class="eyebrow">Mini-split maintenance</p><h3>Daikin deep cleaning and maintenance</h3><p>See protected cleaning of a Daikin indoor unit with visible internal buildup, before-and-after results, reassembly, and final operation checks.</p></div><a class="button secondary" href="/projects/daikin-mini-split-deep-cleaning-seattle">View Cleaning Project</a></div>
+      </section>`
     : "";
   const faqJson = service.faq.map(([question, answer]) => ({
     "@type": "Question",
@@ -725,6 +729,7 @@ function sitemapXml(pages) {
     "/projects/mitsubishi-heat-pump-air-handler-replacement-kirkland",
     "/projects/mitsubishi-ducted-air-conditioning-hrv-installation-bellevue",
     "/projects/mini-split-deep-cleaning-seattle",
+    "/projects/daikin-mini-split-deep-cleaning-seattle",
     "/blog",
     "/instant-estimate/mini-split",
     "/blog/why-heat-pump-frosts",
