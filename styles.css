@@ -3017,6 +3017,7 @@ h3 {
 .mini-split-trust-line { display: flex; max-width: 900px; flex-wrap: wrap; gap: 8px 24px; margin-top: 16px; color: rgba(255,255,255,.88); font-size: 13px; font-weight: 850; }
 .mini-split-trust-line span { display: inline-flex; align-items: center; }
 .mini-split-trust-line span::before { margin-right: 8px; color: var(--sun); content: "✓"; }
+.service-hero-license { position: relative; z-index: 1; width: fit-content; margin: 11px 0 0; color: rgba(255,255,255,.78); font-size: 12px; font-weight: 750; line-height: 1.4; letter-spacing: .01em; }
 .mini-split-information .section-heading { max-width: 940px; }
 .mini-split-information-grid { display: grid; grid-template-columns: minmax(0, .92fr) minmax(420px, 1.08fr); gap: clamp(28px, 5vw, 64px); align-items: start; margin-top: 34px; }
 .mini-split-information-copy { color: var(--muted); font-size: clamp(17px, 1.5vw, 20px); line-height: 1.75; }
@@ -3076,6 +3077,7 @@ h3 {
   .mini-split-conversion-hero .page-actions { display: grid; width: 100%; grid-template-columns: 1fr; }
   .mini-split-conversion-hero .button { width: 100%; }
   .mini-split-trust-line { display: grid; grid-template-columns: 1fr 1fr; gap: 9px 14px; }
+  .service-hero-license { margin-top: 10px; font-size: 11px; }
   .mini-split-price-grid, .mini-split-included-list, .mini-split-zone-grid, .mini-split-why-list, .mini-split-planning-grid { grid-template-columns: 1fr; }
   .mini-split-brand-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
   .mini-split-brand-card { min-height: 110px; padding: 18px; }
