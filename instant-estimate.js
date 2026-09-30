@@ -129,9 +129,6 @@ if (root?.dataset.systemType === "heat_pump") {
   const leadForm = root.querySelector("[data-instant-lead]");
   const phoneField = root.querySelector("[data-instant-phone]");
   const emailField = root.querySelector("[data-instant-email]");
-  const phoneGroup = root.querySelector("[data-phone-group]");
-  const emailGroup = root.querySelector("[data-email-group]");
-  const contactMethodInputs = [...root.querySelectorAll('input[name="preferred_contact_methods"]')];
   const contactMethodError = root.querySelector("[data-contact-method-error]");
   const phoneError = root.querySelector("[data-phone-error]");
   const emailError = root.querySelector("[data-email-error]");
@@ -235,36 +232,16 @@ if (root?.dataset.systemType === "heat_pump") {
     return digits.slice(0, 10);
   };
 
-  const selectedContactMethods = () => contactMethodInputs.filter((input) => input.checked).map((input) => input.value);
+  const selectedContactMethods = () => [phoneDigits() ? "phone" : "", emailField.value.trim() ? "email" : ""].filter(Boolean);
   const emailIsValid = () => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailField.value.trim());
   const setFieldError = (field, errorElement, message) => {
     errorElement.textContent = message;
     field.setAttribute("aria-invalid", message ? "true" : "false");
   };
-  const updateContactFields = () => {
-    const methods = selectedContactMethods();
-    const wantsPhone = methods.includes("phone");
-    const wantsEmail = methods.includes("email");
-    phoneGroup.hidden = !wantsPhone;
-    emailGroup.hidden = !wantsEmail;
-    phoneField.required = wantsPhone;
-    emailField.required = wantsEmail;
-    if (!wantsPhone) {
-      phoneField.setCustomValidity("");
-      setFieldError(phoneField, phoneError, "");
-    }
-    if (!wantsEmail) {
-      emailField.setCustomValidity("");
-      setFieldError(emailField, emailError, "");
-    }
-    contactMethodError.textContent = methods.length ? "" : contactMethodError.textContent;
-  };
-
-  contactMethodInputs.forEach((input) => input.addEventListener("change", updateContactFields));
   phoneField.addEventListener("input", () => {
     const digits = phoneDigits();
     phoneField.value = digits.length <= 3 ? digits : digits.length <= 6 ? `(${digits.slice(0, 3)}) ${digits.slice(3)}` : `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
-    const message = selectedContactMethods().includes("phone") && digits.length !== 10 ? "Enter a valid 10-digit US phone number." : "";
+    const message = digits.length && digits.length !== 10 ? "Enter a valid 10-digit US phone number." : "";
     phoneField.setCustomValidity(message);
     setFieldError(phoneField, phoneError, message);
   });
@@ -291,18 +268,18 @@ if (root?.dataset.systemType === "heat_pump") {
     if (submissionInProgress) return;
     const methods = selectedContactMethods();
     if (!methods.length) {
-      contactMethodError.textContent = "Please select at least one contact method.";
-      contactMethodInputs[0].focus();
-      formStatus.textContent = "Please select how you would like us to contact you.";
+      contactMethodError.textContent = "Enter a valid phone number, email address, or both.";
+      phoneField.focus();
+      formStatus.textContent = "Please enter a phone number, email address, or both.";
       formStatus.className = "form-status is-error";
       return;
     }
     contactMethodError.textContent = "";
     const digits = phoneDigits();
-    const wantsPhone = methods.includes("phone");
-    const wantsEmail = methods.includes("email");
-    const phoneMessage = wantsPhone && digits.length !== 10 ? (digits.length ? "Enter a valid 10-digit US phone number." : "Enter your phone number.") : "";
-    const emailMessage = wantsEmail && !emailField.value.trim() ? "Enter your email address." : wantsEmail && !emailIsValid() ? "Enter a valid email address." : "";
+    const wantsPhone = Boolean(digits);
+    const wantsEmail = Boolean(emailField.value.trim());
+    const phoneMessage = wantsPhone && digits.length !== 10 ? "Enter a valid 10-digit US phone number." : "";
+    const emailMessage = wantsEmail && !emailIsValid() ? "Enter a valid email address." : "";
     phoneField.setCustomValidity(phoneMessage);
     emailField.setCustomValidity(emailMessage);
     setFieldError(phoneField, phoneError, phoneMessage);
@@ -358,6 +335,5 @@ if (root?.dataset.systemType === "heat_pump") {
   });
 
   track("instant_estimate_start", { system_type: "mini_split" });
-  updateContactFields();
   showStep(1, { focus: false });
 }

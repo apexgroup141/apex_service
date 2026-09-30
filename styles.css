@@ -3644,6 +3644,9 @@ h3 {
 .instant-option-grid input:focus-visible + span { outline: 3px solid rgba(47,111,168,.3); outline-offset: 2px; }
 .instant-option-grid input:checked + span { border-color: #2f6fa8; background: #edf6ff; box-shadow: inset 0 0 0 1px #2f6fa8; }
 .instant-step-actions { display: flex; justify-content: space-between; gap: 14px; margin-top: 28px; }
+.instant-step-actions [data-back] { border-color: #647d96; background: #647d96; color: #fff; box-shadow: 0 7px 16px rgba(43, 66, 90, .14); }
+.instant-step-actions [data-back]:hover { border-color: #506981; background: #506981; color: #fff; }
+.instant-step-actions [data-back]:focus-visible { outline: 3px solid rgba(100, 125, 150, .32); outline-offset: 3px; }
 .instant-step-actions [data-continue] { margin-left: auto; }
 .instant-selection-note { min-height: 24px; margin: 16px 0 0; color: #2f6fa8; font-weight: 800; }
 .instant-results { animation: instant-in .25s ease; }
@@ -3657,6 +3660,8 @@ h3 {
 .instant-tier { position: relative; display: flex; flex-direction: column; padding: 26px 22px; border: 2px solid #d9e2eb; border-radius: 12px; background: #fff; transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
 .instant-tier.is-featured { border-color: #2f6fa8; background: #f4f9fe; transform: translateY(-5px); box-shadow: 0 16px 36px rgba(6,31,73,.12); }
 .instant-tier.is-selected { border-color: var(--red); box-shadow: 0 0 0 3px rgba(198,44,51,.15); }
+.instant-tier.is-selected .button { border-color: var(--red); background: var(--red); color: var(--white); }
+.instant-tier.is-selected .button:hover { background: #a91f27; }
 .instant-tier-grid-step { grid-template-columns: repeat(2,minmax(0,1fr)); }
 .instant-tier-grid-step .instant-tier { cursor: pointer; }
 .instant-tier-grid-step .instant-tier > input { position: absolute; opacity: 0; pointer-events: none; }
@@ -3680,11 +3685,16 @@ h3 {
 .instant-contact { scroll-margin-top: 24px; display: grid; grid-template-columns: .8fr 1.2fr; gap: clamp(30px, 6vw, 70px); margin-top: 50px; padding-top: 46px; border-top: 1px solid #dce4ec; }
 .instant-contact h2 { margin: 8px 0 12px; font-size: clamp(30px, 4vw, 44px); line-height: 1.1; }
 .instant-contact > div > p:last-child { color: var(--muted); }
+.instant-contact > div > .instant-rebate-note { margin-top: 14px; font-size: 14px; line-height: 1.5; }
+.instant-privacy-note { margin: 0 0 18px; padding: 11px 13px; border: 1px solid #d6e7dd; border-radius: 7px; background: #f3faf6; color: #30483a; font-size: 14px; font-weight: 750; line-height: 1.45; }
 .instant-contact-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
 .instant-contact label { display: grid; gap: 8px; color: var(--ink); font-weight: 800; }
 .instant-contact input { width: 100%; min-height: 50px; padding: 12px 14px; border: 1px solid #b9c8d6; border-radius: 6px; background: #fff; font: inherit; }
 .instant-contact input:focus { outline: 3px solid rgba(47,111,168,.2); border-color: #2f6fa8; }
 .instant-contact .button { margin-top: 20px; }
+.instant-contact-trust { display: grid; gap: 8px; margin-top: 16px; }
+.instant-contact-trust p { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 8px; align-items: start; margin: 0; color: #35465d; font-size: 14px; font-weight: 750; line-height: 1.4; }
+.instant-contact-trust p span { color: #278254; font-size: 15px; font-weight: 950; line-height: 1.25; }
 .instant-contact-methods { margin: 0 0 24px; padding: 0; border: 0; }
 .instant-contact-methods legend { margin-bottom: 8px; color: var(--ink); font-size: clamp(21px, 2.5vw, 28px); font-weight: 900; line-height: 1.2; }
 .instant-contact-methods > p { margin: 0 0 14px; color: var(--muted); line-height: 1.5; }
@@ -3713,6 +3723,12 @@ h3 {
   .instant-option-grid span { min-height: 66px; padding: 15px 16px; }
   .instant-progress-copy { font-size: 12px; }
   .instant-step-actions .button { min-width: 0; }
+  .instant-contact { gap: 22px; margin-top: 38px; padding-top: 34px; }
+  .instant-contact h2 { font-size: clamp(28px, 8.4vw, 36px); }
+  .instant-contact .button { width: 100%; padding-inline: 12px; font-size: 15px; }
+  .instant-privacy-note { margin-bottom: 16px; padding: 10px 11px; font-size: 13px; }
+  .instant-contact-trust { gap: 7px; }
+  .instant-contact-trust p { font-size: 13px; }
 }
 
 @media (max-width: 700px) {
