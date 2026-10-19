@@ -256,3 +256,6 @@ export default {
 `;
 
 fs.writeFileSync(path.join(dist, "server", "index.js"), worker);
+
+// Cloudflare runs worker.js with ASSETS, not the standalone generated worker.
+fs.writeFileSync(path.join(dist, ".assetsignore"), "/server/\n");
