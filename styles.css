@@ -3154,7 +3154,6 @@ h3 {
 .project-gallery-single { grid-template-columns: minmax(0, 720px); }
 .project-gallery a { display: block; min-height: 360px; overflow: hidden; border-radius: 8px; background: var(--ice); cursor: zoom-in; box-shadow: 0 10px 28px rgba(6,31,73,.08); }
 .project-gallery img { width: 100%; height: 100%; min-height: 360px; max-height: 620px; object-fit: cover; object-position: center; transition: transform 180ms ease, opacity 180ms ease; }
-.project-gallery img.project-gallery-image-top { object-position: center top; }
 .project-gallery a:hover img { opacity: .94; transform: scale(1.012); }
 .project-placeholder { display: grid; grid-template-columns: minmax(280px, .75fr) minmax(0, 1fr); gap: 28px; padding: 22px; border: 1px solid var(--line); border-radius: 8px; background: var(--white); }
 .project-media-placeholder { display: grid; min-height: 300px; place-items: center; border: 1px dashed #8da4bf; border-radius: 6px; background: linear-gradient(135deg, #e9f2fc, #f8fbff); color: var(--muted); font-weight: 900; }
