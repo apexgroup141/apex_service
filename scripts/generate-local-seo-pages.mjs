@@ -730,6 +730,7 @@ function sitemapXml(pages) {
     "/projects/mitsubishi-ducted-air-conditioning-hrv-installation-bellevue",
     "/projects/mini-split-deep-cleaning-seattle",
     "/projects/daikin-mini-split-deep-cleaning-seattle",
+    "/projects/daikin-heat-pump-installation-seattle",
     "/blog",
     "/blog/ac-replacement-when-it-makes-sense",
     "/blog/home-hvac-zoning-guide",
