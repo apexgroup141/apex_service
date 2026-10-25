@@ -3188,7 +3188,7 @@ h3 {
 .project-spotlight-stack .cta-strip h3 { margin: 5px 0 10px; font-size: clamp(24px, 3vw, 36px); }
 
 /* Daikin multi-zone installation project */
-.project-card-media-daikin-install img { object-position: center 72%; }
+.project-card-media-daikin-install img { object-position: center 58%; }
 .daikin-project-hero-media { position: relative; display: block; min-width: 0; min-height: 680px; overflow: hidden; background: #183151; }
 .daikin-project-hero-media .project-featured-image { position: absolute; inset: 0; object-fit: contain; object-position: center; }
 .daikin-install-project a:not(.button):not(.breadcrumb a):not(.daikin-project-hero-media):not(.daikin-compact-photo) { text-underline-offset: 3px; }
@@ -3234,7 +3234,7 @@ h3 {
 }
 
 @media (max-width: 640px) {
-  .project-card-media-daikin-install img { object-position: center 72%; }
+  .project-card-media-daikin-install img { object-position: center 58%; }
   .daikin-project-hero-media { min-height: 440px; }
   .daikin-project-hero-media .project-featured-image { min-height: 440px; max-height: none; object-position: center; }
   .daikin-unit-pair, .daikin-work-list, .daikin-process-grid { grid-template-columns: 1fr; }
