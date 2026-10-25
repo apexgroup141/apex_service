@@ -3187,6 +3187,67 @@ h3 {
 .project-spotlight-stack .section-heading { margin-bottom: 8px; }
 .project-spotlight-stack .cta-strip h3 { margin: 5px 0 10px; font-size: clamp(24px, 3vw, 36px); }
 
+/* Daikin multi-zone installation project */
+.project-card-media-daikin-install img { object-position: center 72%; }
+.daikin-project-hero-media { position: relative; display: block; min-width: 0; min-height: 680px; overflow: hidden; background: #183151; }
+.daikin-project-hero-media .project-featured-image { position: absolute; inset: 0; object-fit: contain; object-position: center; }
+.daikin-install-project a:not(.button):not(.breadcrumb a):not(.daikin-project-hero-media):not(.daikin-compact-photo) { text-underline-offset: 3px; }
+.daikin-unit-pair a:hover img, .daikin-process-grid a:hover img { opacity: .95; transform: scale(1.01); }
+.project-solution { display: grid; grid-template-columns: minmax(0, .95fr) minmax(440px, 1.05fr); gap: clamp(34px, 6vw, 82px); align-items: center; }
+.project-solution-copy p:not(.eyebrow), .daikin-installation-intro p { color: var(--muted); line-height: 1.72; }
+.daikin-unit-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.daikin-unit-pair figure, .daikin-process-grid figure { overflow: hidden; margin: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); box-shadow: 0 13px 32px rgba(6,31,73,.08); }
+.daikin-unit-pair figcaption, .daikin-process-grid figcaption { padding: 13px 16px; color: var(--ink); font-size: 13px; font-weight: 900; letter-spacing: .03em; text-transform: uppercase; }
+.daikin-unit-pair a, .daikin-process-grid a { display: block; overflow: hidden; background: var(--ice); }
+.daikin-unit-pair img { display: block; width: 100%; height: clamp(330px, 35vw, 500px); object-fit: cover; transition: transform 180ms ease, opacity 180ms ease; }
+.daikin-unit-pair figure:first-child img { object-position: center 31%; }
+.daikin-unit-pair figure:last-child img { object-position: center 25%; }
+.daikin-work-completed { display: grid; grid-template-columns: minmax(280px, .7fr) minmax(0, 1.3fr); gap: clamp(34px, 7vw, 90px); align-items: start; }
+.daikin-work-completed .section-heading { margin: 0; }
+.daikin-work-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 28px; margin: 0; }
+.daikin-work-list li { color: var(--muted); line-height: 1.6; }
+.daikin-installation-intro { padding: 0; }
+.daikin-process-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-top: clamp(32px, 5vw, 54px); }
+.daikin-process-grid .daikin-process-wide { grid-column: span 2; }
+.daikin-process-grid .daikin-process-testing { grid-column: span 2; }
+.daikin-process-grid img { display: block; width: 100%; height: 340px; object-fit: cover; transition: transform 180ms ease, opacity 180ms ease; }
+.daikin-process-grid .daikin-process-wide:nth-child(1) img { object-position: center 43%; }
+.daikin-process-grid .daikin-process-wide:nth-child(2) img { object-position: center 62%; }
+.daikin-process-grid figure:nth-child(3) img { object-position: center 52%; }
+.daikin-process-grid figure:nth-child(4) img { object-position: center 61%; }
+.daikin-process-grid .daikin-process-testing img { object-position: center 48%; }
+.daikin-photo-note { margin: 18px 0 0; color: var(--muted); font-size: 14px; }
+.daikin-project-cta .cta-strip { align-items: center; }
+.daikin-project-cta .cta-strip > div:first-child { max-width: 820px; }
+.daikin-project-cta .cta-strip p:not(.eyebrow) { color: var(--muted); }
+.daikin-project-cta .cta-strip p a { color: var(--blue); font-weight: 850; }
+
+@media (max-width: 1000px) {
+  .project-solution, .daikin-work-completed { grid-template-columns: 1fr; }
+  .daikin-process-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .daikin-process-grid .daikin-process-wide, .daikin-process-grid .daikin-process-testing { grid-column: auto; }
+}
+
+@media (max-width: 900px) {
+  .daikin-project-hero-media { min-height: 520px; }
+  .daikin-project-hero-media .project-featured-image { min-height: 520px; max-height: none; object-position: center; }
+}
+
+@media (max-width: 640px) {
+  .project-card-media-daikin-install img { object-position: center 72%; }
+  .daikin-project-hero-media { min-height: 440px; }
+  .daikin-project-hero-media .project-featured-image { min-height: 440px; max-height: none; object-position: center; }
+  .daikin-unit-pair, .daikin-work-list, .daikin-process-grid { grid-template-columns: 1fr; }
+  .daikin-unit-pair img { height: 340px; }
+  .daikin-unit-pair figure:first-child img { object-position: center 28%; }
+  .daikin-unit-pair figure:last-child img { object-position: center 22%; }
+  .daikin-process-grid img { height: 320px; }
+  .daikin-process-grid .daikin-process-wide:nth-child(1) img { object-position: center 42%; }
+  .daikin-process-grid .daikin-process-wide:nth-child(2) img { object-position: center 60%; }
+  .daikin-project-cta .page-actions { display: grid; width: 100%; }
+  .daikin-project-cta .page-actions .button { width: 100%; }
+}
+
 .blog-layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: clamp(28px, 5vw, 64px); }
 .blog-categories { padding: 24px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); }
 .blog-categories ul { display: grid; gap: 8px; padding: 0; list-style: none; }
