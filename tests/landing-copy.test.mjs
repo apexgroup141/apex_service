@@ -54,7 +54,7 @@ test("approved starting prices and the service area appear in each landing page 
   for (const file of ["services/heat-pumps.html", "services/mini-splits.html", "services/furnaces.html", "services/air-conditioning.html"]) {
     assert.ok(heroOf(file).includes(area), file);
   }
-  assert.match(heroOf("services/mini-splits.html"), /<h1>Ductless Mini-Split Installation<\/h1>/);
+  assert.match(heroOf("services/mini-splits.html"), /<h1[^>]*>Ductless Mini-Split Installation<\/h1>/);
   assert.match(heroOf("services/mini-splits.html"), /Get Free Estimate/);
   assert.match(heroOf("services/mini-splits.html"), /See My Options &amp; Pricing/);
 });
