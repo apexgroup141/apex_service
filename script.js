@@ -155,6 +155,63 @@ const normalizedSelectedService = estimateServiceAliases[selectedService] || sel
 const googleAdsLeadDestination = "AW-18358155203/eht5CKv_lvgcEMPv7LFE";
 const googleAdsLeadPendingKey = "apex_google_ads_lead_pending";
 
+// Ad-click attribution for lead records. The latest tagged visit wins and lasts 30 days;
+// arriving from another site without tags (organic search, a referral) ends it, so a new
+// lead is never credited to an old ad click.
+const attributionKey = "apex_lead_attribution";
+const attributionMaxAgeMs = 30 * 24 * 60 * 60 * 1000;
+const attributionParams = { gclid: "gclid", gbraid: "gbraid", wbraid: "wbraid", utm_source: "utm_source", utm_medium: "utm_medium", utm_campaign: "utm_campaign", lpv: "lp_variant" };
+
+const pageAttribution = (() => {
+  const params = new URLSearchParams(window.location.search);
+  const found = {};
+  Object.entries(attributionParams).forEach(([param, field]) => {
+    const value = params.get(param);
+    if (value) found[field] = value.slice(0, 256);
+  });
+  return Object.keys(found).length ? { ...found, attributed_at: new Date().toISOString() } : null;
+})();
+
+try {
+  if (pageAttribution) {
+    window.localStorage.setItem(attributionKey, JSON.stringify(pageAttribution));
+  } else if (document.referrer) {
+    const referrerHost = new URL(document.referrer).hostname.replace(/^www\./, "");
+    if (referrerHost !== window.location.hostname.replace(/^www\./, "")) {
+      window.localStorage.removeItem(attributionKey);
+    }
+  }
+} catch {
+  // Attribution is optional; forms keep working without storage.
+}
+
+const currentAttribution = () => {
+  try {
+    const stored = JSON.parse(window.localStorage.getItem(attributionKey) || "null");
+    if (stored && Date.now() - Date.parse(stored.attributed_at) <= attributionMaxAgeMs) return stored;
+  } catch {
+    // Fall back to the tags on this page.
+  }
+  return pageAttribution;
+};
+
+const newSubmissionId = () => {
+  if (window.crypto?.randomUUID) return window.crypto.randomUUID();
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}-${Math.random().toString(36).slice(2, 12)}`;
+};
+
+// Shared by every lead form: one submission id per filled form (so a resubmit is not a
+// second lead) and the current attribution.
+window.apexLeadContext = {
+  decorate(payload, form) {
+    if (form && !form.dataset.submissionId) form.dataset.submissionId = newSubmissionId();
+    payload.submission_id = form?.dataset.submissionId || newSubmissionId();
+    const attribution = currentAttribution();
+    if (attribution) payload.attribution = attribution;
+    return payload;
+  }
+};
+
 const trackEvent = (eventName, eventData = {}, callback = null, callbackTimeout = 1300) => {
   let callbackCalled = false;
   const runCallback = () => {
@@ -186,8 +243,13 @@ const trackEvent = (eventName, eventData = {}, callback = null, callbackTimeout 
 
 if (window.location.pathname === "/thank-you" || window.location.pathname === "/thank-you.html") {
   try {
-    if (window.sessionStorage.getItem(googleAdsLeadPendingKey) === "1" && typeof window.gtag === "function") {
-      window.gtag("event", "conversion", { send_to: googleAdsLeadDestination });
+    // The marker holds the submission id, sent as transaction_id so Google Ads
+    // counts one conversion per lead even if the tag fires twice.
+    const pendingLead = window.sessionStorage.getItem(googleAdsLeadPendingKey);
+    if (pendingLead && typeof window.gtag === "function") {
+      const conversion = { send_to: googleAdsLeadDestination };
+      if (pendingLead !== "1") conversion.transaction_id = pendingLead;
+      window.gtag("event", "conversion", conversion);
       window.sessionStorage.removeItem(googleAdsLeadPendingKey);
     }
   } catch {
@@ -311,6 +373,7 @@ if (leadForm) {
       payload.message = payload.notes;
     }
     payload.phone = `+1${phoneDigits}`;
+    window.apexLeadContext.decorate(payload, leadForm);
 
     try {
       const response = await fetch(endpoint, {
@@ -334,7 +397,7 @@ if (leadForm) {
         }
       );
       try {
-        window.sessionStorage.setItem(googleAdsLeadPendingKey, "1");
+        window.sessionStorage.setItem(googleAdsLeadPendingKey, payload.submission_id || "1");
       } catch {
         // Continue to the confirmation page if session storage is unavailable.
       }

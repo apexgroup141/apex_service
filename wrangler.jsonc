@@ -9,7 +9,7 @@
     "run_worker_first": ["/", "/about", "/reviews", "/services/mini-splits", "/services/heat-pumps", "/services/furnaces", "/services/air-conditioning", "/*.html"]
   },
   "triggers": {
-    "crons": ["17 */3 * * *"]
+    "crons": ["17 */3 * * *", "*/10 * * * *"]
   },
   "vars": {
     "GOOGLE_BUSINESS_ACCOUNT_ID": "116696538401694307878",

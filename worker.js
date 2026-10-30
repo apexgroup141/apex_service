@@ -3,6 +3,18 @@ import {
   injectGoogleReviewsIntoHtml
 } from "./google-business-reviews.js";
 import { MINI_SPLIT_PRICE_RANGES } from "./mini-split-pricing.js";
+import {
+  cleanSubmissionId,
+  describeAttribution,
+  findLeadBySubmissionId,
+  insertLead,
+  loadNotificationStats,
+  recordNotificationResult,
+  requeueNotification,
+  retryPendingNotifications,
+  sanitizeAttribution,
+  sendTelegramMessage
+} from "./lead-delivery.js";
 
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -82,6 +94,11 @@ const estimateLabels = {
 
 const labelEstimateValue = (value) => estimateLabels[value] || clean(value, 120) || "Not provided";
 
+const sourceLine = (lead) => {
+  const source = describeAttribution(lead.attribution);
+  return source ? [`<b>Source:</b> ${escapeHtml(source)}`] : [];
+};
+
 export const formatInstantEstimateMessage = (lead, request) => {
   const estimate = lead.estimate;
   const isHeatPump = estimate.systemType === "heat_pump";
@@ -123,6 +140,7 @@ export const formatInstantEstimateMessage = (lead, request) => {
     `<b>ZIP Code:</b> ${escapeHtml(lead.area.replace(/^WA\s+/i, ""))}`,
     "",
     `<b>Page:</b> ${escapeHtml(request.headers.get("referer") || "Direct visit")}`,
+    ...sourceLine(lead),
     `<b>Submitted:</b> ${escapeHtml(submittedAt)}`
   ].filter((line) => line !== "").join("\n");
 };
@@ -149,29 +167,9 @@ const formatLeadMessage = (lead, request) => {
     `<b>Message:</b> ${escapeHtml(lead.message || "No message")}`,
     "",
     `<b>Page:</b> ${escapeHtml(page)}`,
+    ...sourceLine(lead),
     `<b>Submitted:</b> ${escapeHtml(submittedAt)}`
   ].join("\n");
-};
-
-const sendTelegramMessage = async (env, text) => {
-  if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) {
-    throw new Error("Telegram environment variables are missing");
-  }
-
-  const response = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      chat_id: env.TELEGRAM_CHAT_ID,
-      text,
-      parse_mode: "HTML",
-      disable_web_page_preview: true
-    })
-  });
-
-  if (!response.ok) {
-    throw new Error(`Telegram request failed with ${response.status}`);
-  }
 };
 
 const getRequestMeta = (request) => {
@@ -188,32 +186,45 @@ const getRequestMeta = (request) => {
   };
 };
 
-const logLead = async (env, lead, request) => {
-  if (!env.DB) return;
+const saveLead = async (env, lead, request, notificationText) => {
+  if (!env.DB) return null;
 
   const meta = getRequestMeta(request);
 
   try {
-    await env.DB.prepare(
-      `INSERT INTO leads (name, email, phone, area, service, message, page, user_agent, ip, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    )
-      .bind(
-        lead.name,
-        lead.email,
-        lead.phone,
-        lead.area,
-        lead.service,
-        lead.message,
-        lead.page || meta.page,
-        meta.userAgent,
-        meta.ip,
-        meta.createdAt
-      )
-      .run();
+    return await insertLead(env, {
+      name: lead.name,
+      email: lead.email,
+      phone: lead.phone,
+      area: lead.area,
+      service: lead.service,
+      message: lead.message,
+      page: lead.page || meta.page,
+      userAgent: meta.userAgent,
+      ip: meta.ip,
+      createdAt: meta.createdAt,
+      submissionId: lead.submissionId,
+      attribution: lead.attribution
+    }, notificationText);
   } catch (error) {
     console.error("Could not log lead", error);
+    return null;
   }
+};
+
+// Two quick attempts inside the request; anything still failing is retried by the cron trigger.
+const deliverLeadNotification = async (env, text) => {
+  let lastError = null;
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    try {
+      await sendTelegramMessage(env, text);
+      return { ok: true, attempts: attempt };
+    } catch (error) {
+      lastError = error;
+      if (attempt === 1) await new Promise((resolve) => setTimeout(resolve, 400));
+    }
+  }
+  return { ok: false, attempts: 2, error: lastError };
 };
 
 const logCallClick = async (env, event, request) => {
@@ -325,13 +336,40 @@ const handleLead = async (request, env) => {
     source,
     estimate,
     preferredContactMethods,
-    page: clean(request.headers.get("referer") || "", 500)
+    page: clean(request.headers.get("referer") || "", 500),
+    submissionId: cleanSubmissionId(lead.submission_id),
+    attribution: sanitizeAttribution(lead.attribution)
   };
+  const success = payload.submissionId ? { ok: true, ref: payload.submissionId } : { ok: true };
 
-  await logLead(env, payload, request);
-  await sendTelegramMessage(env, formatLeadMessage(payload, request));
+  // A resubmitted form (double click, network retry) must not create a second lead or notification.
+  try {
+    if (await findLeadBySubmissionId(env, payload.submissionId)) return json(success);
+  } catch (error) {
+    console.error("Could not check for a duplicate lead", error);
+  }
 
-  return json({ ok: true });
+  const notificationText = formatLeadMessage(payload, request);
+  const stored = await saveLead(env, payload, request, notificationText);
+  if (stored?.duplicate) return json(success);
+
+  const delivery = await deliverLeadNotification(env, notificationText);
+  if (stored?.tracked) {
+    await recordNotificationResult(env, stored.id, delivery);
+  }
+
+  if (!delivery.ok) {
+    if (!stored) {
+      console.error("Lead was neither saved nor delivered", delivery.error);
+      return json({ error: "Could not send request" }, 500);
+    }
+    console.error(
+      stored.tracked ? "Lead saved; Telegram notification queued for retry" : "Lead saved; Telegram notification failed and cannot be retried until migration 0005 is applied",
+      String(delivery.error?.message || delivery.error)
+    );
+  }
+
+  return json(success);
 };
 
 const handleCallClick = async (request, env) => {
@@ -356,6 +394,9 @@ const isAuthorizedAdmin = (request, env) => {
   const authorization = request.headers.get("Authorization") || "";
   return Boolean(token) && authorization === `Bearer ${token}`;
 };
+
+// Must match the retry entry in wrangler.jsonc "triggers.crons".
+const LEAD_NOTIFICATION_RETRY_CRON = "*/10 * * * *";
 
 const GOOGLE_REVIEWS_CACHE_KEY = "apex-google-reviews";
 const GOOGLE_REVIEWS_CACHE_TTL_MS = 3 * 60 * 60 * 1000;
@@ -513,9 +554,12 @@ const loadStructuredLeads = async (env, { q, service, from, to, limit, offset })
 
   const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
   const emailSelect = hasEmail ? "email" : "'' AS email";
+  const deliverySelect = (await tableHasColumn(env, "leads", "notify_status"))
+    ? ", notify_status, notify_attempts, notify_last_error, gclid, gbraid, wbraid, utm_source, utm_medium, utm_campaign, lp_variant"
+    : "";
   const totalRow = await first(env.DB.prepare(`SELECT COUNT(*) AS total FROM leads ${whereSql}`), values);
   const rows = await env.DB.prepare(
-    `SELECT id, 'lead' AS source, name, ${emailSelect}, phone, area, service, message, page, user_agent, ip, created_at
+    `SELECT id, 'lead' AS source, name, ${emailSelect}, phone, area, service, message, page, user_agent, ip, created_at${deliverySelect}
      FROM leads
      ${whereSql}
      ORDER BY datetime(created_at) DESC
@@ -768,15 +812,39 @@ const handleAdminLeads = async (request, env) => {
     console.error("Could not load call click count", error);
   }
 
+  let notifications = null;
+  try {
+    notifications = await loadNotificationStats(env);
+  } catch (error) {
+    console.error("Could not load notification stats", error);
+  }
+
   return json({
     leads,
     total: structured.total + legacy.total,
     limit,
     offset,
     stats: {
-      callClicks
+      callClicks,
+      notifications
     }
   });
+};
+
+const handleAdminNotificationRetry = async (request, env) => {
+  if (!isAuthorizedAdmin(request, env)) return json({ error: "Unauthorized" }, 401);
+  if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
+  if (!env.DB) return json({ error: "Database is not configured" }, 503);
+
+  const body = await readJsonBody(request);
+  const id = Number(body?.id);
+  if (!Number.isInteger(id) || id <= 0) return json({ error: "Invalid lead id" }, 400);
+  if (!(await requeueNotification(env, id))) {
+    return json({ error: "This lead has no undelivered notification." }, 409);
+  }
+
+  const result = await retryPendingNotifications(env);
+  return json({ ok: true, ...result });
 };
 
 export default {
@@ -862,6 +930,15 @@ export default {
       }
     }
 
+    if (url.pathname === "/api/admin/notifications/retry") {
+      try {
+        return await handleAdminNotificationRetry(request, env);
+      } catch (error) {
+        console.error(error);
+        return json({ error: "Could not retry the notification" }, 500);
+      }
+    }
+
     if (url.pathname === "/api/admin/google-reviews/sync") {
       try {
         return await handleGoogleReviewsSync(request, env);
@@ -912,6 +989,15 @@ export default {
   },
 
   async scheduled(controller, env, ctx) {
+    if (controller.cron === LEAD_NOTIFICATION_RETRY_CRON) {
+      ctx.waitUntil(
+        retryPendingNotifications(env).catch((error) => {
+          console.error("Scheduled lead notification retry failed", error);
+        })
+      );
+      return;
+    }
+
     ctx.waitUntil(
       syncGoogleBusinessReviews(env).catch((error) => {
         console.error("Scheduled Google reviews sync failed; serving the last successful cache", error);
