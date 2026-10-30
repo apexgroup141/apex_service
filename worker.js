@@ -981,7 +981,7 @@ export default {
       return renderReviewsPage(request, env, { limit: 3 });
     }
 
-    if (url.pathname === "/services/furnaces") {
+    if (url.pathname === "/services/furnaces" || url.pathname === "/services/air-conditioning") {
       return renderReviewsPage(request, env);
     }
 

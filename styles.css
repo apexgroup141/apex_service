@@ -4108,3 +4108,14 @@ h3 {
   .mobile-cta-bar.is-visible { transform: none; visibility: visible; transition: transform .2s ease; }
   .nav-lock .mobile-cta-bar.is-visible { transform: translateY(110%); visibility: hidden; }
 }
+
+/* Landing page first screen: service area line, phone-only call button, estimate response note */
+.service-area-line { position: relative; z-index: 1; max-width: 760px; margin: 14px 0 0; color: rgba(255,255,255,.9); font-size: 14px; font-weight: 700; line-height: 1.45; }
+.mini-split-conversion-hero .heat-pump-hero-estimate { border-color: rgba(255,255,255,.42); background: #bc1524; color: #fff; box-shadow: 0 10px 24px rgba(188,21,36,.24); }
+.mini-split-conversion-hero .heat-pump-hero-estimate:hover { border-color: rgba(255,255,255,.68); background: #a9111f; color: #fff; }
+.hero-call-mobile { display: none; }
+.instant-response-note { margin: 4px 0 12px; color: #30483a; font-size: 14px; font-weight: 750; }
+@media (max-width: 640px) {
+  .page-actions .hero-call-mobile { display: inline-flex; }
+  .service-area-line { font-size: 13px; }
+}
