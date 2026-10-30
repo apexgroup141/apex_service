@@ -12,6 +12,7 @@ const tableBody = document.querySelector("[data-leads-body]");
 const totalLeads = document.querySelector("[data-total-leads]");
 const totalCalls = document.querySelector("[data-total-calls]");
 const shownLeads = document.querySelector("[data-shown-leads]");
+const undeliveredLeads = document.querySelector("[data-undelivered]");
 const addClientButton = document.querySelector("[data-add-client]");
 const editor = document.querySelector("[data-admin-editor]");
 const cancelEditorButton = document.querySelector("[data-cancel-editor]");
@@ -82,10 +83,22 @@ const hideEditor = () => {
   editor.reset();
 };
 
+const deliveryBadge = (lead) => {
+  if (lead.notify_status === "failed") return `<br><span class="admin-badge is-error">Telegram failed</span> <button type="button" data-retry-notification>Resend</button>`;
+  if (lead.notify_status === "pending" || lead.notify_status === "sending") return `<br><span class="admin-badge">Telegram retrying (${escapeHtml(lead.notify_attempts)})</span> <button type="button" data-retry-notification>Resend now</button>`;
+  return "";
+};
+
+const sourceBadge = (lead) => {
+  if (lead.gclid || lead.gbraid || lead.wbraid) return `<br><span class="admin-badge">Google Ads${lead.lp_variant ? ` · ${escapeHtml(lead.lp_variant)}` : ""}</span>`;
+  if (lead.utm_source) return `<br><span class="admin-badge">${escapeHtml([lead.utm_source, lead.utm_medium].filter(Boolean).join(" / "))}</span>`;
+  return "";
+};
+
 const leadRow = (lead) => `
   <tr data-id="${escapeHtml(lead.id)}" data-source="${escapeHtml(lead.source || "lead")}">
     <td>${escapeHtml(formatDate(lead.created_at))}</td>
-    <td><strong>${escapeHtml(lead.name)}</strong></td>
+    <td><strong>${escapeHtml(lead.name)}</strong>${sourceBadge(lead)}${deliveryBadge(lead)}</td>
     <td><a href="tel:${escapeHtml(lead.phone)}">${escapeHtml(lead.phone)}</a></td>
     <td><a href="mailto:${escapeHtml(lead.email)}">${escapeHtml(lead.email)}</a></td>
     <td>${escapeHtml(lead.area)}</td>
@@ -105,6 +118,9 @@ const renderLeads = (data) => {
   totalLeads.textContent = String(data.total || 0);
   totalCalls.textContent = String(data.stats?.callClicks || 0);
   shownLeads.textContent = String(leads.length);
+  const notifications = data.stats?.notifications;
+  undeliveredLeads.textContent = notifications ? String((notifications.pending || 0) + (notifications.failed || 0)) : "–";
+  undeliveredLeads.closest("[data-undelivered-card]")?.classList.toggle("is-alert", Boolean(notifications?.failed));
 
   tableBody.innerHTML = leads.length
     ? leads.map(leadRow).join("")
@@ -281,6 +297,23 @@ tableBody.addEventListener("click", async (event) => {
 
   if (event.target.closest("[data-edit-client]")) {
     showEditor(lead);
+    return;
+  }
+
+  if (event.target.closest("[data-retry-notification]")) {
+    try {
+      const response = await fetch("/api/admin/notifications/retry", {
+        method: "POST",
+        headers: adminJsonHeaders(),
+        body: JSON.stringify({ id: Number(lead.id) })
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || "Could not resend the notification.");
+      setStatus(status, result.sent ? "Notification sent to Telegram." : "Telegram is still unavailable; the notification stays queued.", result.sent ? "success" : "error");
+      await loadLeads();
+    } catch (error) {
+      setStatus(status, error.message, "error");
+    }
     return;
   }
 

@@ -14,7 +14,7 @@ test("the confirmation page owns the only Google Ads lead conversion", () => {
 
   const thankYouCheck = classicSource.indexOf('window.location.pathname === "/thank-you"');
   const markerCheck = classicSource.indexOf("sessionStorage.getItem(googleAdsLeadPendingKey)", thankYouCheck);
-  const conversion = classicSource.indexOf('gtag("event", "conversion", { send_to: googleAdsLeadDestination })', markerCheck);
+  const conversion = classicSource.indexOf('window.gtag("event", "conversion", conversion)', markerCheck);
   const markerClear = classicSource.indexOf("sessionStorage.removeItem(googleAdsLeadPendingKey)", conversion);
   assert.ok(thankYouCheck >= 0 && markerCheck > thankYouCheck && conversion > markerCheck && markerClear > conversion);
 });
@@ -23,7 +23,7 @@ test("the shared lead form sets the marker and redirects only after confirmed su
   const successCheck = classicSource.indexOf('if (!response.ok || result?.ok !== true)');
   const successLatch = classicSource.indexOf("leadEventSent = true;", successCheck);
   const generateLead = classicSource.indexOf('"generate_lead"', successLatch);
-  const markerSet = classicSource.indexOf('sessionStorage.setItem(googleAdsLeadPendingKey, "1")', generateLead);
+  const markerSet = classicSource.indexOf('sessionStorage.setItem(googleAdsLeadPendingKey, payload.submission_id || "1")', generateLead);
   const redirect = classicSource.indexOf('window.location.href = "/thank-you"', markerSet);
   const catchBlock = classicSource.indexOf("    } catch {", redirect);
   assert.ok(successCheck >= 0 && successLatch > successCheck && generateLead > successLatch && markerSet > generateLead && redirect > markerSet && catchBlock > redirect);
@@ -34,11 +34,11 @@ test("the shared lead form sets the marker and redirects only after confirmed su
 
 test("both instant estimates set the marker and redirect after confirmed success and GA4", () => {
   assert.equal((quizSource.match(/if \(!response\.ok \|\| (?:data|result)\?\.ok !== true\) throw new Error\("Request failed"\);/g) || []).length, 2);
-  assert.equal((quizSource.match(/sessionStorage\.setItem\(GOOGLE_ADS_LEAD_PENDING_KEY, "1"\)/g) || []).length, 2);
+  assert.equal((quizSource.match(/sessionStorage\.setItem\(GOOGLE_ADS_LEAD_PENDING_KEY, payload\.submission_id \|\| "1"\)/g) || []).length, 2);
   assert.equal((quizSource.match(/window\.location\.href = "\/thank-you"/g) || []).length, 2);
   assert.equal((quizSource.match(/track\("generate_lead"/g) || []).length, 2);
 
-  for (const markerSet of quizSource.matchAll(/sessionStorage\.setItem\(GOOGLE_ADS_LEAD_PENDING_KEY, "1"\)/g)) {
+  for (const markerSet of quizSource.matchAll(/sessionStorage\.setItem\(GOOGLE_ADS_LEAD_PENDING_KEY, payload\.submission_id \|\| "1"\)/g)) {
     const successCheck = quizSource.lastIndexOf("ok !== true", markerSet.index);
     const generateLead = quizSource.lastIndexOf('track("generate_lead"', markerSet.index);
     const redirect = quizSource.indexOf('window.location.href = "/thank-you"', markerSet.index);
@@ -59,6 +59,12 @@ test("failed and validation paths cannot set a marker or fire an Ads conversion"
 test("direct visits and refreshes do not convert without a pending session marker", () => {
   assert.match(classicSource, new RegExp(`const googleAdsLeadPendingKey = "${marker}"`));
   assert.match(quizSource, new RegExp(`const GOOGLE_ADS_LEAD_PENDING_KEY = "${marker}"`));
-  assert.match(classicSource, /sessionStorage\.getItem\(googleAdsLeadPendingKey\) === "1"/);
+  assert.match(classicSource, /const pendingLead = window\.sessionStorage\.getItem\(googleAdsLeadPendingKey\);\s+if \(pendingLead && typeof window\.gtag === "function"\)/);
   assert.match(classicSource, /sessionStorage\.removeItem\(googleAdsLeadPendingKey\)/);
+});
+
+test("the conversion carries the submission id as transaction_id so Google Ads deduplicates it", () => {
+  assert.match(classicSource, /if \(pendingLead !== "1"\) conversion\.transaction_id = pendingLead;/);
+  assert.match(classicSource, /window\.apexLeadContext\.decorate\(payload, leadForm\);/);
+  assert.equal((quizSource.match(/window\.apexLeadContext\?\.decorate\(payload, leadForm\);/g) || []).length, 2);
 });
