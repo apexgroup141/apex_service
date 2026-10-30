@@ -23,7 +23,9 @@ test("no page still offers the old 2-year warranty or a paid labor extension", (
     assert.doesNotMatch(text, /2[- ]year workmanship/i, file);
     assert.doesNotMatch(text, /extended labor (coverage|warranty)/i, file);
     assert.doesNotMatch(text, /labor warranty available/i, file);
-    assert.doesNotMatch(text, /warranties up to twelve years/i, file);
+    for (const match of text.matchAll(/up to (12|twelve)[- ]years?[^.]*/gi)) {
+      assert.match(match[0], /depending on (the equipment )?brand/i, `${file}: ${match[0]}`);
+    }
   }
 });
 
@@ -56,7 +58,7 @@ test("ad landing heroes lead with the included 10-year labor warranty and explai
     assert.match(hero, /<span>10-Year Labor Warranty Included<\/span>/, file);
     const warranty = page.match(/<section[^>]*id="warranty"[\s\S]*?<\/section>/)?.[0] || "";
     assert.match(warranty, /10-year labor warranty<\/strong> included with every installation and system replacement/, file);
-    assert.match(warranty, /Manufacturer parts warranties vary by brand and model/, file);
+    assert.match(warranty, /Manufacturer parts warranty up to 12 years<\/strong>, depending on the equipment brand/, file);
   }
 });
 
