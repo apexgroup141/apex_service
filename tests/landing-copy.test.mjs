@@ -59,6 +59,19 @@ test("approved starting prices and the service area appear in each landing page 
   assert.match(heroOf("services/mini-splits.html"), /See My Options &amp; Pricing/);
 });
 
+test("ad landing heroes lead with the available 10-year labor warranty and explain it below", () => {
+  for (const file of ["services/heat-pumps.html", "services/mini-splits.html", "services/furnaces.html", "services/air-conditioning.html"]) {
+    const page = read(file);
+    const hero = page.match(/<section class="[^"]*hero[^"]*"[\s\S]*?<\/section>/)?.[0] || "";
+    assert.match(hero, /<span>10-Year Labor Warranty Available<\/span>/, file);
+    assert.doesNotMatch(hero, /2-Year Workmanship Warranty/, `${file}: the hero should not lead with the standard warranty`);
+    const warranty = page.match(/<section[^>]*id="warranty"[\s\S]*?<\/section>/)?.[0] || "";
+    assert.match(warranty, /Standard 2-year workmanship warranty<\/strong> included with every installation/, file);
+    assert.match(warranty, /Extended labor warranty up to 10 years<\/strong> available for an additional cost/, file);
+    assert.match(warranty, /Manufacturer parts warranties vary by brand and model/, file);
+  }
+});
+
 test("both instant estimates show the price first and ask for phone or email afterwards", () => {
   for (const file of ["instant-estimate/heat-pump.html", "instant-estimate/mini-split.html"]) {
     const page = read(file);
