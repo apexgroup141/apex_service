@@ -3,6 +3,7 @@ import {
   injectGoogleReviewsIntoHtml
 } from "./google-business-reviews.js";
 import { MINI_SPLIT_PRICE_RANGES } from "./mini-split-pricing.js";
+import { applyLandingVariant, resolveLandingVariant } from "./landing-variants.js";
 import {
   cleanSubmissionId,
   describeAttribution,
@@ -480,10 +481,12 @@ const renderReviewsPage = async (request, env, options = {}) => {
   if (!assetResponse.ok) return assetResponse;
 
   const cache = await loadGoogleReviewsCache(env);
-  const html = injectGoogleReviewsIntoHtml(await assetResponse.text(), cache, options);
+  const variant = resolveLandingVariant(new URL(request.url));
+  const html = applyLandingVariant(injectGoogleReviewsIntoHtml(await assetResponse.text(), cache, options), variant);
   const headers = new Headers(assetResponse.headers);
   headers.set("Content-Type", "text/html; charset=utf-8");
-  headers.set("Cache-Control", "public, max-age=300, stale-while-revalidate=3600");
+  // A personalized page is never stored in shared caches; the canonical URL stays the plain page.
+  headers.set("Cache-Control", variant ? "private, max-age=300" : "public, max-age=300, stale-while-revalidate=3600");
   headers.delete("Content-Length");
   headers.delete("Content-Encoding");
   headers.delete("ETag");
