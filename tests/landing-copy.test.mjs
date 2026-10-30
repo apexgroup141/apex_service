@@ -17,22 +17,14 @@ const sitePages = [
   ...["services/", "instant-estimate/", "landing/", "areas/", "projects/"].flatMap((dir) => (fs.existsSync(new URL(dir, root)) ? htmlFiles(dir) : []))
 ];
 
-test("no page presents the 10-year labor warranty as included", () => {
+test("no page still offers the old 2-year warranty or a paid labor extension", () => {
   for (const file of sitePages) {
     const text = read(file).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
-    for (const match of text.matchAll(/10[- ]year labor warranty(?! available)/gi)) {
-      assert.fail(`${file}: "${text.slice(Math.max(0, match.index - 60), match.index + 60)}"`);
-    }
-    assert.doesNotMatch(text, /include[sd]? (a |long-term )?10[- ]year/i, file);
-    assert.doesNotMatch(text, /warranties up to twelve years/i, file);
-  }
-});
-
-test("pages that mention extended labor coverage say it costs extra", () => {
-  for (const file of sitePages) {
-    const text = read(file).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
-    for (const match of text.matchAll(/extended labor coverage[^.]*/gi)) {
-      assert.match(match[0], /additional cost|available/i, `${file}: ${match[0]}`);
+    assert.doesNotMatch(text, /2[- ]year workmanship/i, file);
+    assert.doesNotMatch(text, /extended labor (coverage|warranty)/i, file);
+    assert.doesNotMatch(text, /labor warranty available/i, file);
+    for (const match of text.matchAll(/up to (12|twelve)[- ]years?[^.]*/gi)) {
+      assert.match(match[0], /depending on (the equipment )?brand/i, `${file}: ${match[0]}`);
     }
   }
 });
@@ -59,16 +51,14 @@ test("approved starting prices and the service area appear in each landing page 
   assert.match(heroOf("services/mini-splits.html"), /See My Options &amp; Pricing/);
 });
 
-test("ad landing heroes lead with the available 10-year labor warranty and explain it below", () => {
+test("ad landing heroes lead with the included 10-year labor warranty and explain it below", () => {
   for (const file of ["services/heat-pumps.html", "services/mini-splits.html", "services/furnaces.html", "services/air-conditioning.html"]) {
     const page = read(file);
     const hero = page.match(/<section class="[^"]*hero[^"]*"[\s\S]*?<\/section>/)?.[0] || "";
-    assert.match(hero, /<span>10-Year Labor Warranty Available<\/span>/, file);
-    assert.doesNotMatch(hero, /2-Year Workmanship Warranty/, `${file}: the hero should not lead with the standard warranty`);
+    assert.match(hero, /<span>10-Year Labor Warranty Included<\/span>/, file);
     const warranty = page.match(/<section[^>]*id="warranty"[\s\S]*?<\/section>/)?.[0] || "";
-    assert.match(warranty, /Standard 2-year workmanship warranty<\/strong> included with every installation/, file);
-    assert.match(warranty, /Extended labor warranty up to 10 years<\/strong> available for an additional cost/, file);
-    assert.match(warranty, /Manufacturer parts warranties vary by brand and model/, file);
+    assert.match(warranty, /10-year labor warranty<\/strong> included with every installation and system replacement/, file);
+    assert.match(warranty, /Manufacturer parts warranty up to 12 years<\/strong>, depending on the equipment brand/, file);
   }
 });
 
