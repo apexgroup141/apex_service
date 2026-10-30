@@ -51,6 +51,14 @@ test("every variant id matches its page prefix and fits the copy limits", () => 
   }
 });
 
+test("the 17 variants keep the copy the owner approved on 2026-10-30", async () => {
+  const { createHash } = await import("node:crypto");
+  // Any wording change must be re-approved; update this hash only together with that approval.
+  const digest = createHash("sha256").update(JSON.stringify(LANDING_VARIANTS)).digest("hex");
+  assert.equal(Object.keys(LANDING_VARIANTS).length, 17);
+  assert.equal(digest, "245aba64acac9fd002d6ee65ad238e540aa4d7c2cafebb8c057958c252eb7bd3");
+});
+
 test("only Heat Pump and Mini-Split are switched on for the first launch", () => {
   assert.deepEqual([...ENABLED_SERVICES].sort(), ["hp", "ms"]);
 });
