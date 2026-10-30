@@ -4063,3 +4063,27 @@ h3 {
   .about-final-actions { display: grid; }
   .about-final-actions .button { width: 100%; }
 }
+
+.hero-rating-badge { position: relative; z-index: 1; display: flex; width: fit-content; flex-wrap: wrap; gap: 4px 8px; align-items: center; margin-top: 16px; padding: 8px 14px; border: 1px solid rgba(255,255,255,.28); border-radius: 999px; background: rgba(3,21,54,.55); color: var(--white); font-size: 14px; font-weight: 750; line-height: 1.2; }
+.hero-rating-badge:hover { border-color: rgba(255,255,255,.7); }
+.hero-rating-badge .google-review-stars { color: #fbbc04; letter-spacing: 1px; }
+.hero-rating-badge strong { font-size: 16px; }
+.hero-rating-badge span:last-child { color: rgba(255,255,255,.86); }
+.home-hero .hero-rating-badge { margin: 18px 0 0; }
+.furnace-hero-pricing-link { display: inline-block; margin-top: 14px; color: var(--white); font-size: 15px; font-weight: 750; text-decoration: underline; text-decoration-color: rgba(255,255,255,.45); text-underline-offset: 4px; }
+.furnace-hero-pricing-link:hover { text-decoration-color: var(--white); }
+
+.mobile-cta-bar { display: none; }
+
+@media (max-width: 700px) {
+  .hero-rating-badge { font-size: 13px; }
+  body:has(.mobile-cta-bar) { padding-bottom: calc(66px + env(safe-area-inset-bottom)); }
+  .mobile-cta-bar { position: fixed; z-index: 18; right: 0; bottom: 0; left: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 8px 10px calc(8px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: rgba(255,255,255,.97); box-shadow: 0 -8px 24px rgba(6,31,73,.12); }
+  .mobile-cta-bar a { display: flex; min-height: 48px; align-items: center; justify-content: center; border-radius: 8px; font-size: 16px; font-weight: 850; }
+  .mobile-cta-call { border: 1px solid rgba(6,31,73,.22); color: var(--ink); }
+  .mobile-cta-call::before { margin-right: 8px; content: "☎"; }
+  .mobile-cta-estimate { background: var(--red); color: var(--white); }
+  .mobile-cta-bar { transform: translateY(110%); visibility: hidden; transition: transform .2s ease, visibility 0s linear .2s; }
+  .mobile-cta-bar.is-visible { transform: none; visibility: visible; transition: transform .2s ease; }
+  .nav-lock .mobile-cta-bar.is-visible { transform: translateY(110%); visibility: hidden; }
+}

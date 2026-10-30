@@ -172,3 +172,21 @@ test("adds the single visible reviews CTA to the home rating summary when reques
   assert.match(rendered, /google-rating-summary[\s\S]*home-reviews-cta/);
   assert.match(rendered, /href="\/reviews">Read All Reviews<\/a>/);
 });
+
+test("renders the hero rating badge from cached Google data only", () => {
+  const html = '<section><!-- GOOGLE_RATING_BADGE --></section><main data-google-reviews-state="empty"><!-- GOOGLE_REVIEWS_SUMMARY --></main>';
+  const rendered = injectGoogleReviewsIntoHtml(html, { averageRating: 4.86, totalReviewCount: 1234, reviews: [] });
+
+  assert.match(rendered, /<a class="hero-rating-badge" href="\/reviews">/);
+  assert.match(rendered, /<strong>4\.9<\/strong>/);
+  assert.match(rendered, /1,234 Google reviews/);
+  assert.doesNotMatch(rendered, /GOOGLE_RATING_BADGE/);
+  assert.match(rendered, /data-google-reviews-state="empty"/);
+});
+
+test("leaves the hero rating marker invisible when no Google data is cached", () => {
+  const html = '<section><!-- GOOGLE_RATING_BADGE --></section>';
+  assert.equal(injectGoogleReviewsIntoHtml(html, null), html);
+  assert.equal(injectGoogleReviewsIntoHtml(html, { averageRating: null, totalReviewCount: null, reviews: [] }), html);
+  assert.equal(injectGoogleReviewsIntoHtml(html, { averageRating: 5, totalReviewCount: 0, reviews: [] }), html);
+});

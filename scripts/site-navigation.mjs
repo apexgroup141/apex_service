@@ -46,6 +46,22 @@ export function renderSiteHeader(pathname = "/") {
     </header>`;
 }
 
+const mobileCtaExcludedPaths = new Set(["/admin", "/get-estimate", "/thank-you"]);
+const mobileCtaExcludedPrefixes = ["/instant-estimate/", "/landing/"];
+
+export function shouldRenderMobileCtaBar(pathname = "/") {
+  const currentPath = normalizePath(pathname);
+  if (mobileCtaExcludedPaths.has(currentPath)) return false;
+  return !mobileCtaExcludedPrefixes.some((prefix) => currentPath.startsWith(prefix));
+}
+
+export function renderMobileCtaBar() {
+  return `<nav class="mobile-cta-bar" aria-label="Contact Apex Service Group" data-mobile-cta-bar>
+      <a class="mobile-cta-call" href="tel:+12532821126">Call</a>
+      <a class="mobile-cta-estimate" href="/get-estimate" data-cta-location="mobile_bar">Free Estimate</a>
+    </nav>`;
+}
+
 export function pathForHtmlFile(relativePath) {
   const normalized = relativePath.split("\\").join("/");
   if (normalized === "index.html") return "/";

@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { pathForHtmlFile, renderSiteHeader } from "./site-navigation.mjs";
+import { pathForHtmlFile, renderMobileCtaBar, renderSiteHeader, shouldRenderMobileCtaBar } from "./site-navigation.mjs";
 
 const root = process.cwd();
 const dist = path.join(root, "dist");
@@ -111,6 +111,17 @@ function injectSharedNavigation(filePath) {
   fs.writeFileSync(filePath, html);
 }
 
+function injectMobileCtaBar(filePath) {
+  if (!shouldRenderMobileCtaBar(pathForHtmlFile(path.relative(dist, filePath)))) return;
+  let html = fs.readFileSync(filePath, "utf8");
+  if (!html.includes("data-header") || html.includes("data-mobile-cta-bar")) return;
+  // Place the bar before script.js so the existing phone and estimate click tracking binds to it.
+  const sharedScript = /<script src="\/?script\.js"><\/script>/i;
+  if (!sharedScript.test(html)) return;
+  html = html.replace(sharedScript, (match) => `${renderMobileCtaBar()}\n    ${match}`);
+  fs.writeFileSync(filePath, html);
+}
+
 function injectServiceDiscoveryLinks(filePath) {
   const route = pathForHtmlFile(path.relative(dist, filePath));
   if (route === "/services/mini-splits" || route === "/services/heat-pumps") return;
@@ -168,6 +179,7 @@ for (const filePath of listFiles(dist)) {
     markSharedServiceHero(filePath);
     connectServiceEstimateButtons(filePath);
     injectServiceDiscoveryLinks(filePath);
+    injectMobileCtaBar(filePath);
     injectGoogleTagIntoHtml(filePath);
   }
 }

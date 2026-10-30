@@ -22,6 +22,39 @@ const syncHeader = () => {
 syncHeader();
 window.addEventListener("scroll", syncHeader, { passive: true });
 
+const mobileCtaBar = document.querySelector("[data-mobile-cta-bar]");
+
+if (mobileCtaBar) {
+  const firstHero = document.querySelector(".hero, .page-hero");
+  let heroVisible = Boolean(firstHero);
+  let fieldFocused = false;
+  const syncMobileCtaBar = () => {
+    mobileCtaBar.classList.toggle("is-visible", !heroVisible && !fieldFocused);
+  };
+  const isTextField = (target) => target instanceof Element && target.matches("input, textarea, select");
+
+  if (firstHero && "IntersectionObserver" in window) {
+    new IntersectionObserver(([entry]) => {
+      heroVisible = entry.isIntersecting;
+      syncMobileCtaBar();
+    }, { rootMargin: "-70px 0px 0px 0px" }).observe(firstHero);
+  } else {
+    heroVisible = false;
+  }
+
+  document.addEventListener("focusin", (event) => {
+    if (!isTextField(event.target)) return;
+    fieldFocused = true;
+    syncMobileCtaBar();
+  });
+  document.addEventListener("focusout", (event) => {
+    if (!isTextField(event.target)) return;
+    fieldFocused = false;
+    syncMobileCtaBar();
+  });
+  syncMobileCtaBar();
+}
+
 const setNavOpen = (isOpen) => {
   toggle.setAttribute("aria-expanded", String(isOpen));
   toggle.setAttribute("aria-label", isOpen ? "Close navigation" : "Open navigation");

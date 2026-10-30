@@ -904,6 +904,10 @@ export default {
       return renderReviewsPage(request, env, { limit: 3 });
     }
 
+    if (url.pathname === "/services/furnaces") {
+      return renderReviewsPage(request, env);
+    }
+
     return env.ASSETS.fetch(request);
   },
 

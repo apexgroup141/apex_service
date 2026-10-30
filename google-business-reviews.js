@@ -223,11 +223,21 @@ export const renderGoogleReviewsHtml = (payload, options = {}) => {
   };
 };
 
-export const injectGoogleReviewsIntoHtml = (html, payload, options = {}) => {
-  const rendered = renderGoogleReviewsHtml(payload, options);
-  if (!rendered) return html;
+export const renderGoogleRatingBadge = (payload) => {
+  const rating = Number(payload?.averageRating);
+  const count = Number(payload?.totalReviewCount);
+  if (!Number.isFinite(rating) || !Number.isFinite(count) || rating <= 0 || count <= 0) return "";
 
-  return html
+  return `<a class="hero-rating-badge" href="/reviews">${renderStars(Math.round(rating))}<strong>${escapeHtml(rating.toFixed(1))}</strong><span>${escapeHtml(count.toLocaleString("en-US"))} Google reviews</span></a>`;
+};
+
+export const injectGoogleReviewsIntoHtml = (html, payload, options = {}) => {
+  const badge = renderGoogleRatingBadge(payload);
+  const withBadge = badge ? html.replaceAll("<!-- GOOGLE_RATING_BADGE -->", badge) : html;
+  const rendered = renderGoogleReviewsHtml(payload, options);
+  if (!rendered) return withBadge;
+
+  return withBadge
     .replace("<!-- GOOGLE_REVIEWS_SUMMARY -->", rendered.summary)
     .replace("<!-- GOOGLE_REVIEWS_LIST -->", rendered.reviews)
     .replace("data-google-reviews-state=\"empty\"", "data-google-reviews-state=\"ready\"");
