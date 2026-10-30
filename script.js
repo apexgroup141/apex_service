@@ -25,7 +25,7 @@ window.addEventListener("scroll", syncHeader, { passive: true });
 const mobileCtaBar = document.querySelector("[data-mobile-cta-bar]");
 
 if (mobileCtaBar) {
-  const firstHero = document.querySelector(".hero, .page-hero");
+  const firstHero = document.querySelector(".hero, .page-hero, .mini-split-conversion-hero");
   let heroVisible = Boolean(firstHero);
   let fieldFocused = false;
   const syncMobileCtaBar = () => {

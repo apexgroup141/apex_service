@@ -27,3 +27,13 @@ test("the shared script does not add tracking events for the mobile bar", () => 
   assert.ok(barLogic.length > 0);
   assert.doesNotMatch(barLogic, /trackEvent|gtag|sendBeacon|dataLayer/);
 });
+
+test("every hero with its own call-to-action buttons hides the mobile bar", () => {
+  const source = fs.readFileSync(new URL("../script.js", import.meta.url), "utf8");
+  const heroSelector = source.match(/const firstHero = document\.querySelector\("([^"]+)"\)/)?.[1] || "";
+  const miniSplits = fs.readFileSync(new URL("../services/mini-splits.html", import.meta.url), "utf8");
+  const heroClass = miniSplits.match(/<section class="([^"]*)"[^>]*>(?:(?!<\/section>)[\s\S])*<h1/)?.[1].split(/\s+/) || [];
+
+  assert.ok(heroClass.length > 0);
+  assert.ok(heroClass.some((name) => heroSelector.split(/\s*,\s*/).includes(`.${name}`)), heroClass.join(" "));
+});
