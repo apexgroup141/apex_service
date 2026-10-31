@@ -1974,6 +1974,27 @@ h3 {
   font-size: 18px;
 }
 
+.thank-you-estimate {
+  margin: 22px 0;
+  padding: 18px 20px;
+  border: 1px solid rgba(9, 101, 216, 0.22);
+  border-radius: 8px;
+  background: var(--ice);
+}
+
+.thank-you-estimate ul {
+  margin: 8px 0 10px;
+  padding-left: 20px;
+  color: var(--ink);
+  font-size: 19px;
+  font-weight: 800;
+}
+
+.thank-you-card .thank-you-estimate p:not(.eyebrow) {
+  margin: 0;
+  font-size: 15px;
+}
+
 .content-section.alt {
   background: #eef4f1;
 }

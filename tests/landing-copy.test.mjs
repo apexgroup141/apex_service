@@ -62,17 +62,28 @@ test("ad landing heroes lead with the included 10-year labor warranty and explai
   }
 });
 
-test("both instant estimates show the price first and ask for phone or email afterwards", () => {
+test("both instant estimates show the price range only after a phone number or email is sent", () => {
   for (const file of ["instant-estimate/heat-pump.html", "instant-estimate/mini-split.html"]) {
     const page = read(file);
     const results = page.indexOf("data-results");
     const contact = page.indexOf("data-contact");
     assert.ok(results > 0 && contact > results, file);
-    assert.match(page, /Want an Exact Written Quote\?/);
-    assert.match(page, /Request My Free Estimate/);
+    assert.match(page, /See Your Planning Range/);
+    assert.match(page, /Show My Price Range/);
+    assert.doesNotMatch(page, /\$\d{1,2},\d{3}–\$/, `${file}: no price range before contact`);
+    assert.doesNotMatch(page, /No contact information is required/, file);
     assert.doesNotMatch(page, /name="phone"[^>]*required/, `${file}: phone must stay optional`);
     assert.doesNotMatch(page, /name="email"[^>]*required/, `${file}: email must stay optional`);
   }
+  const quiz = read("instant-estimate.js");
+  assert.doesNotMatch(quiz, /textContent = ranges\?\.\[tier\]/);
+  assert.doesNotMatch(quiz, /planning range: \$\{range\}/);
+  assert.equal((quiz.match(/rememberEstimateResult\("Your /g) || []).length, 2);
+  for (const call of quiz.matchAll(/rememberEstimateResult\("Your /g)) {
+    assert.ok(quiz.lastIndexOf('track("generate_lead"', call.index) > quiz.lastIndexOf("ok !== true", call.index));
+  }
+  assert.match(read("thank-you.html"), /data-estimate-result hidden/);
+  assert.match(read("script.js"), /apex_instant_estimate_result/);
 });
 
 test("the AC page is served through the Worker so the rating badge renders", () => {

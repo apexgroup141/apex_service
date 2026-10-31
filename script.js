@@ -314,6 +314,23 @@ if (window.location.pathname === "/thank-you" || window.location.pathname === "/
   } catch {
     // Keep the confirmation page usable if session storage is unavailable.
   }
+
+  // Instant estimates reveal the planning range here, after the contact details were sent.
+  const estimateResult = document.querySelector("[data-estimate-result]");
+  try {
+    const result = JSON.parse(window.sessionStorage.getItem("apex_instant_estimate_result") || "null");
+    if (estimateResult && result?.lines?.length) {
+      estimateResult.querySelector("[data-estimate-title]").textContent = String(result.title || "Your planning range");
+      estimateResult.querySelector("[data-estimate-lines]").replaceChildren(...result.lines.slice(0, 4).map((line) => {
+        const item = document.createElement("li");
+        item.textContent = String(line);
+        return item;
+      }));
+      estimateResult.hidden = false;
+    }
+  } catch {
+    // Without a stored range the page shows the plain confirmation.
+  }
 }
 
 document.querySelectorAll('a[href]').forEach((link) => {

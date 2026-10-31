@@ -3,6 +3,12 @@ import { MINI_SPLIT_PRICE_RANGES, getMiniSplitPriceRanges } from "./mini-split-p
 export const PRICE_RANGES = MINI_SPLIT_PRICE_RANGES;
 export const getPriceRanges = getMiniSplitPriceRanges;
 const GOOGLE_ADS_LEAD_PENDING_KEY = "apex_google_ads_lead_pending";
+const ESTIMATE_RESULT_KEY = "apex_instant_estimate_result";
+
+// The planning range is shown on the confirmation page, once a phone number or email was sent.
+const rememberEstimateResult = (title, lines) => {
+  try { if (lines.length) window.sessionStorage.setItem(ESTIMATE_RESULT_KEY, JSON.stringify({ title, lines })); } catch {}
+};
 
 const root = typeof document === "undefined" ? null : document.querySelector("[data-instant-estimate]");
 
@@ -55,7 +61,7 @@ const initHeatPumpQuiz = (quizRoot) => {
     state.answers.priorities = priorities;
     const tier = state.answers.selected_tier || "not_sure";
     const range = HEAT_PUMP_PRICES[tier];
-    quizRoot.querySelector("[data-heat-pump-result-copy]").textContent = range ? `${tier[0].toUpperCase() + tier.slice(1)} planning range: ${range}` : "We’ll help select the right system level after assessing your home.";
+    quizRoot.querySelector("[data-heat-pump-result-copy]").textContent = range ? `Your ${tier[0].toUpperCase() + tier.slice(1)} planning range is ready. Enter a phone number or email below to see it.` : "Enter a phone number or email below to see typical ranges for each system level.";
     quiz.hidden = true; quizRoot.querySelector("[data-progress-wrap]").hidden = true; results.hidden = false;
     track("instant_estimate_complete", { system_type: "heat_pump", home_size: state.answers.home_size, selected_tier: tier });
     results.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -107,7 +113,7 @@ const initHeatPumpQuiz = (quizRoot) => {
     window.apexLeadContext?.decorate(payload, leadForm);
     const pendingUserData = window.apexLeadContext?.hashUserData(payload);
     const button = leadForm.querySelector('button[type="submit"]'); submissionInProgress = true; button.disabled = true; status.textContent = "Sending request...";
-    try { const response = await fetch(leadForm.dataset.endpoint || "/api/lead", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }); const data = await response.json().catch(() => null); if (!response.ok || data?.ok !== true) throw new Error("Request failed"); leadEventSent = true; track("instant_estimate_lead", { system_type: "heat_pump", selected_tier: tier }); track("generate_lead", { lead_service: payload.service, lead_area: payload.area, page_location: window.location.href, system_type: "heat_pump" }); try { window.sessionStorage.setItem(GOOGLE_ADS_LEAD_PENDING_KEY, payload.submission_id || "1"); } catch {} await window.apexLeadContext?.rememberUserData(pendingUserData); window.location.href = "/thank-you"; }
+    try { const response = await fetch(leadForm.dataset.endpoint || "/api/lead", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }); const data = await response.json().catch(() => null); if (!response.ok || data?.ok !== true) throw new Error("Request failed"); leadEventSent = true; track("instant_estimate_lead", { system_type: "heat_pump", selected_tier: tier }); track("generate_lead", { lead_service: payload.service, lead_area: payload.area, page_location: window.location.href, system_type: "heat_pump" }); rememberEstimateResult("Your heat pump planning range", Object.entries(HEAT_PUMP_PRICES).filter(([level]) => tier === "not_sure" || level === tier).map(([level, price]) => `${level[0].toUpperCase() + level.slice(1)}: ${price}`)); try { window.sessionStorage.setItem(GOOGLE_ADS_LEAD_PENDING_KEY, payload.submission_id || "1"); } catch {} await window.apexLeadContext?.rememberUserData(pendingUserData); window.location.href = "/thank-you"; }
     catch { submissionInProgress = false; button.disabled = false; status.textContent = "Could not send the request. Please call or email us directly."; status.className = "form-status is-error"; }
   });
   track("instant_estimate_start", { system_type: "heat_pump" });
@@ -184,7 +190,7 @@ if (root?.dataset.systemType === "heat_pump") {
     const ranges = getPriceRanges(state.answers.zones);
     root.querySelector("[data-unsure-note]").hidden = Boolean(ranges);
     ["good", "better", "best"].forEach((tier) => {
-      root.querySelector(`[data-price="${tier}"]`).textContent = ranges?.[tier] || "Price confirmed after assessment";
+      root.querySelector(`[data-price="${tier}"]`).textContent = ranges ? "Shown after you send a phone or email" : "Price confirmed after assessment";
     });
     track("instant_estimate_complete", { system_type: "mini_split", zones: state.answers.zones, space_size: state.answers.space_size });
     results.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -326,6 +332,7 @@ if (root?.dataset.systemType === "heat_pump") {
       if (!response.ok || result?.ok !== true) throw new Error("Request failed");
       track("instant_estimate_lead", { system_type: "mini_split", zones: state.answers.zones, selected_tier: state.selectedTier });
       track("generate_lead", { lead_service: payload.service, lead_area: payload.area, page_location: window.location.href });
+      rememberEstimateResult("Your mini-split planning range", ranges ? [`Good: ${ranges.good}`, `Better: ${ranges.better}`, `Best: ${ranges.best}`] : []);
       try {
         window.sessionStorage.setItem(GOOGLE_ADS_LEAD_PENDING_KEY, payload.submission_id || "1");
       } catch {}
