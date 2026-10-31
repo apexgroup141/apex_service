@@ -12,8 +12,8 @@ export const LANDING_PAGES = {
   ac: "/services/air-conditioning"
 };
 
-// Furnace and AC variants are prepared but switched off until the first two are verified.
-export const ENABLED_SERVICES = new Set(["hp", "ms"]);
+// AC variants are prepared but switched off; furnace was enabled 2026-10-31 for heating season.
+export const ENABLED_SERVICES = new Set(["hp", "ms", "fn"]);
 
 export const LANDING_VARIANTS = {
   "hp-install": {

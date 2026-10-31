@@ -59,8 +59,18 @@ test("the 17 variants keep the copy the owner approved (2026-10-30, ms-cost revi
   assert.equal(digest, "4fcfba87e49c580c1e540cf859a3068c1687fdda04f3f8de3bb20e22d7a87585");
 });
 
-test("only Heat Pump and Mini-Split are switched on for the first launch", () => {
-  assert.deepEqual([...ENABLED_SERVICES].sort(), ["hp", "ms"]);
+test("Heat Pump, Mini-Split and Furnace are switched on; AC stays off", () => {
+  assert.deepEqual([...ENABLED_SERVICES].sort(), ["fn", "hp", "ms"]);
+});
+
+test("furnace variants swap the furnace page first screen", async () => {
+  for (const id of ["fn-install", "fn-replace", "fn-local"]) {
+    const { html } = await load(`/services/furnaces?lpv=${id}`);
+    assert.equal(h1(html), LANDING_VARIANTS[id].h1, id);
+    assert.equal(cta(html), amp(LANDING_VARIANTS[id].cta), id);
+  }
+  const plain = (await load("/services/furnaces")).html;
+  assert.equal((await load("/services/furnaces?lpv=hp-install")).html, plain, "cross-page variant is ignored");
 });
 
 test("an approved variant swaps only the H1, subheading and CTA label", async () => {
@@ -88,8 +98,6 @@ test("unknown, malformed, cross-page and disabled variants show the regular page
   for (const query of ["?lpv=ms-unknown", "?lpv=MS-<script>", "?lpv=hp-cost", "?lpv=ms-", "?lpv=", "?lpv=ms-cost-extra"]) {
     assert.equal((await load(`/services/mini-splits${query}`)).html, plain, query);
   }
-  const furnace = (await load("/services/furnaces")).html;
-  assert.equal((await load("/services/furnaces?lpv=fn-cost")).html, furnace, "furnace variants stay off");
   const ac = (await load("/services/air-conditioning")).html;
   assert.equal((await load("/services/air-conditioning?lpv=ac-cost")).html, ac, "AC variants stay off");
 });
