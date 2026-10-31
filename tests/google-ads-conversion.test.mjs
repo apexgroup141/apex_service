@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
+import { createHash, webcrypto } from "node:crypto";
 import fs from "node:fs";
 import test from "node:test";
+import vm from "node:vm";
 
 const classicSource = fs.readFileSync(new URL("../script.js", import.meta.url), "utf8");
 const quizSource = fs.readFileSync(new URL("../instant-estimate.js", import.meta.url), "utf8");
@@ -61,6 +63,87 @@ test("direct visits and refreshes do not convert without a pending session marke
   assert.match(quizSource, new RegExp(`const GOOGLE_ADS_LEAD_PENDING_KEY = "${marker}"`));
   assert.match(classicSource, /const pendingLead = window\.sessionStorage\.getItem\(googleAdsLeadPendingKey\);\s+if \(pendingLead && typeof window\.gtag === "function"\)/);
   assert.match(classicSource, /sessionStorage\.removeItem\(googleAdsLeadPendingKey\)/);
+});
+
+// Runs the enhanced-conversion helpers from script.js against a stub window.
+const loadLeadContext = (sessionStorage) => {
+  const start = classicSource.indexOf("const sha256Hex");
+  const end = classicSource.indexOf("const trackEvent");
+  const keyDeclaration = classicSource.match(/const googleAdsUserDataKey = "[^"]+";/)[0];
+  const window = { crypto: webcrypto, sessionStorage, setTimeout };
+  vm.runInNewContext(`${keyDeclaration}\n${classicSource.slice(start, end)}`, { window, TextEncoder });
+  const context = window.apexLeadContext;
+  // Values from the sandbox have its own prototypes; compare them as plain JSON.
+  const plain = async (pending) => JSON.parse(JSON.stringify(await pending));
+  return { ...context, hashUserData: (payload) => plain(context.hashUserData(payload)), rememberUserData: context.rememberUserData, rawHashUserData: context.hashUserData };
+};
+const sha256 = (value) => createHash("sha256").update(value).digest("hex");
+const memoryStorage = () => {
+  const items = new Map();
+  return { items, setItem: (key, value) => items.set(key, String(value)), getItem: (key) => items.get(key) ?? null };
+};
+
+test("enhanced conversions hash the normalized email and phone the way Google expects", async () => {
+  const context = loadLeadContext(memoryStorage());
+  assert.deepEqual(await context.hashUserData({ email: "  Jane.Doe@Example.COM ", phone: "+12535550123" }), {
+    sha256_email_address: sha256("jane.doe@example.com"),
+    sha256_phone_number: sha256("+12535550123")
+  });
+  assert.deepEqual(await context.hashUserData({ email: "j.doe.x@GMail.com", phone: "(253) 555-0123" }), {
+    sha256_email_address: sha256("jdoex@gmail.com"),
+    sha256_phone_number: sha256("+12535550123")
+  });
+  assert.deepEqual(await context.hashUserData({ email: "", phone: "+12535550123" }), { sha256_phone_number: sha256("+12535550123") });
+  assert.equal(await context.hashUserData({ email: "not-an-email", phone: "" }), null);
+  assert.equal(await context.hashUserData({}), null);
+});
+
+test("only hashes are stored, and a slow or failed hash never blocks the redirect", async () => {
+  const storage = memoryStorage();
+  const context = loadLeadContext(storage);
+  await context.rememberUserData(context.rawHashUserData({ email: "jane@example.com", phone: "+12535550123" }));
+  const stored = storage.items.get("apex_google_ads_user_data");
+  assert.doesNotMatch(stored, /jane|example|2535550123/);
+  assert.deepEqual(JSON.parse(stored), { sha256_email_address: sha256("jane@example.com"), sha256_phone_number: sha256("+12535550123") });
+
+  const slowStorage = memoryStorage();
+  const started = Date.now();
+  await loadLeadContext(slowStorage).rememberUserData(new Promise(() => {}));
+  assert.ok(Date.now() - started < 1000);
+  assert.equal(slowStorage.items.size, 0);
+
+  await loadLeadContext(slowStorage).rememberUserData(Promise.reject(new Error("hash failed")));
+  await loadLeadContext({ setItem() { throw new Error("storage blocked"); } }).rememberUserData(Promise.resolve({ sha256_phone_number: "x" }));
+  await loadLeadContext(slowStorage).rememberUserData(undefined);
+  assert.equal(slowStorage.items.size, 0);
+});
+
+test("the confirmation page sends user data before the conversion and then clears it", () => {
+  const thankYouCheck = classicSource.indexOf('window.location.pathname === "/thank-you"');
+  const userData = classicSource.indexOf('window.gtag("set", "user_data", userData)', thankYouCheck);
+  const conversion = classicSource.indexOf('window.gtag("event", "conversion", conversion)', thankYouCheck);
+  const cleared = classicSource.indexOf("sessionStorage.removeItem(googleAdsUserDataKey)", conversion);
+  assert.ok(userData > thankYouCheck && conversion > userData && cleared > conversion);
+  // A bad stored value has its own try, so it cannot skip the conversion.
+  assert.match(classicSource.slice(thankYouCheck, conversion), /try \{\s+const userData = JSON\.parse[\s\S]*?\} catch \{/);
+});
+
+test("every lead form stores user data only after a confirmed lead and before the redirect", () => {
+  for (const [source, markerCall] of [
+    [classicSource, 'sessionStorage.setItem(googleAdsLeadPendingKey, payload.submission_id || "1")'],
+    [quizSource, 'sessionStorage.setItem(GOOGLE_ADS_LEAD_PENDING_KEY, payload.submission_id || "1")']
+  ]) {
+    const remembers = [...source.matchAll(/await window\.apexLeadContext\??\.rememberUserData\(pendingUserData\);/g)];
+    assert.equal(remembers.length, source === quizSource ? 2 : 1);
+    for (const remember of remembers) {
+      const markerSet = source.lastIndexOf(markerCall, remember.index);
+      const hashStart = source.lastIndexOf("hashUserData(payload)", remember.index);
+      const request = source.lastIndexOf("await fetch(", remember.index);
+      const redirect = source.indexOf('window.location.href = "/thank-you"', remember.index);
+      assert.ok(hashStart >= 0 && request > hashStart && markerSet > request && remember.index > markerSet && redirect > remember.index);
+      assert.ok(redirect - remember.index < 120);
+    }
+  }
 });
 
 test("the conversion carries the submission id as transaction_id so Google Ads deduplicates it", () => {
