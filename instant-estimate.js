@@ -105,8 +105,9 @@ const initHeatPumpQuiz = (quizRoot) => {
     const tier = state.answers.selected_tier || "not_sure";
     const payload = { lead_source: "hvac_quiz", system_type: "heat_pump", project_type: state.answers.project_type, existing_system: state.answers.existing_system, ductwork: state.answers.ductwork, home_size: state.answers.home_size, space_size: state.answers.home_size, system_preference: state.answers.system_preference, priorities: state.answers.priorities, selected_tier: tier, price_range: HEAT_PUMP_PRICES[tier] || "", page: "instant-estimate-heat-pump", first_name: String(fields.first_name || "").trim(), name: String(fields.first_name || "").trim(), preferred_contact_methods: [digits ? "phone" : "", email ? "email" : ""].filter(Boolean), phone: digits ? `+1${digits}` : "", email, zip: String(fields.zip || "").trim(), area: `WA ${String(fields.zip || "").trim()}`, service: "Heat pump installation" };
     window.apexLeadContext?.decorate(payload, leadForm);
+    const pendingUserData = window.apexLeadContext?.hashUserData(payload);
     const button = leadForm.querySelector('button[type="submit"]'); submissionInProgress = true; button.disabled = true; status.textContent = "Sending request...";
-    try { const response = await fetch(leadForm.dataset.endpoint || "/api/lead", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }); const data = await response.json().catch(() => null); if (!response.ok || data?.ok !== true) throw new Error("Request failed"); leadEventSent = true; track("instant_estimate_lead", { system_type: "heat_pump", selected_tier: tier }); track("generate_lead", { lead_service: payload.service, lead_area: payload.area, page_location: window.location.href, system_type: "heat_pump" }); try { window.sessionStorage.setItem(GOOGLE_ADS_LEAD_PENDING_KEY, payload.submission_id || "1"); } catch {} window.location.href = "/thank-you"; }
+    try { const response = await fetch(leadForm.dataset.endpoint || "/api/lead", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }); const data = await response.json().catch(() => null); if (!response.ok || data?.ok !== true) throw new Error("Request failed"); leadEventSent = true; track("instant_estimate_lead", { system_type: "heat_pump", selected_tier: tier }); track("generate_lead", { lead_service: payload.service, lead_area: payload.area, page_location: window.location.href, system_type: "heat_pump" }); try { window.sessionStorage.setItem(GOOGLE_ADS_LEAD_PENDING_KEY, payload.submission_id || "1"); } catch {} await window.apexLeadContext?.rememberUserData(pendingUserData); window.location.href = "/thank-you"; }
     catch { submissionInProgress = false; button.disabled = false; status.textContent = "Could not send the request. Please call or email us directly."; status.className = "form-status is-error"; }
   });
   track("instant_estimate_start", { system_type: "heat_pump" });
@@ -315,6 +316,7 @@ if (root?.dataset.systemType === "heat_pump") {
       service: "Mini-split installation"
     };
     window.apexLeadContext?.decorate(payload, leadForm);
+    const pendingUserData = window.apexLeadContext?.hashUserData(payload);
     submissionInProgress = true;
     leadForm.querySelector('button[type="submit"]').disabled = true;
     formStatus.textContent = "Sending request...";
@@ -327,6 +329,7 @@ if (root?.dataset.systemType === "heat_pump") {
       try {
         window.sessionStorage.setItem(GOOGLE_ADS_LEAD_PENDING_KEY, payload.submission_id || "1");
       } catch {}
+      await window.apexLeadContext?.rememberUserData(pendingUserData);
       window.location.href = "/thank-you";
     } catch {
       submissionInProgress = false;

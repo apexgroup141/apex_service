@@ -154,6 +154,7 @@ const estimateServiceAliases = {
 const normalizedSelectedService = estimateServiceAliases[selectedService] || selectedService;
 const googleAdsLeadDestination = "AW-18358155203/eht5CKv_lvgcEMPv7LFE";
 const googleAdsLeadPendingKey = "apex_google_ads_lead_pending";
+const googleAdsUserDataKey = "apex_google_ads_user_data";
 
 // Ad-click attribution for lead records. The latest tagged visit wins and lasts 30 days;
 // arriving from another site without tags (organic search, a referral) ends it, so a new
@@ -200,6 +201,54 @@ const newSubmissionId = () => {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}-${Math.random().toString(36).slice(2, 12)}`;
 };
 
+// Enhanced conversions: Google matches a lead to its ad click by the SHA-256 of the
+// normalized email and phone. Only these hashes reach the confirmation page.
+const sha256Hex = async (value) => {
+  const digest = await window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+};
+
+// Waits for the hashes at most 300 ms after a confirmed lead, so enhanced conversions can
+// never hold up the redirect; without them the conversion still counts by click id.
+const rememberUserData = async (pendingUserData) => {
+  try {
+    const timeout = new Promise((resolve) => window.setTimeout(() => resolve(null), 300));
+    const userData = await Promise.race([pendingUserData, timeout]);
+    if (userData) window.sessionStorage.setItem(googleAdsUserDataKey, JSON.stringify(userData));
+  } catch {
+    // Storage blocked or hashing failed: skip enhanced data only.
+  }
+};
+
+const normalizeEmail = (email) => {
+  const value = String(email || "").trim().toLowerCase();
+  const parts = value.split("@");
+  if (parts.length !== 2 || !parts[0] || !parts[1]) return "";
+  const [local, domain] = parts;
+  return domain === "gmail.com" || domain === "googlemail.com" ? `${local.replace(/\./g, "")}@${domain}` : value;
+};
+
+const normalizePhone = (phone) => {
+  const digits = String(phone || "").replace(/\D/g, "");
+  if (digits.length === 10) return `+1${digits}`;
+  if (digits.length === 11 && digits.startsWith("1")) return `+${digits}`;
+  return "";
+};
+
+const hashUserData = async (payload) => {
+  try {
+    if (!window.crypto?.subtle || typeof TextEncoder !== "function") return null;
+    const email = normalizeEmail(payload.email);
+    const phone = normalizePhone(payload.phone);
+    const userData = {};
+    if (email) userData.sha256_email_address = await sha256Hex(email);
+    if (phone) userData.sha256_phone_number = await sha256Hex(phone);
+    return Object.keys(userData).length ? userData : null;
+  } catch {
+    return null;
+  }
+};
+
 // Shared by every lead form: one submission id per filled form (so a resubmit is not a
 // second lead) and the current attribution.
 window.apexLeadContext = {
@@ -209,7 +258,10 @@ window.apexLeadContext = {
     const attribution = currentAttribution();
     if (attribution) payload.attribution = attribution;
     return payload;
-  }
+  },
+  // Hashing starts with the request and is stored only after a confirmed lead.
+  hashUserData,
+  rememberUserData
 };
 
 const trackEvent = (eventName, eventData = {}, callback = null, callbackTimeout = 1300) => {
@@ -247,11 +299,18 @@ if (window.location.pathname === "/thank-you" || window.location.pathname === "/
     // counts one conversion per lead even if the tag fires twice.
     const pendingLead = window.sessionStorage.getItem(googleAdsLeadPendingKey);
     if (pendingLead && typeof window.gtag === "function") {
+      try {
+        const userData = JSON.parse(window.sessionStorage.getItem(googleAdsUserDataKey) || "null");
+        if (userData) window.gtag("set", "user_data", userData);
+      } catch {
+        // A bad entry only drops enhanced data; the conversion below still fires.
+      }
       const conversion = { send_to: googleAdsLeadDestination };
       if (pendingLead !== "1") conversion.transaction_id = pendingLead;
       window.gtag("event", "conversion", conversion);
       window.sessionStorage.removeItem(googleAdsLeadPendingKey);
     }
+    window.sessionStorage.removeItem(googleAdsUserDataKey);
   } catch {
     // Keep the confirmation page usable if session storage is unavailable.
   }
@@ -374,6 +433,7 @@ if (leadForm) {
     }
     payload.phone = `+1${phoneDigits}`;
     window.apexLeadContext.decorate(payload, leadForm);
+    const pendingUserData = window.apexLeadContext.hashUserData(payload);
 
     try {
       const response = await fetch(endpoint, {
@@ -401,6 +461,7 @@ if (leadForm) {
       } catch {
         // Continue to the confirmation page if session storage is unavailable.
       }
+      await window.apexLeadContext.rememberUserData(pendingUserData);
       window.location.href = "/thank-you";
     } catch {
       submissionInProgress = false;
