@@ -53,7 +53,7 @@ export const LANDING_VARIANTS = {
   },
   "ms-cost": {
     h1: "Mini-Split Installation Cost",
-    sub: "See typical installed price ranges for one or more zones in about a minute. No contact details needed.",
+    sub: "See typical installed price ranges for one or more zones in about a minute. A phone number or email is enough.",
     cta: "See My Price Range"
   },
   "ms-local": {
