@@ -62,6 +62,34 @@ export function renderMobileCtaBar() {
     </nav>`;
 }
 
+export const socialProfiles = [
+  {
+    name: "Facebook",
+    href: "https://www.facebook.com/apexgroupwa",
+    icon: '<path d="M13.5 21v-7.5h2.6l.4-3h-3V8.6c0-.9.3-1.5 1.5-1.5h1.6V4.4c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4v2.2H7.8v3h2.6V21z"/>'
+  },
+  {
+    name: "Instagram",
+    href: "https://www.instagram.com/apexgroupwa",
+    icon: '<rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.3" cy="6.7" r="1.2"/>'
+  }
+];
+
+// Ad landing pages and instant-estimate flows keep the form as the only exit.
+export function shouldRenderFooterSocialLinks(currentPath) {
+  return currentPath !== "/admin" && !currentPath.startsWith("/landing/") && !currentPath.startsWith("/instant-estimate");
+}
+
+export function renderFooterSocialLinks() {
+  const links = socialProfiles
+    .map(
+      ({ name, href, icon }) =>
+        `<a href="${href}" target="_blank" rel="noopener" aria-label="Apex Service Group on ${name}"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">${icon}</svg></a>`
+    )
+    .join("");
+  return `<nav class="footer-social" aria-label="Apex Service Group on social media" data-footer-social>${links}</nav>`;
+}
+
 export function pathForHtmlFile(relativePath) {
   const normalized = relativePath.split("\\").join("/");
   if (normalized === "index.html") return "/";

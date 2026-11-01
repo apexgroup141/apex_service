@@ -1,6 +1,13 @@
 import fs from "node:fs";
 import path from "node:path";
-import { pathForHtmlFile, renderMobileCtaBar, renderSiteHeader, shouldRenderMobileCtaBar } from "./site-navigation.mjs";
+import {
+  pathForHtmlFile,
+  renderFooterSocialLinks,
+  renderMobileCtaBar,
+  renderSiteHeader,
+  shouldRenderFooterSocialLinks,
+  shouldRenderMobileCtaBar
+} from "./site-navigation.mjs";
 
 const root = process.cwd();
 const dist = path.join(root, "dist");
@@ -122,6 +129,15 @@ function injectMobileCtaBar(filePath) {
   fs.writeFileSync(filePath, html);
 }
 
+function injectFooterSocialLinks(filePath) {
+  if (!shouldRenderFooterSocialLinks(pathForHtmlFile(path.relative(dist, filePath)))) return;
+  let html = fs.readFileSync(filePath, "utf8");
+  if (html.includes("data-footer-social")) return;
+  // Sit under the business details so the footer keeps its two columns.
+  html = html.replace(/(<footer class="site-footer"><div>[\s\S]*?)<\/div>/i, (match, details) => `${details}${renderFooterSocialLinks()}</div>`);
+  fs.writeFileSync(filePath, html);
+}
+
 function injectServiceDiscoveryLinks(filePath) {
   const route = pathForHtmlFile(path.relative(dist, filePath));
   if (route === "/services/mini-splits" || route === "/services/heat-pumps") return;
@@ -180,6 +196,7 @@ for (const filePath of listFiles(dist)) {
     connectServiceEstimateButtons(filePath);
     injectServiceDiscoveryLinks(filePath);
     injectMobileCtaBar(filePath);
+    injectFooterSocialLinks(filePath);
     injectGoogleTagIntoHtml(filePath);
   }
 }
