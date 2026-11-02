@@ -731,6 +731,7 @@ function sitemapXml(pages) {
     "/projects/mini-split-deep-cleaning-seattle",
     "/projects/daikin-mini-split-deep-cleaning-seattle",
     "/projects/daikin-heat-pump-installation-seattle",
+    "/projects/fantech-erv-gym-ventilation-north-bend",
     "/blog",
     "/blog/heat-pump-vs-baseboard-heat-puget-sound",
     "/blog/ducted-vs-ductless-heat-pump",
