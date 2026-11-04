@@ -56,6 +56,10 @@ const mimeTypes = {
 
 const googleTagId = "G-F4H11YXLLS";
 const googleAdsTagId = "AW-18358155203";
+// "Calls from website 60s+": visitors from an ad see a Google forwarding number in place of
+// this one, so their calls count in Google Ads. It must match the number as the pages show it.
+const googleAdsWebsiteCallLabel = "AW-18358155203/d4snCK2y0bEdEMPv7LFE";
+const sitePhoneDisplay = "(253) 282-1126";
 const googleTagSnippet = `<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=${googleTagId}"></script>
 <script>
@@ -64,6 +68,7 @@ const googleTagSnippet = `<!-- Google tag (gtag.js) -->
   gtag('js', new Date());
   gtag('config', '${googleTagId}');
   gtag('config', '${googleAdsTagId}');
+  gtag('config', '${googleAdsWebsiteCallLabel}', { 'phone_conversion_number': '${sitePhoneDisplay}' });
 </script>
 <!-- End Google tag -->`;
 

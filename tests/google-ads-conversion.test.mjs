@@ -146,6 +146,15 @@ test("every lead form stores user data only after a confirmed lead and before th
   }
 });
 
+test("website call tracking swaps the number exactly as the pages show it", () => {
+  const buildSource = fs.readFileSync(new URL("../scripts/build.mjs", import.meta.url), "utf8");
+  const display = buildSource.match(/const sitePhoneDisplay = "([^"]+)";/)[1];
+  assert.match(buildSource, /gtag\('config', '\$\{googleAdsWebsiteCallLabel\}', \{ 'phone_conversion_number': '\$\{sitePhoneDisplay\}' \}\);/);
+  assert.match(buildSource, /const googleAdsWebsiteCallLabel = "AW-18358155203\/[\w-]+";/);
+  const home = fs.readFileSync(new URL("../index.html", import.meta.url), "utf8");
+  assert.ok(home.includes(`href="tel:+12532821126">Call ${display}</a>`));
+});
+
 test("the conversion carries the submission id as transaction_id so Google Ads deduplicates it", () => {
   assert.match(classicSource, /if \(pendingLead !== "1"\) conversion\.transaction_id = pendingLead;/);
   assert.match(classicSource, /window\.apexLeadContext\.decorate\(payload, leadForm\);/);
