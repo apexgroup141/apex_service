@@ -733,6 +733,8 @@ function sitemapXml(pages) {
     "/projects/daikin-heat-pump-installation-seattle",
     "/projects/fantech-erv-gym-ventilation-north-bend",
     "/blog",
+    "/blog/heat-pump-blowing-cold-air",
+    "/blog/hvac-maintenance-checklist",
     "/blog/heat-pump-vs-baseboard-heat-puget-sound",
     "/blog/ducted-vs-ductless-heat-pump",
     "/blog/inverter-vs-standard-hvac",
