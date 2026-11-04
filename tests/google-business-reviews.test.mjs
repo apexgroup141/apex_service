@@ -190,3 +190,18 @@ test("leaves the hero rating marker invisible when no Google data is cached", ()
   assert.equal(injectGoogleReviewsIntoHtml(html, { averageRating: null, totalReviewCount: null, reviews: [] }), html);
   assert.equal(injectGoogleReviewsIntoHtml(html, { averageRating: 5, totalReviewCount: 0, reviews: [] }), html);
 });
+
+test("every service page with a review marker is served through the review renderer", async () => {
+  const fs = await import("node:fs");
+  const worker = fs.readFileSync(new URL("../worker.js", import.meta.url), "utf8");
+  // Static assets skip the worker unless the path is listed in run_worker_first.
+  const wrangler = fs.readFileSync(new URL("../wrangler.jsonc", import.meta.url), "utf8");
+  const servicesDir = new URL("../services/", import.meta.url);
+  for (const file of fs.readdirSync(servicesDir).filter((name) => name.endsWith(".html"))) {
+    const html = fs.readFileSync(new URL(file, servicesDir), "utf8");
+    if (!/GOOGLE_RATING_BADGE|GOOGLE_REVIEWS_LIST/.test(html)) continue;
+    const route = `"/services/${file.replace(/\.html$/, "")}"`;
+    assert.ok(worker.includes(route), `${file} has a review marker but no review route`);
+    assert.ok(wrangler.includes(route), `${file} is served without the worker`);
+  }
+});

@@ -980,11 +980,18 @@ export default {
       });
     }
 
+    if (url.pathname === "/services/repair-maintenance") {
+      return renderReviewsPage(request, env, {
+        limit: 3,
+        priorityKeywords: ["repair", "service", "maintenance", "cleaning", "diagnos", "fixed"]
+      });
+    }
+
     if (url.pathname === "/about") {
       return renderReviewsPage(request, env, { limit: 3 });
     }
 
-    if (url.pathname === "/services/furnaces" || url.pathname === "/services/air-conditioning") {
+    if (url.pathname === "/services/furnaces" || url.pathname === "/services/air-conditioning" || url.pathname === "/services/ductwork") {
       return renderReviewsPage(request, env);
     }
 
