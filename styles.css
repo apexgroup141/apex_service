@@ -4161,3 +4161,17 @@ h3 {
   .page-actions .hero-call-mobile { display: inline-flex; }
   .page-hero > p.service-area-line.service-area-line, .mini-split-conversion-hero > p.service-area-line.service-area-line { font-size: 13px; }
 }
+
+/* Repair & maintenance landing: numbered visit steps and the hero crop that keeps the technician and logo in frame. */
+.repair-conversion-hero .service-hero-media img { object-position: center 38%; }
+.repair-landing .heat-pump-price-badge { top: -12px; }
+.repair-steps { grid-template-columns: 1fr; max-width: 860px; counter-reset: repair-step; }
+.repair-steps li { counter-increment: repair-step; font-weight: 500; }
+.repair-steps li::before { content: counter(repair-step); color: var(--white); top: 14px; display: grid; width: 20px; height: 20px; place-items: center; border-radius: 50%; background: var(--teal); font-size: 12px; }
+/* On phones and small tablets the photo becomes a band above the text, so the technician and logo stay visible. */
+@media (max-width: 820px) {
+  .page-hero.repair-conversion-hero { padding-top: calc(min(72vw, 430px) + 26px); }
+  .page-hero.repair-conversion-hero .service-hero-media { bottom: auto; height: min(72vw, 430px); }
+  .repair-conversion-hero .service-hero-media img { object-position: center 40%; }
+  .page-hero.repair-conversion-hero::before { background: linear-gradient(180deg, rgba(3,21,54,0) 0, rgba(3,21,54,0) calc(min(72vw, 430px) - 70px), rgba(3,21,54,1) min(72vw, 430px), rgba(3,21,54,1) 100%); }
+}
