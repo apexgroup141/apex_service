@@ -12,3 +12,4 @@ node_modules/
 *.credentials.json
 *service-account*.json
 *oauth-client*.json
+.indexnow-sent.json

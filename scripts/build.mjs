@@ -31,6 +31,7 @@ const filesToCopy = [
   "projects.html",
   "projects",
   "robots.txt",
+  "d91b3f2688ddf0abd3f2f416e0f57ebc.txt",
   "script.js",
   "service-areas.html",
   "reviews.html",
