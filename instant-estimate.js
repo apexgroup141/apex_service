@@ -50,7 +50,7 @@ const initHeatPumpQuiz = (quizRoot) => {
   const contactError = quizRoot.querySelector("[data-contact-method-error]");
   const status = quizRoot.querySelector("[data-instant-status]");
   const state = { currentStep: 1, answers: {} };
-  const labels = ["Project plan", "Existing system", "Ductwork", "Home size", "System setup", "Priorities", "System level"];
+  const labels = ["Project plan", "Timeline", "Existing system", "Ductwork", "Home size", "System setup", "Priorities", "System level"];
   let advanceTimer = null;
   let submissionInProgress = false;
   let leadEventSent = false;
@@ -63,7 +63,7 @@ const initHeatPumpQuiz = (quizRoot) => {
     state.currentStep = number;
     steps.forEach((step) => { const active = Number(step.dataset.step) === number; step.hidden = !active; step.classList.toggle("is-active", active); });
     quiz.hidden = false; results.hidden = true; quizRoot.querySelector("[data-progress-wrap]").hidden = false;
-    backButton.hidden = number === 1; continueButton.hidden = number !== 6;
+    backButton.hidden = number === 1; continueButton.hidden = number !== 7;
     quizRoot.querySelector("[data-step-count]").textContent = `Step ${number} of ${steps.length}`;
     quizRoot.querySelector("[data-progress-label]").textContent = labels[number - 1];
     progress.setAttribute("aria-valuenow", String(number)); progressFill.style.width = `${number / steps.length * 100}%`;
@@ -73,7 +73,7 @@ const initHeatPumpQuiz = (quizRoot) => {
   const selectedPriorities = () => [...quiz.querySelectorAll('input[name="priorities"]:checked')].map((item) => item.value);
   const showResults = () => {
     const priorities = selectedPriorities();
-    if (!priorities.length) { quizRoot.querySelector("[data-priority-note]").textContent = "Choose one or two priorities, or select I’m not sure."; showStep(6); return; }
+    if (!priorities.length) { quizRoot.querySelector("[data-priority-note]").textContent = "Choose one or two priorities, or select I’m not sure."; showStep(7); return; }
     state.answers.priorities = priorities;
     const tier = state.answers.selected_tier || "not_sure";
     const range = HEAT_PUMP_PRICES[tier];
@@ -112,9 +112,9 @@ const initHeatPumpQuiz = (quizRoot) => {
       return;
     }
     state.answers.priorities = priorities;
-    showStep(7);
+    showStep(8);
   });
-  quizRoot.querySelector("[data-edit-answers]").addEventListener("click", () => showStep(7));
+  quizRoot.querySelector("[data-edit-answers]").addEventListener("click", () => showStep(8));
 
   const phoneDigits = () => { let digits = phoneField.value.replace(/\D/g, ""); if (digits.length > 10 && digits.startsWith("1")) digits = digits.slice(1); return digits.slice(0, 10); };
   const emailValid = () => !emailField.value.trim() || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailField.value.trim());
@@ -129,7 +129,7 @@ const initHeatPumpQuiz = (quizRoot) => {
     if ((!digits && !email) || (digits && digits.length !== 10) || !emailValid() || !leadForm.reportValidity()) { contactError.textContent = "Enter a valid phone number, email address, or both."; return; }
     contactError.textContent = "";
     const tier = state.answers.selected_tier || "not_sure";
-    const payload = { lead_source: "hvac_quiz", system_type: "heat_pump", project_type: state.answers.project_type, existing_system: state.answers.existing_system, ductwork: state.answers.ductwork, home_size: state.answers.home_size, space_size: state.answers.home_size, system_preference: state.answers.system_preference, priorities: state.answers.priorities, selected_tier: tier, price_range: HEAT_PUMP_PRICES[tier] || "", page: "instant-estimate-heat-pump", first_name: String(fields.first_name || "").trim(), name: String(fields.first_name || "").trim(), preferred_contact_methods: [digits ? "phone" : "", email ? "email" : ""].filter(Boolean), phone: digits ? `+1${digits}` : "", email, zip: String(fields.zip || "").trim(), area: `WA ${String(fields.zip || "").trim()}`, service: "Heat pump installation" };
+    const payload = { lead_source: "hvac_quiz", system_type: "heat_pump", project_type: state.answers.project_type, timeline: state.answers.timeline, existing_system: state.answers.existing_system, ductwork: state.answers.ductwork, home_size: state.answers.home_size, space_size: state.answers.home_size, system_preference: state.answers.system_preference, priorities: state.answers.priorities, selected_tier: tier, price_range: HEAT_PUMP_PRICES[tier] || "", page: "instant-estimate-heat-pump", first_name: String(fields.first_name || "").trim(), name: String(fields.first_name || "").trim(), preferred_contact_methods: [digits ? "phone" : "", email ? "email" : ""].filter(Boolean), phone: digits ? `+1${digits}` : "", email, zip: String(fields.zip || "").trim(), area: `WA ${String(fields.zip || "").trim()}`, service: "Heat pump installation" };
     window.apexLeadContext?.decorate(payload, leadForm);
     const pendingUserData = window.apexLeadContext?.hashUserData(payload);
     const button = leadForm.querySelector('button[type="submit"]'); submissionInProgress = true; button.disabled = true; status.textContent = "Sending request...";
@@ -164,7 +164,7 @@ if (root?.dataset.systemType === "heat_pump") {
   const formStatus = root.querySelector("[data-instant-status]");
   const state = { currentStep: 1, answers: {}, selectedTier: "not_sure", resultsShown: false };
   const zoneLabels = { "1": "single-zone", "2": "2-zone", "3": "3-zone", "4_plus": "4+ zone" };
-  const stepLabels = ["Project type", "Existing system", "Space size", "Zones", "Priorities"];
+  const stepLabels = ["Project type", "Timeline", "Existing system", "Space size", "Zones", "Priorities"];
   let submissionInProgress = false;
   let advanceTimer = null;
 
@@ -187,11 +187,11 @@ if (root?.dataset.systemType === "heat_pump") {
     results.hidden = true;
     root.querySelector("[data-progress-wrap]").hidden = false;
     backButton.hidden = number === 1;
-    continueButton.hidden = number !== 5;
-    stepCount.textContent = `Step ${number} of 5`;
+    continueButton.hidden = number !== steps.length;
+    stepCount.textContent = `Step ${number} of ${steps.length}`;
     progressLabel.textContent = stepLabels[number - 1];
     progress.setAttribute("aria-valuenow", String(number));
-    progressFill.style.width = `${number * 20}%`;
+    progressFill.style.width = `${number / steps.length * 100}%`;
     track("instant_estimate_step", { step_number: number, step_name: steps[number - 1].dataset.name });
     if (focus) steps[number - 1].querySelector("legend")?.focus?.();
   };
@@ -240,7 +240,7 @@ if (root?.dataset.systemType === "heat_pump") {
     const sourceStep = Number(input.closest("[data-step]")?.dataset.step || state.currentStep);
     window.clearTimeout(advanceTimer);
     advanceTimer = window.setTimeout(() => {
-      if (state.currentStep === sourceStep) showStep(Math.min(sourceStep + 1, 5));
+      if (state.currentStep === sourceStep) showStep(Math.min(sourceStep + 1, steps.length));
     }, 160);
   });
 
@@ -249,7 +249,7 @@ if (root?.dataset.systemType === "heat_pump") {
     showStep(Math.max(1, state.currentStep - 1));
   });
   continueButton.addEventListener("click", showResults);
-  root.querySelector("[data-edit-answers]").addEventListener("click", () => showStep(5));
+  root.querySelector("[data-edit-answers]").addEventListener("click", () => showStep(steps.length));
 
   const phoneDigits = () => {
     let digits = phoneField.value.replace(/\D/g, "");
@@ -320,6 +320,7 @@ if (root?.dataset.systemType === "heat_pump") {
       lead_source: "mini_split_instant_estimate",
       system_type: "mini_split",
       project_type: state.answers.project_type,
+      timeline: state.answers.timeline,
       existing_system: state.answers.existing_system,
       space_size: state.answers.space_size,
       zones: state.answers.zones,

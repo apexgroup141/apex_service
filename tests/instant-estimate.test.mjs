@@ -274,3 +274,9 @@ test("accepts an instant-estimate lead without a name and labels it in Telegram"
   assert.equal(response.status, 200);
   assert.match(messages[0].text, /First Name:<\/b> Not given/);
 });
+
+test("shows how soon the customer plans the project at the top of the Telegram message", async () => {
+  const { response, messages } = await postInstantLead({ preferred_contact_methods: ["phone"], phone: "+12535550123", timeline: "researching" });
+  assert.equal(response.status, 200);
+  assert.match(messages[0].text, /Lead<\/b>\n<b>Timeline:<\/b> Just researching prices/);
+});

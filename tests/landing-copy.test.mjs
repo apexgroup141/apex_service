@@ -73,6 +73,7 @@ test("both instant estimates show the price range only after a phone number or e
     assert.match(page, /Show My Price Range/);
     assert.match(page, /Rather talk to a person\? <a href="tel:\+12532821126" data-instant-call>/, file);
     assert.match(page, /<!-- GOOGLE_RATING_BADGE -->/, file);
+    assert.match(page, /data-step="2" data-name="timeline"[\s\S]*?value="asap"[\s\S]*?value="1_3_months"[\s\S]*?value="researching"/, `${file}: timeline question comes second`);
     assert.doesNotMatch(page, /rebate/i, file);
     assert.doesNotMatch(page, /name="first_name"[^>]*required/, `${file}: name must stay optional`);
     assert.doesNotMatch(page, /\$\d{1,2},\d{3}–\$/, `${file}: no price range before contact`);
@@ -83,6 +84,7 @@ test("both instant estimates show the price range only after a phone number or e
   const quiz = read("instant-estimate.js");
   assert.doesNotMatch(quiz, /textContent = ranges\?\.\[tier\]/);
   assert.doesNotMatch(quiz, /planning range: \$\{range\}/);
+  assert.equal((quiz.match(/timeline: state\.answers\.timeline/g) || []).length, 2);
   assert.equal((quiz.match(/rememberEstimateResult\("Your /g) || []).length, 2);
   for (const call of quiz.matchAll(/rememberEstimateResult\("Your /g)) {
     assert.ok(quiz.lastIndexOf('track("generate_lead"', call.index) > quiz.lastIndexOf("ok !== true", call.index));

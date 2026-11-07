@@ -90,7 +90,10 @@ const estimateLabels = {
   dual_fuel: "Heat pump + furnace (dual fuel)",
   comfort: "Comfort",
   essential: "Essential",
-  premium: "Premium"
+  premium: "Premium",
+  asap: "As soon as possible",
+  "1_3_months": "In 1–3 months",
+  researching: "Just researching prices"
 };
 
 const labelEstimateValue = (value) => estimateLabels[value] || clean(value, 120) || "Not provided";
@@ -122,6 +125,7 @@ export const formatInstantEstimateMessage = (lead, request) => {
   return [
     isHeatPump ? "<b>New HEAT PUMP LEAD</b>" : "<b>New Mini-Split Instant Estimate Lead</b>",
     "",
+    `<b>Timeline:</b> ${escapeHtml(labelEstimateValue(estimate.timeline))}`,
     `<b>Project type:</b> ${escapeHtml(labelEstimateValue(estimate.projectType))}`,
     `<b>Existing system:</b> ${escapeHtml(labelEstimateValue(estimate.existingSystem))}`,
     isHeatPump ? `<b>Ductwork:</b> ${escapeHtml(labelEstimateValue(estimate.ductwork))}` : "",
@@ -286,6 +290,7 @@ const handleLead = async (request, env) => {
     ? {
         systemType: clean(lead.system_type, 40) || "mini_split",
         projectType: clean(lead.project_type, 80),
+        timeline: clean(lead.timeline, 40),
         existingSystem: clean(lead.existing_system, 80),
         spaceSize: clean(lead.space_size || lead.home_size, 80),
         zones: clean(lead.zones, 80),
@@ -303,6 +308,7 @@ const handleLead = async (request, env) => {
   const storedMessage = estimate
     ? [
         estimate.systemType === "heat_pump" ? "Heat Pump Instant Estimate" : "Mini-Split Instant Estimate",
+        `Timeline: ${labelEstimateValue(estimate.timeline)}`,
         `Project: ${labelEstimateValue(estimate.projectType)}`,
         `Existing system: ${labelEstimateValue(estimate.existingSystem)}`,
         `Space size: ${labelEstimateValue(estimate.spaceSize)}`,
