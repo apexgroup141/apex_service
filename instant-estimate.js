@@ -10,6 +10,22 @@ const rememberEstimateResult = (title, lines) => {
   try { if (lines.length) window.sessionStorage.setItem(ESTIMATE_RESULT_KEY, JSON.stringify({ title, lines })); } catch {}
 };
 
+// Reports once when the contact form is on screen and when typing starts, and on each call-link tap.
+const watchContactForm = (contact, leadForm, track, systemType) => {
+  if (contact.dataset.watched) return;
+  contact.dataset.watched = "1";
+  if ("IntersectionObserver" in window) {
+    const observer = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      observer.disconnect();
+      track("instant_estimate_contact_view", { system_type: systemType });
+    }, { threshold: 0.4 });
+    observer.observe(leadForm);
+  }
+  leadForm.addEventListener("input", () => track("instant_estimate_form_start", { system_type: systemType }), { once: true });
+  contact.querySelector("[data-instant-call]")?.addEventListener("click", () => track("instant_estimate_call_click", { system_type: systemType }));
+};
+
 const root = typeof document === "undefined" ? null : document.querySelector("[data-instant-estimate]");
 
 export const HEAT_PUMP_PRICES = {
@@ -61,9 +77,13 @@ const initHeatPumpQuiz = (quizRoot) => {
     state.answers.priorities = priorities;
     const tier = state.answers.selected_tier || "not_sure";
     const range = HEAT_PUMP_PRICES[tier];
-    quizRoot.querySelector("[data-heat-pump-result-copy]").textContent = range ? `Your ${tier[0].toUpperCase() + tier.slice(1)} planning range is ready. Enter a phone number or email below to see it.` : "Enter a phone number or email below to see typical ranges for each system level.";
+    const startingPrice = (range || HEAT_PUMP_PRICES.essential).match(/\$[\d,]+/)[0];
+    quizRoot.querySelector("[data-heat-pump-result-copy]").textContent = range
+      ? `${tier[0].toUpperCase() + tier.slice(1)} systems start from ${startingPrice}. Leave a phone number or email to see your full range.`
+      : `Central heat pump systems start from ${startingPrice}. Leave a phone number or email to see the range for each system level.`;
     quiz.hidden = true; quizRoot.querySelector("[data-progress-wrap]").hidden = true; results.hidden = false;
     track("instant_estimate_complete", { system_type: "heat_pump", home_size: state.answers.home_size, selected_tier: tier });
+    watchContactForm(quizRoot.querySelector("[data-contact]"), leadForm, track, "heat_pump");
     results.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
@@ -134,6 +154,7 @@ if (root?.dataset.systemType === "heat_pump") {
   const priorityNote = root.querySelector("[data-priority-note]");
   const results = root.querySelector("[data-results]");
   const contact = root.querySelector("[data-contact]");
+  const readyCopy = root.querySelector("[data-ready-copy]");
   const leadForm = root.querySelector("[data-instant-lead]");
   const phoneField = root.querySelector("[data-instant-phone]");
   const emailField = root.querySelector("[data-instant-email]");
@@ -142,6 +163,7 @@ if (root?.dataset.systemType === "heat_pump") {
   const emailError = root.querySelector("[data-email-error]");
   const formStatus = root.querySelector("[data-instant-status]");
   const state = { currentStep: 1, answers: {}, selectedTier: "not_sure", resultsShown: false };
+  const zoneLabels = { "1": "single-zone", "2": "2-zone", "3": "3-zone", "4_plus": "4+ zone" };
   const stepLabels = ["Project type", "Existing system", "Space size", "Zones", "Priorities"];
   let submissionInProgress = false;
   let advanceTimer = null;
@@ -187,12 +209,14 @@ if (root?.dataset.systemType === "heat_pump") {
     quiz.hidden = true;
     root.querySelector("[data-progress-wrap]").hidden = true;
     results.hidden = false;
+    // Only the starting price is shown before contact; the Good, Better and Best ranges come after.
     const ranges = getPriceRanges(state.answers.zones);
-    root.querySelector("[data-unsure-note]").hidden = Boolean(ranges);
-    ["good", "better", "best"].forEach((tier) => {
-      root.querySelector(`[data-price="${tier}"]`).textContent = ranges ? "Shown after you send a phone or email" : "Price confirmed after assessment";
-    });
+    const startingPrice = ranges?.good.match(/\$[\d,]+/)?.[0];
+    readyCopy.textContent = startingPrice
+      ? `Most ${zoneLabels[state.answers.zones]} installs start from ${startingPrice}. Leave a phone number or email to see your Good, Better and Best ranges.`
+      : "Complete mini-split systems start around $5,000. Leave a phone number or email and we’ll help you choose the right number of zones.";
     track("instant_estimate_complete", { system_type: "mini_split", zones: state.answers.zones, space_size: state.answers.space_size });
+    watchContactForm(contact, leadForm, track, "mini_split");
     results.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
@@ -226,13 +250,6 @@ if (root?.dataset.systemType === "heat_pump") {
   });
   continueButton.addEventListener("click", showResults);
   root.querySelector("[data-edit-answers]").addEventListener("click", () => showStep(5));
-
-  root.querySelectorAll("[data-tier]").forEach((button) => button.addEventListener("click", () => {
-    state.selectedTier = button.dataset.tier;
-    root.querySelectorAll("[data-tier-card]").forEach((card) => card.classList.toggle("is-selected", card.dataset.tierCard === state.selectedTier));
-    track("instant_estimate_tier_select", { tier: state.selectedTier });
-    contact.scrollIntoView({ behavior: "smooth", block: "start" });
-  }));
 
   const phoneDigits = () => {
     let digits = phoneField.value.replace(/\D/g, "");

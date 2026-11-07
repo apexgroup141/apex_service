@@ -14,7 +14,7 @@
 <body>
   <header class="site-header header-solid" data-header></header>
   <main class="page-main instant-estimate-page">
-    <section class="instant-estimate-intro"><nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/services/heat-pumps">Heat Pumps</a><span>/</span><span>Instant Estimate</span></nav><p class="eyebrow">About 60 seconds</p><h1>Heat Pump Instant Estimate</h1><p>See typical system levels and planning ranges before requesting a free on-site assessment.</p></section>
+    <section class="instant-estimate-intro"><nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/services/heat-pumps">Heat Pumps</a><span>/</span><span>Instant Estimate</span></nav><p class="eyebrow">About 60 seconds</p><h1>Heat Pump Instant Estimate</h1><p>See typical system levels and planning ranges before requesting a free on-site assessment.</p><!-- GOOGLE_RATING_BADGE --></section>
     <section class="instant-estimate-shell" data-instant-estimate data-system-type="heat_pump" aria-live="polite">
       <div class="instant-progress" data-progress-wrap><div class="instant-progress-copy"><span data-step-count>Step 1 of 7</span><span data-progress-label>Project plan</span></div><div class="instant-progress-track" role="progressbar" aria-label="Estimate progress" aria-valuemin="1" aria-valuemax="7" aria-valuenow="1" data-progress><span></span></div></div>
       <form class="instant-quiz" data-quiz novalidate>
@@ -27,8 +27,32 @@
         <fieldset class="instant-step" data-step="7" data-name="selected_tier" hidden><legend tabindex="-1">Which system level fits your goals?</legend><div class="instant-tier-grid instant-tier-grid-step"><label class="instant-tier"><input type="radio" name="selected_tier" value="essential" /><span><b>Essential</b><small>Reliable modern heating and cooling.</small></span></label><label class="instant-tier"><input type="radio" name="selected_tier" value="comfort" /><span><b>Comfort</b><small>Better efficiency, quiet operation and comfort.</small></span></label><label class="instant-tier"><input type="radio" name="selected_tier" value="premium" /><span><b>Premium</b><small>Maximum efficiency and system control.</small></span></label><label class="instant-tier"><input type="radio" name="selected_tier" value="not_sure" /><span><b>I’m not sure</b><small>Help me choose after an on-site assessment.</small></span></label></div></fieldset>
         <div class="instant-step-actions"><button class="button secondary" type="button" data-back hidden>Back</button><button class="button primary" type="button" data-continue hidden>Continue</button></div>
       </form>
-      <section class="instant-results" data-results hidden aria-labelledby="instant-results-title"><div class="instant-results-heading"><p class="eyebrow">Your selected planning level</p><h2 id="instant-results-title">Your Heat Pump Plan</h2><p data-heat-pump-result-copy>Enter a phone number or email below to see your planning range.</p></div><div class="instant-disclaimer"><p><strong>This is a planning range, not a final quote.</strong> System size, indoor equipment, ductwork, electrical requirements and installation conditions affect final pricing.</p></div><button type="button" class="instant-edit-answers" data-edit-answers>← Change my answers</button>
-        <section class="instant-contact" data-contact aria-labelledby="instant-contact-title"><div><p class="eyebrow">Your next step</p><h2 id="instant-contact-title">See Your Planning Range</h2><p>Leave a phone number or an email address — whichever you prefer, one is enough. Your range appears on the next screen, and we can follow up with an exact written quote.</p><p class="instant-rebate-note">Available rebates depend on equipment, utility, location, and program eligibility.</p></div><form data-instant-lead data-endpoint="/api/lead"><p class="instant-privacy-note">🔒 We respect your privacy. We don’t sell your contact information.</p><div class="instant-contact-grid"><label>Name <span aria-hidden="true">*</span><input name="first_name" autocomplete="given-name" required /></label><label>Phone Number <span class="phone-input"><span class="phone-prefix">+1</span><input name="phone" type="tel" autocomplete="tel-national" inputmode="tel" data-instant-phone /></span><span class="instant-field-error" data-phone-error aria-live="polite"></span></label><label>Email Address <input name="email" type="email" autocomplete="email" inputmode="email" data-instant-email /><span class="instant-field-error" data-email-error aria-live="polite"></span></label><label>ZIP Code <span aria-hidden="true">*</span><input name="zip" autocomplete="postal-code" inputmode="numeric" pattern="[0-9]{5}(-[0-9]{4})?" maxlength="10" required /></label></div><p class="instant-field-error" data-contact-method-error aria-live="polite"></p><p class="form-status" data-instant-status aria-live="polite"></p><p class="instant-response-note">We typically respond within 10 minutes during business hours.</p><button class="button primary" type="submit">Show My Price Range</button><div class="instant-contact-trust" aria-label="Service credentials"><p><span aria-hidden="true">✓</span>Free &amp; No Obligation</p><p><span aria-hidden="true">✓</span>Bonded &amp; Insured</p><p><span aria-hidden="true">✓</span>Washington Contractor License · APEXSSG746LJ</p></div></form></section>
+      <section class="instant-results" data-results hidden aria-labelledby="instant-results-title">
+        <section class="instant-contact" data-contact aria-labelledby="instant-results-title">
+          <div>
+            <p class="eyebrow">Your planning range</p>
+            <h2 id="instant-results-title">Your Heat Pump Range Is Ready</h2>
+            <p class="instant-ready-copy" data-heat-pump-result-copy>Leave a phone number or email to see your planning range.</p>
+            <p>One is enough. Your range appears on the next screen, and we can follow up with an exact written quote.</p>
+            <!-- GOOGLE_RATING_BADGE -->
+          </div>
+          <form data-instant-lead data-endpoint="/api/lead">
+            <div class="instant-contact-grid">
+              <label>Phone Number <span class="phone-input"><span class="phone-prefix">+1</span><input name="phone" type="tel" autocomplete="tel-national" inputmode="tel" data-instant-phone /></span><span class="instant-field-error" data-phone-error aria-live="polite"></span></label>
+              <label>Email Address <input name="email" type="email" autocomplete="email" inputmode="email" data-instant-email /><span class="instant-field-error" data-email-error aria-live="polite"></span></label>
+              <label><span>ZIP Code <span aria-hidden="true">*</span></span><input name="zip" autocomplete="postal-code" inputmode="numeric" pattern="[0-9]{5}(-[0-9]{4})?" maxlength="10" required /></label>
+              <label><span>Name <span class="instant-optional">(optional)</span></span><input name="first_name" autocomplete="given-name" /></label>
+            </div>
+            <p class="instant-field-error" data-contact-method-error aria-live="polite"></p>
+            <p class="form-status" data-instant-status aria-live="polite"></p>
+            <button class="button primary" type="submit">Show My Price Range</button>
+            <p class="instant-call-option">Rather talk to a person? <a href="tel:+12532821126" data-instant-call>Call (253) 282-1126</a></p>
+            <p class="instant-privacy-note">🔒 We don’t sell your contact information. We typically respond within 10 minutes during business hours.</p>
+            <div class="instant-contact-trust" aria-label="Service credentials"><p><span aria-hidden="true">✓</span>Free &amp; No Obligation</p><p><span aria-hidden="true">✓</span>Bonded &amp; Insured</p><p><span aria-hidden="true">✓</span>Washington Contractor License · APEXSSG746LJ</p></div>
+          </form>
+        </section>
+        <div class="instant-disclaimer"><p><strong>This is a planning range, not a final quote.</strong> System size, indoor equipment, ductwork, electrical requirements and installation conditions affect final pricing.</p></div>
+        <button type="button" class="instant-edit-answers" data-edit-answers>← Change my answers</button>
       </section>
     </section>
   </main>

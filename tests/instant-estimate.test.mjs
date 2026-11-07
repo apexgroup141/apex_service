@@ -268,3 +268,9 @@ test("keeps the existing generic lead Telegram format unchanged", async () => {
     globalThis.fetch = originalFetch;
   }
 });
+
+test("accepts an instant-estimate lead without a name and labels it in Telegram", async () => {
+  const { response, messages } = await postInstantLead({ name: "", preferred_contact_methods: ["phone"], phone: "+12535550123" });
+  assert.equal(response.status, 200);
+  assert.match(messages[0].text, /First Name:<\/b> Not given/);
+});

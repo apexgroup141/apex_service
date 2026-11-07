@@ -68,8 +68,13 @@ test("both instant estimates show the price range only after a phone number or e
     const results = page.indexOf("data-results");
     const contact = page.indexOf("data-contact");
     assert.ok(results > 0 && contact > results, file);
-    assert.match(page, /See Your Planning Range/);
+    assert.ok(contact < page.indexOf("instant-disclaimer", results), `${file}: the form comes right after the questions`);
+    assert.match(page, /Range Is Ready/);
     assert.match(page, /Show My Price Range/);
+    assert.match(page, /Rather talk to a person\? <a href="tel:\+12532821126" data-instant-call>/, file);
+    assert.match(page, /<!-- GOOGLE_RATING_BADGE -->/, file);
+    assert.doesNotMatch(page, /rebate/i, file);
+    assert.doesNotMatch(page, /name="first_name"[^>]*required/, `${file}: name must stay optional`);
     assert.doesNotMatch(page, /\$\d{1,2},\d{3}–\$/, `${file}: no price range before contact`);
     assert.doesNotMatch(page, /No contact information is required/, file);
     assert.doesNotMatch(page, /name="phone"[^>]*required/, `${file}: phone must stay optional`);

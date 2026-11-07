@@ -23,6 +23,7 @@
         <p class="eyebrow">About 60 seconds</p>
         <h1>Mini-Split Instant Estimate</h1>
         <p>Answer five quick questions to see typical system levels and planning ranges. At the end, leave a phone number or email (your choice) to see your planning range.</p>
+        <!-- GOOGLE_RATING_BADGE -->
       </section>
 
       <section class="instant-estimate-shell" data-instant-estimate data-system-type="mini_split" aria-live="polite">
@@ -98,30 +99,26 @@
         </form>
 
         <section class="instant-results" data-results hidden aria-labelledby="instant-results-title">
-          <div class="instant-results-heading"><p class="eyebrow">Your planning range</p><h2 id="instant-results-title">Your Mini-Split Options</h2><p>Based on your answers, here are three typical system levels to consider.</p></div>
-          <div class="instant-unsure-note" data-unsure-note hidden><h3>We’ll help determine the right number of zones for your home.</h3><p>Complete professionally installed Mini-Split systems start around $5,000, with final pricing depending on the number of indoor units, equipment and installation requirements.</p></div>
-          <div class="instant-tier-grid">
-            <article class="instant-tier" data-tier-card="good"><p class="instant-tier-kicker">GOOD</p><h3>Value Option</h3><p class="instant-tier-price" data-price="good"></p><p>Reliable heating and cooling with a focus on keeping the initial project cost lower.</p><ul><li>Reliable equipment</li><li>Good efficiency</li><li>Straightforward controls</li><li>Best for budget-focused projects</li></ul><button type="button" class="button primary" data-tier="good">I’m Interested in This Option</button></article>
-            <article class="instant-tier" data-tier-card="better"><p class="instant-tier-kicker">BETTER</p><h3>Comfort &amp; Efficiency</h3><p class="instant-tier-price" data-price="better"></p><p>A strong balance of efficiency, comfort, quiet operation and overall value.</p><ul><li>Higher efficiency</li><li>Quieter operation</li><li>Better comfort control</li><li>Strong price-to-performance balance</li></ul><button type="button" class="button primary" data-tier="better">I’m Interested in This Option</button></article>
-            <article class="instant-tier" data-tier-card="best"><p class="instant-tier-kicker">BEST</p><h3>Premium Performance</h3><p class="instant-tier-price" data-price="best"></p><p>Premium equipment options for homeowners who prioritize efficiency, quiet operation and advanced comfort.</p><ul><li>Premium equipment options</li><li>Excellent efficiency</li><li>Very quiet operation</li><li>Advanced comfort features</li><li>Strong cold-weather performance where applicable</li></ul><button type="button" class="button primary" data-tier="best">I’m Interested in This Option</button></article>
-          </div>
-          <button type="button" class="instant-help-choose" data-tier="not_sure">Not Sure — Help Me Choose</button>
-          <div class="instant-disclaimer"><p><strong>These are planning ranges, not a final quote.</strong> Actual pricing can vary depending on equipment brand, system capacity, indoor unit type, electrical requirements, line-set length, permits and installation conditions.</p><p>Not sure which option is right for you? That’s okay. Our on-site assessment will confirm the correct system size and configuration for your home.</p></div>
-          <button type="button" class="instant-edit-answers" data-edit-answers>← Change my answers</button>
-
-          <section class="instant-contact" data-contact aria-labelledby="instant-contact-title">
-            <div><p class="eyebrow">Your next step</p><h2 id="instant-contact-title">See Your Planning Range</h2><p>Leave a phone number or an email address — whichever you prefer, one is enough. Your range appears on the next screen, and we can follow up with an exact written quote.</p><p class="instant-rebate-note">Available rebates depend on equipment, utility, location, and program eligibility.</p></div>
+          <section class="instant-contact" data-contact aria-labelledby="instant-results-title">
+            <div>
+              <p class="eyebrow">Your planning range</p>
+              <h2 id="instant-results-title">Your Mini-Split Range Is Ready</h2>
+              <p class="instant-ready-copy" data-ready-copy>Leave a phone number or an email address to see your Good, Better and Best price ranges.</p>
+              <p>One is enough. Your ranges appear on the next screen, and we can follow up with an exact written quote.</p>
+              <!-- GOOGLE_RATING_BADGE -->
+            </div>
             <form data-instant-lead data-endpoint="/api/lead">
-              <p class="instant-privacy-note">🔒 We respect your privacy. We don’t sell your contact information.</p>
               <div class="instant-contact-grid">
-                <label>Name <span aria-hidden="true">*</span><input name="first_name" autocomplete="given-name" required /></label>
                 <label>Phone Number <span class="phone-input"><span class="phone-prefix">+1</span><input name="phone" type="tel" autocomplete="tel-national" inputmode="tel" aria-describedby="instant-phone-error" data-instant-phone /></span><span class="instant-field-error" id="instant-phone-error" data-phone-error aria-live="polite"></span></label>
                 <label>Email Address <input name="email" type="email" autocomplete="email" inputmode="email" aria-describedby="instant-email-error" data-instant-email /><span class="instant-field-error" id="instant-email-error" data-email-error aria-live="polite"></span></label>
-                <label>ZIP Code <span aria-hidden="true">*</span><input name="zip" autocomplete="postal-code" inputmode="numeric" pattern="[0-9]{5}(-[0-9]{4})?" maxlength="10" required /></label>
+                <label><span>ZIP Code <span aria-hidden="true">*</span></span><input name="zip" autocomplete="postal-code" inputmode="numeric" pattern="[0-9]{5}(-[0-9]{4})?" maxlength="10" required /></label>
+                <label><span>Name <span class="instant-optional">(optional)</span></span><input name="first_name" autocomplete="given-name" /></label>
               </div>
               <p class="instant-field-error" data-contact-method-error aria-live="polite"></p>
               <p class="form-status" data-instant-status aria-live="polite"></p>
-              <p class="instant-response-note">We typically respond within 10 minutes during business hours.</p><button class="button primary" type="submit">Show My Price Range</button>
+              <button class="button primary" type="submit">Show My Price Range</button>
+              <p class="instant-call-option">Rather talk to a person? <a href="tel:+12532821126" data-instant-call>Call (253) 282-1126</a></p>
+              <p class="instant-privacy-note">🔒 We don’t sell your contact information. We typically respond within 10 minutes during business hours.</p>
               <div class="instant-contact-trust" aria-label="Service credentials">
                 <p><span aria-hidden="true">✓</span>Free &amp; No Obligation</p>
                 <p><span aria-hidden="true">✓</span>Bonded &amp; Insured</p>
@@ -129,6 +126,8 @@
               </div>
             </form>
           </section>
+          <div class="instant-disclaimer"><p><strong>These are planning ranges, not a final quote.</strong> Actual pricing can vary depending on equipment brand, system capacity, indoor unit type, electrical requirements, line-set length, permits and installation conditions. Our on-site assessment will confirm the correct system size and configuration for your home.</p></div>
+          <button type="button" class="instant-edit-answers" data-edit-answers>← Change my answers</button>
         </section>
       </section>
     </main>

@@ -268,14 +268,15 @@ const handleLead = async (request, env) => {
     return json({ ok: true });
   }
 
-  const name = clean(lead.name, 120);
+  const source = clean(lead.lead_source, 80);
+  const isInstantEstimate = source === "mini_split_instant_estimate" || source === "hvac_quiz";
+  // The name is optional in the instant estimates, so the lead still gets a readable label.
+  const name = clean(lead.name, 120) || (isInstantEstimate ? "Not given" : "");
   const email = normalizeEmail(lead.email);
   const phone = normalizeUsPhone(lead.phone);
   const area = clean(lead.area, 160);
   const service = clean(lead.service, 160);
   const message = clean(lead.message, 1600);
-  const source = clean(lead.lead_source, 80);
-  const isInstantEstimate = source === "mini_split_instant_estimate" || source === "hvac_quiz";
   const preferredContactMethods = isInstantEstimate
     ? [...new Set((Array.isArray(lead.preferred_contact_methods) ? lead.preferred_contact_methods : [lead.preferred_contact_methods])
       .map((value) => clean(value, 20).toLowerCase())
@@ -992,6 +993,11 @@ export default {
     }
 
     if (url.pathname === "/services/furnaces" || url.pathname === "/services/air-conditioning" || url.pathname === "/services/ductwork") {
+      return renderReviewsPage(request, env);
+    }
+
+    // The instant estimates only use the rating badge.
+    if (url.pathname === "/instant-estimate/mini-split" || url.pathname === "/instant-estimate/heat-pump") {
       return renderReviewsPage(request, env);
     }
 
