@@ -46,7 +46,7 @@ export function renderSiteHeader(pathname = "/") {
     </header>`;
 }
 
-const mobileCtaExcludedPaths = new Set(["/admin", "/get-estimate", "/thank-you"]);
+const mobileCtaExcludedPaths = new Set(["/admin", "/get-estimate", "/thank-you", "/yard"]);
 const mobileCtaExcludedPrefixes = ["/instant-estimate/", "/landing/"];
 
 export function shouldRenderMobileCtaBar(pathname = "/") {

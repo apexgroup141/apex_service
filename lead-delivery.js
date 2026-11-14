@@ -18,6 +18,7 @@ const text = (value, maxLength) =>
     .slice(0, maxLength);
 
 const CLICK_ID_PATTERN = /^[A-Za-z0-9_-]{8,256}$/;
+const OPPREF_PATTERN = /^[A-Za-z0-9._~=+\/-]{4,512}$/;
 const LP_VARIANT_PATTERN = /^[a-z]{2,5}-[a-z]{3,12}$/;
 const SUBMISSION_ID_PATTERN = /^[A-Za-z0-9-]{16,64}$/;
 
@@ -28,6 +29,9 @@ export const EMPTY_ATTRIBUTION = Object.freeze({
   utm_source: null,
   utm_medium: null,
   utm_campaign: null,
+  utm_content: null,
+  oppref: null,
+  oa_oppref: null,
   lp_variant: null,
   attributed_at: null
 });
@@ -51,6 +55,13 @@ export const sanitizeAttribution = (raw, now = Date.now()) => {
     return CLICK_ID_PATTERN.test(id) ? id : null;
   };
   const utm = (value) => text(value, 150) || null;
+  // The OpenAI reference format is not documented, so accept URL-safe characters only, without
+  // an unexpanded "{oppref}" placeholder.
+  const openAiRef = (value) => {
+    if (String(value ?? "").length > 512) return null;
+    const ref = text(value, 512);
+    return OPPREF_PATTERN.test(ref) ? ref : null;
+  };
   const variant = text(raw.lp_variant, 20).toLowerCase();
 
   const attribution = {
@@ -60,6 +71,10 @@ export const sanitizeAttribution = (raw, now = Date.now()) => {
     utm_source: utm(raw.utm_source),
     utm_medium: utm(raw.utm_medium),
     utm_campaign: utm(raw.utm_campaign),
+    utm_content: utm(raw.utm_content),
+    // OpenAI ads click reference: `oppref` as OpenAI appends it, `oa_oppref` as our campaign copies it.
+    oppref: openAiRef(raw.oppref),
+    oa_oppref: openAiRef(raw.oa_oppref),
     lp_variant: LP_VARIANT_PATTERN.test(variant) ? variant : null,
     attributed_at: null
   };
@@ -68,8 +83,26 @@ export const sanitizeAttribution = (raw, now = Date.now()) => {
   return attribution;
 };
 
+// Paid ChatGPT traffic: the campaign's own tags (utm_source=chatgpt + utm_medium=cpc) or an
+// OpenAI ads click reference. Organic ChatGPT links carry utm_source=chatgpt.com and no medium.
+export const isChatGptAds = (attribution) => Boolean(
+  attribution && (
+    (String(attribution.utm_source || "").toLowerCase() === "chatgpt" && String(attribution.utm_medium || "").toLowerCase() === "cpc") ||
+    attribution.oppref || attribution.oa_oppref
+  )
+);
+
+// The advertising channel, kept apart from the form type (lead_source) and the service.
+export const marketingSource = (attribution) => {
+  if (!attribution) return "";
+  if (isChatGptAds(attribution)) return "ChatGPT Ads";
+  if (attribution.gclid || attribution.gbraid || attribution.wbraid) return "Google Ads";
+  return "";
+};
+
 export const describeAttribution = (attribution) => {
   if (!attribution) return "";
+  if (isChatGptAds(attribution)) return "ChatGPT Ads";
   if (attribution.gclid || attribution.gbraid || attribution.wbraid) {
     return attribution.lp_variant ? `Google Ads click (${attribution.lp_variant})` : "Google Ads click";
   }
@@ -87,18 +120,25 @@ const isUniqueError = (error) => /UNIQUE constraint failed/i.test(String(error?.
 export const findLeadBySubmissionId = async (env, submissionId) => {
   if (!env.DB || !submissionId) return null;
   try {
-    return await env.DB.prepare("SELECT id FROM leads WHERE submission_id = ?").bind(submissionId).first();
+    return await env.DB.prepare("SELECT id, notify_status FROM leads WHERE submission_id = ?").bind(submissionId).first();
   } catch (error) {
     if (isMissingColumnError(error)) return null;
     throw error;
   }
 };
 
+// A lead that looks like spam is saved with notify_status 'held': the retry queue skips it,
+// notify_last_error says why, and the admin page can still send it to Telegram.
+export const HELD_STATUS = "held";
+export const heldNote = (reasons) => text(`Possible spam, not sent to Telegram: ${reasons}`, 300);
+
 // Returns { id, tracked } where tracked means the notification queue columns exist,
 // or { duplicate: true } when the same submission was already stored.
+// row.heldReasons (text) saves the lead as held instead of queueing its notification.
 export const insertLead = async (env, row, notificationText) => {
   const now = row.createdAt;
   const attribution = row.attribution || EMPTY_ATTRIBUTION;
+  const held = Boolean(row.heldReasons);
   const values = [
     row.name, row.email, row.phone, row.area, row.service, row.message,
     row.page, row.userAgent, row.ip, now
@@ -107,14 +147,16 @@ export const insertLead = async (env, row, notificationText) => {
   try {
     const result = await env.DB.prepare(
       `INSERT INTO leads (name, email, phone, area, service, message, page, user_agent, ip, created_at,
-         submission_id, notify_status, notify_attempts, notify_next_at, notify_payload,
+         submission_id, notify_status, notify_attempts, notify_next_at, notify_last_error, notify_payload,
          gclid, gbraid, wbraid, utm_source, utm_medium, utm_campaign, lp_variant, attributed_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
       .bind(
         ...values,
         row.submissionId || null,
-        new Date(Date.parse(now) + FIRST_RETRY_DELAY_MS).toISOString(),
+        held ? HELD_STATUS : "pending",
+        held ? null : new Date(Date.parse(now) + FIRST_RETRY_DELAY_MS).toISOString(),
+        held ? heldNote(row.heldReasons) : null,
         notificationText,
         attribution.gclid, attribution.gbraid, attribution.wbraid,
         attribution.utm_source, attribution.utm_medium, attribution.utm_campaign,
@@ -128,7 +170,9 @@ export const insertLead = async (env, row, notificationText) => {
     if (!isMissingColumnError(error)) throw error;
   }
 
-  // Migration 0005 not applied yet: keep saving leads exactly as before.
+  // Migration 0005 not applied yet: keep saving leads exactly as before; a held lead is
+  // marked in its message.
+  if (held) values[5] = `[${heldNote(row.heldReasons)}] ${row.message || ""}`.trim();
   const result = await env.DB.prepare(
     `INSERT INTO leads (name, email, phone, area, service, message, page, user_agent, ip, created_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
@@ -249,16 +293,38 @@ export const requeueNotification = async (env, id) => {
   return Number(result?.meta?.changes || 0) === 1;
 };
 
+// "Not spam" on the admin page: sends a held lead's saved notification to Telegram now.
+// Returns { released: false } when the lead is not held, else { released: true, sent }.
+// A failed send leaves the lead in the normal retry queue.
+export const releaseHeldLead = async (env, id) => {
+  const claim = await env.DB.prepare(
+    `UPDATE leads SET notify_status = 'sending', notify_attempts = 0, notify_next_at = ?, notify_last_error = NULL
+     WHERE id = ? AND notify_status = 'held' AND notify_payload IS NOT NULL`
+  ).bind(new Date(Date.now() + CLAIM_MS).toISOString(), id).run();
+  if (Number(claim?.meta?.changes || 0) !== 1) return { released: false };
+
+  const row = await env.DB.prepare("SELECT notify_payload FROM leads WHERE id = ?").bind(id).first();
+  try {
+    await sendTelegramMessage(env, `<i>Sent from the admin page: the spam check had held this request.</i>\n\n${row.notify_payload}`);
+    await recordNotificationResult(env, id, { ok: true, attempts: 1 });
+    return { released: true, sent: true };
+  } catch (error) {
+    await recordNotificationResult(env, id, { ok: false, error, attempts: 1 });
+    return { released: true, sent: false };
+  }
+};
+
 export const loadNotificationStats = async (env) => {
   if (!env.DB) return null;
   try {
     const result = await env.DB.prepare(
       `SELECT notify_status AS status, COUNT(*) AS total FROM leads
-       WHERE notify_status IN ('pending', 'sending', 'failed') GROUP BY notify_status`
+       WHERE notify_status IN ('pending', 'sending', 'failed', 'held') GROUP BY notify_status`
     ).all();
-    const stats = { pending: 0, failed: 0 };
+    const stats = { pending: 0, failed: 0, held: 0 };
     for (const row of result.results || []) {
       if (row.status === "failed") stats.failed += Number(row.total || 0);
+      else if (row.status === "held") stats.held += Number(row.total || 0);
       else stats.pending += Number(row.total || 0);
     }
     return stats;

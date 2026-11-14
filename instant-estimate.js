@@ -10,6 +10,19 @@ const rememberEstimateResult = (title, lines) => {
   try { if (lines.length) window.sessionStorage.setItem(ESTIMATE_RESULT_KEY, JSON.stringify({ title, lines })); } catch {}
 };
 
+const FALLBACK_ERROR = "Could not send the request. Please call or email us directly.";
+
+// A submission the server did not accept as a lead (see apexLeadGuard in script.js).
+// error.held means it was saved for review: the visitor is told it was received, and no
+// conversion fires because the thank-you page is never opened.
+const refusal = (form, response, result) => {
+  const outcome = window.apexLeadGuard?.outcome(form, response, result, FALLBACK_ERROR) || { kind: "error", message: FALLBACK_ERROR };
+  const error = new Error("Request failed");
+  error.held = outcome.kind === "held";
+  error.userMessage = outcome.message;
+  return error;
+};
+
 // Reports once when the contact form is on screen and when typing starts, and on each call-link tap.
 const watchContactForm = (contact, leadForm, track, systemType) => {
   if (contact.dataset.watched) return;
@@ -133,8 +146,11 @@ const initHeatPumpQuiz = (quizRoot) => {
     window.apexLeadContext?.decorate(payload, leadForm);
     const pendingUserData = window.apexLeadContext?.hashUserData(payload);
     const button = leadForm.querySelector('button[type="submit"]'); submissionInProgress = true; button.disabled = true; status.textContent = "Sending request...";
-    try { const response = await fetch(leadForm.dataset.endpoint || "/api/lead", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }); const data = await response.json().catch(() => null); if (!response.ok || data?.ok !== true) throw new Error("Request failed"); leadEventSent = true; track("instant_estimate_lead", { system_type: "heat_pump", selected_tier: tier }); track("generate_lead", { lead_service: payload.service, lead_area: payload.area, page_location: window.location.href, system_type: "heat_pump" }); rememberEstimateResult("Your heat pump planning range", Object.entries(HEAT_PUMP_PRICES).filter(([level]) => tier === "not_sure" || level === tier).map(([level, price]) => `${level[0].toUpperCase() + level.slice(1)}: ${price}`)); try { window.sessionStorage.setItem(GOOGLE_ADS_LEAD_PENDING_KEY, payload.submission_id || "1"); } catch {} await window.apexLeadContext?.rememberUserData(pendingUserData); window.location.href = "/thank-you"; }
-    catch { submissionInProgress = false; button.disabled = false; status.textContent = "Could not send the request. Please call or email us directly."; status.className = "form-status is-error"; }
+    try { await window.apexLeadGuard?.protect(payload, leadForm); const response = await fetch(leadForm.dataset.endpoint || "/api/lead", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }); const data = await response.json().catch(() => null); if (!response.ok || data?.ok !== true) throw refusal(leadForm, response, data); leadEventSent = true; track("instant_estimate_lead", { system_type: "heat_pump", selected_tier: tier }); track("generate_lead", { lead_service: payload.service, lead_area: payload.area, page_location: window.location.href, system_type: "heat_pump" }); rememberEstimateResult("Your heat pump planning range", Object.entries(HEAT_PUMP_PRICES).filter(([level]) => tier === "not_sure" || level === tier).map(([level, price]) => `${level[0].toUpperCase() + level.slice(1)}: ${price}`)); try { window.sessionStorage.setItem(GOOGLE_ADS_LEAD_PENDING_KEY, payload.submission_id || "1"); } catch {} await window.apexLeadContext?.rememberUserData(pendingUserData); window.location.href = "/thank-you"; }
+    catch (error) {
+      if (error?.held) { leadEventSent = true; status.textContent = error.userMessage; status.className = "form-status is-success"; return; }
+      submissionInProgress = false; button.disabled = false; status.textContent = error?.userMessage || FALLBACK_ERROR; status.className = "form-status is-error";
+    }
   });
   track("instant_estimate_start", { system_type: "heat_pump" });
   showStep(1, false);
@@ -345,9 +361,10 @@ if (root?.dataset.systemType === "heat_pump") {
     leadForm.querySelector('button[type="submit"]').disabled = true;
     formStatus.textContent = "Sending request...";
     try {
+      await window.apexLeadGuard?.protect(payload, leadForm);
       const response = await fetch(leadForm.dataset.endpoint || "/api/lead", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       const result = await response.json().catch(() => null);
-      if (!response.ok || result?.ok !== true) throw new Error("Request failed");
+      if (!response.ok || result?.ok !== true) throw refusal(leadForm, response, result);
       track("instant_estimate_lead", { system_type: "mini_split", zones: state.answers.zones, selected_tier: state.selectedTier });
       track("generate_lead", { lead_service: payload.service, lead_area: payload.area, page_location: window.location.href });
       rememberEstimateResult("Your mini-split planning range", ranges ? [`Good: ${ranges.good}`, `Better: ${ranges.better}`, `Best: ${ranges.best}`] : []);
@@ -356,10 +373,16 @@ if (root?.dataset.systemType === "heat_pump") {
       } catch {}
       await window.apexLeadContext?.rememberUserData(pendingUserData);
       window.location.href = "/thank-you";
-    } catch {
+    } catch (error) {
+      if (error?.held) {
+        // Saved for review only: the form stays locked and the visitor stays on this page.
+        formStatus.textContent = error.userMessage;
+        formStatus.className = "form-status is-success";
+        return;
+      }
       submissionInProgress = false;
       leadForm.querySelector('button[type="submit"]').disabled = false;
-      formStatus.textContent = "Could not send the request. Please call or email us directly.";
+      formStatus.textContent = error?.userMessage || FALLBACK_ERROR;
       formStatus.className = "form-status is-error";
     }
   });

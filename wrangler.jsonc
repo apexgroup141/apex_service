@@ -6,14 +6,17 @@
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
-    "run_worker_first": ["/", "/about", "/reviews", "/services/mini-splits", "/services/heat-pumps", "/services/furnaces", "/services/air-conditioning", "/services/repair-maintenance", "/services/ductwork", "/instant-estimate/mini-split", "/instant-estimate/heat-pump", "/*.html"]
+    "run_worker_first": ["/", "/about", "/yard", "/go", "/reviews", "/services/mini-splits", "/services/heat-pumps", "/services/furnaces", "/services/air-conditioning", "/services/repair-maintenance", "/services/ductwork", "/instant-estimate/mini-split", "/instant-estimate/heat-pump", "/*.html"]
   },
   "triggers": {
     "crons": ["17 */3 * * *", "*/10 * * * *"]
   },
   "vars": {
     "GOOGLE_BUSINESS_ACCOUNT_ID": "116696538401694307878",
-    "GOOGLE_BUSINESS_LOCATION_ID": "2978863217463563301"
+    "GOOGLE_BUSINESS_LOCATION_ID": "2978863217463563301",
+    // Public Turnstile site key (widget "apexgroupwa.com", Managed). The secret key is a
+    // Wrangler secret (TURNSTILE_SECRET_KEY) and never goes in this file.
+    "TURNSTILE_SITE_KEY": "0x4AAAAAAGAjJDxDJ25uRmtT"
   },
   "d1_databases": [
     {

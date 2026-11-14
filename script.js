@@ -153,22 +153,26 @@ const estimateServiceAliases = {
 };
 const normalizedSelectedService = estimateServiceAliases[selectedService] || selectedService;
 const googleAdsLeadDestination = "AW-18358155203/eht5CKv_lvgcEMPv7LFE";
+// Same rule as the tag snippet in scripts/build.mjs: previews and local servers send no conversions.
+const isLiveSite = /(^|\.)apexgroupwa\.com$/i.test(window.location.hostname);
 const googleAdsLeadPendingKey = "apex_google_ads_lead_pending";
 const googleAdsUserDataKey = "apex_google_ads_user_data";
+const openAiLeadSentKey = "apex_openai_lead_sent";
 
 // Ad-click attribution for lead records. The latest tagged visit wins and lasts 30 days;
 // arriving from another site without tags (organic search, a referral) ends it, so a new
 // lead is never credited to an old ad click.
 const attributionKey = "apex_lead_attribution";
 const attributionMaxAgeMs = 30 * 24 * 60 * 60 * 1000;
-const attributionParams = { gclid: "gclid", gbraid: "gbraid", wbraid: "wbraid", utm_source: "utm_source", utm_medium: "utm_medium", utm_campaign: "utm_campaign", lpv: "lp_variant" };
+const attributionParams = { gclid: "gclid", gbraid: "gbraid", wbraid: "wbraid", utm_source: "utm_source", utm_medium: "utm_medium", utm_campaign: "utm_campaign", utm_content: "utm_content", oppref: "oppref", oa_oppref: "oa_oppref", lpv: "lp_variant" };
 
 const pageAttribution = (() => {
   const params = new URLSearchParams(window.location.search);
   const found = {};
   Object.entries(attributionParams).forEach(([param, field]) => {
     const value = params.get(param);
-    if (value) found[field] = value.slice(0, 256);
+    // An unexpanded placeholder such as {oppref} (or %7Boppref%7D) is not a click.
+    if (value && !/[{}]|%7[BD]/i.test(value)) found[field] = value.slice(0, 512);
   });
   return Object.keys(found).length ? { ...found, attributed_at: new Date().toISOString() } : null;
 })();
@@ -194,6 +198,17 @@ const currentAttribution = () => {
     // Fall back to the tags on this page.
   }
   return pageAttribution;
+};
+
+// GA4 gets only the city or the ZIP, never the street address the lead itself keeps.
+// Free-text values with digits (a house number) are left out.
+const analyticsLeadArea = (payload) => {
+  const city = String(payload.city || "").trim();
+  if (city && !/\d/.test(city)) return city.slice(0, 60);
+  const zip = String(payload.zip || "").trim().match(/^\d{5}/)?.[0];
+  if (zip) return `WA ${zip}`;
+  const area = String(payload.area || "").trim();
+  return area && !/\d/.test(area) ? area.slice(0, 60) : "";
 };
 
 const newSubmissionId = () => {
@@ -261,7 +276,9 @@ window.apexLeadContext = {
   },
   // Hashing starts with the request and is stored only after a confirmed lead.
   hashUserData,
-  rememberUserData
+  rememberUserData,
+  // The stored campaign tags (no personal data), for pages that report where a visit came from.
+  attribution: () => currentAttribution()
 };
 
 const trackEvent = (eventName, eventData = {}, callback = null, callbackTimeout = 1300) => {
@@ -293,12 +310,202 @@ const trackEvent = (eventName, eventData = {}, callback = null, callbackTimeout 
   }
 };
 
+// Spam protection shared by every lead form: Cloudflare Turnstile in its invisible mode
+// (it shows a checkbox only when Cloudflare needs one), the hidden honeypot field and the
+// time the form took. The script loads on the first touch of a form, never on page load.
+// outcome() turns a refused submission into what the visitor sees; only { ok: true } from the
+// server is a lead, so a held or refused submission never fires a conversion.
+window.apexLeadGuard = (() => {
+  const formSelector = "[data-lead-form], [data-instant-lead], [data-yard-form]";
+  const forms = new WeakMap();
+  const RETRY_MESSAGE = "The quick security check did not finish. Your details are still in the form: please press the button again. If it keeps failing, call (253) 282-1126.";
+  let configPromise = null;
+  let scriptPromise = null;
+
+  const loadConfig = () => {
+    configPromise ||= fetch("/api/lead-guard/config")
+      .then((response) => (response.ok ? response.json() : Promise.reject(new Error("config"))))
+      .catch(() => {
+        configPromise = null;
+        return { failed: true };
+      });
+    return configPromise;
+  };
+
+  const loadTurnstile = () => {
+    scriptPromise ||= new Promise((resolve, reject) => {
+      if (window.turnstile) { resolve(window.turnstile); return; }
+      window.apexTurnstileLoaded = () => resolve(window.turnstile);
+      const script = document.createElement("script");
+      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=apexTurnstileLoaded";
+      script.async = true;
+      script.defer = true;
+      script.onerror = () => {
+        // A network hiccup: forget this attempt so the next press loads the script again.
+        script.remove();
+        scriptPromise = null;
+        reject(new Error("Turnstile did not load"));
+      };
+      document.head.append(script);
+    });
+    return scriptPromise;
+  };
+
+  const stateFor = (form) => {
+    let state = forms.get(form);
+    if (!state) {
+      state = { startedAt: Date.now(), attempt: 1, token: "", widgetId: null, needsInteraction: false, waiters: [], rendering: null };
+      forms.set(form, state);
+    }
+    return state;
+  };
+
+  const settle = (state, token) => {
+    state.token = token;
+    state.waiters.splice(0).forEach((resolve) => resolve(token));
+  };
+
+  const ensureHoneypot = (form) => {
+    if (form.querySelector('input[name="company"]')) return;
+    const label = document.createElement("label");
+    label.className = "form-honeypot";
+    label.setAttribute("aria-hidden", "true");
+    label.textContent = "Company";
+    const input = document.createElement("input");
+    input.name = "company";
+    input.tabIndex = -1;
+    input.autocomplete = "off";
+    label.append(input);
+    form.append(label);
+  };
+
+  const render = (form) => {
+    const state = stateFor(form);
+    state.rendering ||= loadConfig().then(async (config) => {
+      if (config?.failed) throw new Error("Lead guard config unavailable");
+      if (!config?.turnstileSiteKey) return false;
+      const turnstile = await loadTurnstile();
+      let box = form.querySelector("[data-lead-guard-widget]");
+      if (!box) {
+        box = document.createElement("div");
+        box.className = "lead-guard-widget";
+        box.dataset.leadGuardWidget = "";
+        const anchor = form.querySelector(".form-status") || form.querySelector('button[type="submit"]');
+        if (anchor) anchor.before(box);
+        else form.append(box);
+      }
+      state.widgetId = turnstile.render(box, {
+        sitekey: config.turnstileSiteKey,
+        appearance: "interaction-only",
+        size: "flexible",
+        "refresh-expired": "auto",
+        callback: (token) => { state.needsInteraction = false; settle(state, token); },
+        "expired-callback": () => { state.token = ""; },
+        "error-callback": () => { settle(state, ""); return true; },
+        "before-interactive-callback": () => { state.needsInteraction = true; },
+        "after-interactive-callback": () => { state.needsInteraction = false; }
+      });
+      return true;
+    }).catch(() => {
+      state.rendering = null;
+      return false;
+    });
+    return state.rendering;
+  };
+
+  const prepare = (form) => {
+    if (!form) return;
+    stateFor(form);
+    ensureHoneypot(form);
+    render(form);
+  };
+
+  // The token, waiting at most waitMs in all for Turnstile to finish in the background.
+  // Without a token the server answers with a retry, so a slow check never loses the lead.
+  const token = async (form, waitMs = 6000) => {
+    const state = stateFor(form);
+    const deadline = new Promise((resolve) => window.setTimeout(() => resolve(null), waitMs));
+    const enabled = await Promise.race([render(form), deadline]);
+    if (enabled === false) return "";
+    if (state.token) return state.token;
+    if (state.needsInteraction) return "";
+    const waited = await Promise.race([new Promise((resolve) => state.waiters.push(resolve)), deadline]);
+    return waited || state.token || "";
+  };
+
+  // Adds the token, the honeypot value, the elapsed time and the attempt number. Throws
+  // (with userMessage) while Cloudflare is waiting for the visitor to tick its checkbox.
+  const protect = async (payload, form) => {
+    if (!form) return payload;
+    prepare(form);
+    const state = stateFor(form);
+    payload.turnstile_token = await token(form);
+    if (!payload.turnstile_token && state.needsInteraction) {
+      const error = new Error("Security check pending");
+      error.userMessage = "Please complete the quick security check above, then press the button again.";
+      throw error;
+    }
+    payload.company = form.querySelector('input[name="company"]')?.value || payload.company || "";
+    payload.form_elapsed_ms = Date.now() - state.startedAt;
+    payload.verification_attempt = state.attempt;
+    return payload;
+  };
+
+  // A Turnstile token works once: after any answer that was not a lead, get a fresh one.
+  const reset = (form) => {
+    const state = forms.get(form);
+    if (!state) return;
+    state.token = "";
+    if (state.widgetId !== null && window.turnstile) {
+      try { window.turnstile.reset(state.widgetId); } catch {}
+    }
+  };
+
+  // { kind: "held" | "retry" | "error", message } for a response that was not { ok: true }.
+  const outcome = (form, response, result, fallback) => {
+    reset(form);
+    if (result?.held) return { kind: "held", message: String(result.message || "Thanks, we received your request. If it is urgent, call (253) 282-1126.") };
+    if (result?.retry === "verification") {
+      const state = forms.get(form);
+      if (state) state.attempt += 1;
+      return { kind: "retry", message: state?.needsInteraction ? "Please complete the quick security check above, then press the button again." : RETRY_MESSAGE };
+    }
+    if (response?.status === 400 && result?.error) return { kind: "error", message: String(result.error) };
+    if (response?.status === 429 && result?.error) return { kind: "error", message: String(result.error) };
+    return { kind: "error", message: fallback };
+  };
+
+  ["focusin", "pointerdown"].forEach((type) => {
+    document.addEventListener(type, (event) => {
+      const form = event.target instanceof Element ? event.target.closest(formSelector) : null;
+      if (form) prepare(form);
+    }, { passive: true });
+  });
+
+  return { prepare, protect, outcome, reset };
+})();
+
 if (window.location.pathname === "/thank-you" || window.location.pathname === "/thank-you.html") {
+  // OpenAI Ads: one lead_created per lead the server accepted, read from the same marker as the
+  // Google conversion below. The submission id is the event_id, so OpenAI drops repeats, and the
+  // per-tab note stops a reload from sending it again. No contact details are sent.
+  try {
+    const pendingLead = window.sessionStorage.getItem(googleAdsLeadPendingKey);
+    if (pendingLead && typeof window.oaiq === "function" && window.sessionStorage.getItem(openAiLeadSentKey) !== pendingLead) {
+      const measureArgs = ["measure", "lead_created", { type: "customer_action" }];
+      if (pendingLead !== "1") measureArgs.push({ event_id: pendingLead });
+      window.oaiq(...measureArgs);
+      window.sessionStorage.setItem(openAiLeadSentKey, pendingLead);
+    }
+  } catch {
+    // Measurement is optional; the confirmation page works without it.
+  }
+
   try {
     // The marker holds the submission id, sent as transaction_id so Google Ads
     // counts one conversion per lead even if the tag fires twice.
     const pendingLead = window.sessionStorage.getItem(googleAdsLeadPendingKey);
-    if (pendingLead && typeof window.gtag === "function") {
+    if (pendingLead && isLiveSite && typeof window.gtag === "function") {
       try {
         const userData = JSON.parse(window.sessionStorage.getItem(googleAdsUserDataKey) || "null");
         if (userData) window.gtag("set", "user_data", userData);
@@ -453,6 +660,7 @@ if (leadForm) {
     const pendingUserData = window.apexLeadContext.hashUserData(payload);
 
     try {
+      await window.apexLeadGuard.protect(payload, leadForm);
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -461,7 +669,16 @@ if (leadForm) {
       const result = await response.json().catch(() => null);
 
       if (!response.ok || result?.ok !== true) {
-        throw new Error("Request failed");
+        const outcome = window.apexLeadGuard.outcome(leadForm, response, result, "Could not send the request. Please call or email us directly.");
+        if (outcome.kind === "held") {
+          // Saved for review only, not a confirmed lead: the visitor stays on this page.
+          leadEventSent = true;
+          setFormStatus(outcome.message, "success");
+          return;
+        }
+        const error = new Error("Request failed");
+        error.userMessage = outcome.message;
+        throw error;
       }
 
       leadEventSent = true;
@@ -469,7 +686,7 @@ if (leadForm) {
         "generate_lead",
         {
           lead_service: payload.service || "",
-          lead_area: payload.area || "",
+          lead_area: analyticsLeadArea(payload),
           page_location: window.location.href
         }
       );
@@ -480,10 +697,10 @@ if (leadForm) {
       }
       await window.apexLeadContext.rememberUserData(pendingUserData);
       window.location.href = "/thank-you";
-    } catch {
+    } catch (error) {
       submissionInProgress = false;
       submitButton.disabled = false;
-      setFormStatus("Could not send the request. Please call or email us directly.", "error");
+      setFormStatus(error?.userMessage || "Could not send the request. Please call or email us directly.", "error");
     }
   });
 }

@@ -9,13 +9,25 @@ import {
   describeAttribution,
   findLeadBySubmissionId,
   insertLead,
+  isChatGptAds,
   loadNotificationStats,
   recordNotificationResult,
+  releaseHeldLead,
   requeueNotification,
   retryPendingNotifications,
   sanitizeAttribution,
   sendTelegramMessage
 } from "./lead-delivery.js";
+import {
+  BURST_LIMIT,
+  HOURLY_CAP,
+  MAX_BODY_BYTES,
+  assessLead,
+  countRecentLeads,
+  publicGuardConfig,
+  verifyTurnstile
+} from "./lead-guard.js";
+import { YARD_CATEGORIES, YARD_EQUIPMENT, YARD_LEAD_SOURCE, YARD_REDIRECT_URL, YARD_TASKS } from "./yard-lead.js";
 
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -40,7 +52,8 @@ const normalizeUsPhone = (value) => {
   if (digits.length === 11 && digits.startsWith("1")) {
     digits = digits.slice(1);
   }
-  return digits.length === 10 ? `+1${digits}` : "";
+  // A real US number: neither the area code nor the exchange starts with 0 or 1.
+  return /^[2-9]\d{2}[2-9]\d{6}$/.test(digits) ? `+1${digits}` : "";
 };
 
 const escapeHtml = (value) =>
@@ -98,9 +111,24 @@ const estimateLabels = {
 
 const labelEstimateValue = (value) => estimateLabels[value] || clean(value, 120) || "Not provided";
 
+// Which form sent the lead (lead_source), shown apart from the ad channel and the service.
+const FORM_LABELS = {
+  mini_split_instant_estimate: "Mini-split instant estimate",
+  hvac_quiz: "Heat pump instant estimate",
+  [YARD_LEAD_SOURCE]: "Yard page form"
+};
+
 const sourceLine = (lead) => {
   const source = describeAttribution(lead.attribution);
-  return source ? [`<b>Source:</b> ${escapeHtml(source)}`] : [];
+  if (!source) return [];
+  const lines = [`<b>Source:</b> ${escapeHtml(source)}`];
+  if (isChatGptAds(lead.attribution)) {
+    const { utm_campaign: campaign, utm_content: ad } = lead.attribution;
+    if (campaign) lines.push(`<b>Campaign:</b> ${escapeHtml(campaign)}`);
+    if (ad) lines.push(`<b>Ad:</b> ${escapeHtml(ad)}`);
+    lines.push(`<b>Form:</b> ${escapeHtml(FORM_LABELS[lead.source] || "Estimate request form")}`);
+  }
+  return lines;
 };
 
 export const formatInstantEstimateMessage = (lead, request) => {
@@ -150,7 +178,90 @@ export const formatInstantEstimateMessage = (lead, request) => {
   ].filter((line) => line !== "").join("\n");
 };
 
+// The /yard page (yard-sign QR code) asks for a category and a task instead of a free-form service.
+// Returns { lead } or { error } for a /yard submission.
+export const normalizeYardLead = (raw) => {
+  const category = clean(raw.category, 40);
+  const task = clean(raw.task, 40);
+  const config = YARD_CATEGORIES[category];
+  if (!config || !config.tasks.includes(task)) return { error: "Choose what we can help you with." };
+
+  const description = category === "other" ? clean(raw.description, 1000) : "";
+  if (category === "other" && !description) return { error: "Tell us what we can help you with." };
+  const equipmentKey = category === "repair_maintenance" ? clean(raw.equipment, 40) : "";
+  const equipment = YARD_EQUIPMENT[equipmentKey] || "";
+
+  const name = clean(raw.name, 120);
+  const method = clean(raw.preferred_contact_method, 20).toLowerCase();
+  const phone = method === "phone" ? normalizeUsPhone(raw.phone) : "";
+  const email = method === "email" ? normalizeEmail(raw.email) : "";
+  const zip = clean(raw.zip, 10);
+  const details = clean(raw.details, 1600);
+
+  if (!name) return { error: "Enter your name." };
+  if (method !== "phone" && method !== "email") return { error: "Choose phone or email." };
+  if (method === "phone" && !phone) return { error: "Enter a valid 10-digit US phone number." };
+  if (method === "email" && !isValidEmail(email)) return { error: "Enter a valid email address." };
+  if (!/^\d{5}(-\d{4})?$/.test(zip)) return { error: "Enter a valid ZIP code." };
+
+  const categoryLabel = config.label;
+  const taskLabel = YARD_TASKS[task];
+  const service = category === "other" ? "Other request" : `${categoryLabel}: ${taskLabel}`;
+  const contactLabel = method === "phone" ? "Phone" : "Email";
+  const message = [
+    "Yard sign page request",
+    `Equipment/category: ${categoryLabel}`,
+    `Task: ${taskLabel}`,
+    equipment ? `Equipment type: ${equipment}` : "",
+    description ? `Description: ${description}` : "",
+    details ? `Additional details: ${details}` : "",
+    `Preferred contact: ${contactLabel}`
+  ].filter(Boolean).join(" | ");
+
+  return {
+    lead: {
+      name, phone, email, zip, details, description, equipment, method,
+      category, task, categoryLabel, taskLabel, contactLabel,
+      area: `WA ${zip}`,
+      service,
+      message
+    }
+  };
+};
+
+export const formatYardLeadMessage = (lead, request) => {
+  const yard = lead.yard;
+  const submittedAt = new Date().toLocaleString("en-US", {
+    timeZone: "America/Los_Angeles",
+    dateStyle: "medium",
+    timeStyle: "short"
+  });
+  const isInstall = yard.task === "install_replace";
+  return [
+    isInstall ? "<b>New FREE ESTIMATE request (yard page)</b>" : yard.category === "other" ? "<b>New request (yard page)</b>" : "<b>New SERVICE request (yard page)</b>",
+    "",
+    `<b>Equipment/category:</b> ${escapeHtml(yard.categoryLabel)}`,
+    `<b>Task:</b> ${escapeHtml(yard.taskLabel)}`,
+    yard.equipment ? `<b>Equipment type:</b> ${escapeHtml(yard.equipment)}` : null,
+    yard.description ? `<b>Description:</b> ${escapeHtml(yard.description)}` : null,
+    yard.details ? `<b>Additional details:</b> ${escapeHtml(yard.details)}` : null,
+    "",
+    `<b>Name:</b> ${escapeHtml(yard.name)}`,
+    `<b>Preferred contact:</b> ${yard.contactLabel}`,
+    yard.phone ? `<b>Phone:</b> ${escapeHtml(yard.phone)}` : null,
+    yard.email ? `<b>Email:</b> ${escapeHtml(yard.email)}` : null,
+    `<b>ZIP Code:</b> ${escapeHtml(yard.zip)}`,
+    "",
+    `<b>Page:</b> ${escapeHtml(request.headers.get("referer") || "Direct visit")}`,
+    `<b>Source:</b> ${escapeHtml(describeAttribution(lead.attribution) || "No campaign tags (direct visit)")}`,
+    `<b>Submitted:</b> ${escapeHtml(submittedAt)}`
+  ].filter((line) => line !== null).join("\n");
+};
+
 const formatLeadMessage = (lead, request) => {
+  if (lead.source === YARD_LEAD_SOURCE && lead.yard) {
+    return formatYardLeadMessage(lead, request);
+  }
   if ((lead.source === "mini_split_instant_estimate" || lead.source === "hvac_quiz") && lead.estimate) {
     return formatInstantEstimateMessage(lead, request);
   }
@@ -209,7 +320,8 @@ const saveLead = async (env, lead, request, notificationText) => {
       ip: meta.ip,
       createdAt: meta.createdAt,
       submissionId: lead.submissionId,
-      attribution: lead.attribution
+      attribution: lead.attribution,
+      heldReasons: lead.heldReasons || ""
     }, notificationText);
   } catch (error) {
     console.error("Could not log lead", error);
@@ -261,18 +373,27 @@ const handleLead = async (request, env) => {
     return json({ error: "Method not allowed" }, 405);
   }
 
+  if (Number(request.headers.get("content-length") || 0) > MAX_BODY_BYTES) {
+    return json({ error: "Request is too large" }, 413);
+  }
+
+  const body = await request.text();
+  if (body.length > MAX_BODY_BYTES) {
+    return json({ error: "Request is too large" }, 413);
+  }
+
   let lead;
   try {
-    lead = await request.json();
+    lead = JSON.parse(body);
   } catch {
     return json({ error: "Invalid request" }, 400);
   }
-
-  if (clean(lead.company)) {
-    return json({ ok: true });
+  if (!lead || typeof lead !== "object" || Array.isArray(lead)) {
+    return json({ error: "Invalid request" }, 400);
   }
 
   const source = clean(lead.lead_source, 80);
+  if (source === YARD_LEAD_SOURCE) return handleYardLead(lead, request, env);
   const isInstantEstimate = source === "mini_split_instant_estimate" || source === "hvac_quiz";
   // The name is optional in the instant estimates, so the lead still gets a readable label.
   const name = clean(lead.name, 120) || (isInstantEstimate ? "Not given" : "");
@@ -330,11 +451,15 @@ const handleLead = async (request, env) => {
     if ((wantsPhone && !submittedPhone) || (wantsEmail && (!submittedEmail || !isValidEmail(submittedEmail))) || !name || !area || !service) {
       return json({ error: "Missing or invalid preferred contact information." }, 400);
     }
-  } else if (!name || (email && !isValidEmail(email)) || !phone || !area || !service) {
-    return json({ error: "Missing required fields" }, 400);
+  } else {
+    if (!name) return json({ error: "Enter your name." }, 400);
+    if (!phone) return json({ error: "Enter a valid 10-digit US phone number." }, 400);
+    if (email && !isValidEmail(email)) return json({ error: "Enter a valid email address." }, 400);
+    if (!area) return json({ error: "Enter your city or ZIP code." }, 400);
+    if (!service) return json({ error: "Choose the service you need." }, 400);
   }
 
-  const payload = {
+  return storeAndNotifyLead({
     name,
     email: submittedEmail,
     phone: submittedPhone,
@@ -347,17 +472,96 @@ const handleLead = async (request, env) => {
     page: clean(request.headers.get("referer") || "", 500),
     submissionId: cleanSubmissionId(lead.submission_id),
     attribution: sanitizeAttribution(lead.attribution)
-  };
+  }, request, env, lead);
+};
+
+const handleYardLead = async (raw, request, env) => {
+  const { lead, error } = normalizeYardLead(raw);
+  if (error) return json({ error }, 400);
+  return storeAndNotifyLead({
+    name: lead.name,
+    email: lead.email,
+    phone: lead.phone,
+    service: lead.service,
+    area: lead.area,
+    message: lead.message,
+    source: YARD_LEAD_SOURCE,
+    yard: lead,
+    page: clean(request.headers.get("referer") || "", 500),
+    submissionId: cleanSubmissionId(raw.submission_id),
+    attribution: sanitizeAttribution(raw.attribution)
+  }, request, env, raw);
+};
+
+// A held lead is saved but answered with ok: false, so the page never counts it as a
+// conversion. The visitor still reads that the request was received.
+const HELD_MESSAGE = "Thanks, we received your request. We will review it and contact you. If it is urgent, call (253) 282-1126.";
+const heldResponse = (payload) => json({ ok: false, held: true, message: HELD_MESSAGE, ...(payload.submissionId ? { ref: payload.submissionId } : {}) }, 202);
+
+// Free text the visitor typed (the main form sends its notes as message too, so each text
+// counts once); the structured answers of the estimates are not scored.
+const visitorText = (raw) => [...new Set(["message", "notes", "details", "description"]
+  .map((key) => clean(raw?.[key], 2000))
+  .filter(Boolean))]
+  .join(" | ");
+
+// Spam checks for a validated lead. Returns a Response to send at once, or the reasons to hold it ("" = a normal lead).
+const checkLead = async (payload, request, env, raw) => {
+  const ip = getRequestMeta(request).ip;
+  const recent = await countRecentLeads(env, ip);
+  if (recent.hourly >= HOURLY_CAP) {
+    return { response: json({ error: "Too many requests from this connection. Please call (253) 282-1126.", retry: "later" }, 429) };
+  }
+
+  const honeypot = clean(raw?.company, 200) || clean(raw?.website, 200);
+  const attempt = Number(raw?.verification_attempt) || 1;
+  let turnstileFailed = false;
+  if (!honeypot) {
+    const turnstile = await verifyTurnstile(env, raw?.turnstile_token, ip);
+    if (!turnstile.ok) {
+      // First failure: the visitor gets a fresh check and tries again. Later failures are held.
+      if (attempt < 2) {
+        return { response: json({ ok: false, retry: "verification", error: "We could not complete the quick security check. Please press the button again." }, 403) };
+      }
+      turnstileFailed = true;
+    }
+  }
+
+  const elapsed = Number(raw?.form_elapsed_ms);
+  const assessment = assessLead({
+    name: payload.name,
+    text: visitorText(raw),
+    honeypot,
+    elapsedMs: Number.isFinite(elapsed) ? elapsed : null,
+    rateBurst: recent.burst >= BURST_LIMIT,
+    turnstileFailed
+  });
+  return { heldReasons: assessment.held ? `${assessment.reasons.join("; ")} (score ${assessment.score})` : "" };
+};
+
+// Saves the lead once and sends its Telegram notification (retried by the cron when it fails).
+const storeAndNotifyLead = async (payload, request, env, raw = {}) => {
   const success = payload.submissionId ? { ok: true, ref: payload.submissionId } : { ok: true };
 
   // A resubmitted form (double click, network retry) must not create a second lead or notification.
   try {
-    if (await findLeadBySubmissionId(env, payload.submissionId)) return json(success);
+    const existing = await findLeadBySubmissionId(env, payload.submissionId);
+    if (existing) return existing.notify_status === "held" ? heldResponse(payload) : json(success);
   } catch (error) {
     console.error("Could not check for a duplicate lead", error);
   }
 
+  const check = await checkLead(payload, request, env, raw);
+  if (check.response) return check.response;
+
   const notificationText = formatLeadMessage(payload, request);
+  if (check.heldReasons) {
+    payload.heldReasons = check.heldReasons;
+    const stored = await saveLead(env, payload, request, notificationText);
+    if (!stored) console.error("A held lead could not be saved", check.heldReasons);
+    return heldResponse(payload);
+  }
+
   const stored = await saveLead(env, payload, request, notificationText);
   if (stored?.duplicate) return json(success);
 
@@ -529,14 +733,20 @@ const tableHasColumn = async (env, table, column) => {
   return (result.results || []).some((row) => row.name === column);
 };
 
-const loadStructuredLeads = async (env, { q, service, from, to, limit, offset }) => {
+// view "" hides leads held by the spam check, "spam" shows only them, "all" shows both.
+const loadStructuredLeads = async (env, { q, service, from, to, limit, offset, view = "" }) => {
   if (!(await tableExists(env, "leads"))) {
     return { leads: [], total: 0 };
   }
 
   const hasEmail = await tableHasColumn(env, "leads", "email");
+  const hasDelivery = await tableHasColumn(env, "leads", "notify_status");
   const where = [];
   const values = [];
+
+  if (hasDelivery && view === "spam") where.push("notify_status = 'held'");
+  else if (hasDelivery && view !== "all") where.push("(notify_status IS NULL OR notify_status <> 'held')");
+  else if (!hasDelivery && view === "spam") where.push("0");
 
   if (q) {
     const like = `%${q}%`;
@@ -564,7 +774,7 @@ const loadStructuredLeads = async (env, { q, service, from, to, limit, offset })
 
   const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
   const emailSelect = hasEmail ? "email" : "'' AS email";
-  const deliverySelect = (await tableHasColumn(env, "leads", "notify_status"))
+  const deliverySelect = hasDelivery
     ? ", notify_status, notify_attempts, notify_last_error, gclid, gbraid, wbraid, utm_source, utm_medium, utm_campaign, lp_variant"
     : "";
   const totalRow = await first(env.DB.prepare(`SELECT COUNT(*) AS total FROM leads ${whereSql}`), values);
@@ -802,8 +1012,9 @@ const handleAdminLeads = async (request, env) => {
   const to = /^\d{4}-\d{2}-\d{2}$/.test(toDate) ? `${toDate}T23:59:59.999Z` : "";
   const limit = Math.min(Math.max(Number(params.get("limit")) || 50, 1), 100);
   const offset = Math.max(Number(params.get("offset")) || 0, 0);
-  const structured = await loadStructuredLeads(env, { q, service, from, to, limit, offset });
-  const legacy = await loadLegacyEventLeads(env, { q, service, from, to, limit });
+  const view = ["spam", "all"].includes(params.get("view")) ? params.get("view") : "";
+  const structured = await loadStructuredLeads(env, { q, service, from, to, limit, offset, view });
+  const legacy = view === "spam" ? { leads: [], total: 0 } : await loadLegacyEventLeads(env, { q, service, from, to, limit });
   const leads = [...structured.leads, ...legacy.leads]
     .sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")))
     .slice(0, limit);
@@ -839,6 +1050,19 @@ const handleAdminLeads = async (request, env) => {
       notifications
     }
   });
+};
+
+const handleAdminReleaseLead = async (request, env) => {
+  if (!isAuthorizedAdmin(request, env)) return json({ error: "Unauthorized" }, 401);
+  if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
+  if (!env.DB) return json({ error: "Database is not configured" }, 503);
+
+  const body = await readJsonBody(request);
+  const id = Number(body?.id);
+  if (!Number.isInteger(id) || id <= 0) return json({ error: "Invalid lead id" }, 400);
+  const result = await releaseHeldLead(env, id);
+  if (!result.released) return json({ error: "This lead is not held as spam." }, 409);
+  return json({ ok: true, sent: result.sent });
 };
 
 const handleAdminNotificationRetry = async (request, env) => {
@@ -906,6 +1130,11 @@ export default {
       return Response.redirect(url.toString(), 301);
     }
 
+    // Printed yard-sign QR codes point here; only this destination may change later, never /go itself.
+    if (url.pathname === "/go" || url.pathname === "/go/") {
+      return new Response(null, { status: 302, headers: { Location: YARD_REDIRECT_URL, "Cache-Control": "no-store" } });
+    }
+
     if (url.protocol === "http:" || url.hostname === "www.apexgroupwa.com") {
       url.protocol = "https:";
       url.hostname = "apexgroupwa.com";
@@ -920,6 +1149,13 @@ export default {
         console.error(error);
         return json({ error: "Could not send request" }, 500);
       }
+    }
+
+    // Public: the Turnstile site key (not a secret) for the lead forms.
+    if (url.pathname === "/api/lead-guard/config") {
+      return new Response(JSON.stringify(publicGuardConfig(env)), {
+        headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "public, max-age=300" }
+      });
     }
 
     if (url.pathname === "/api/call-click") {
@@ -937,6 +1173,15 @@ export default {
       } catch (error) {
         console.error(error);
         return json({ error: "Could not load leads" }, 500);
+      }
+    }
+
+    if (url.pathname === "/api/admin/leads/release") {
+      try {
+        return await handleAdminReleaseLead(request, env);
+      } catch (error) {
+        console.error(error);
+        return json({ error: "Could not send the lead to Telegram" }, 500);
       }
     }
 
@@ -994,7 +1239,7 @@ export default {
       });
     }
 
-    if (url.pathname === "/about") {
+    if (url.pathname === "/about" || url.pathname === "/yard") {
       return renderReviewsPage(request, env, { limit: 3 });
     }
 

@@ -37,7 +37,9 @@ const filesToCopy = [
   "reviews.html",
   "sitemap.xml",
   "styles.css",
-  "thank-you.html"
+  "thank-you.html",
+  "yard.html",
+  "yard.js"
 ];
 
 const mimeTypes = {
@@ -61,17 +63,48 @@ const googleAdsTagId = "AW-18358155203";
 // this one, so their calls count in Google Ads. It must match the number as the pages show it.
 const googleAdsWebsiteCallLabel = "AW-18358155203/d4snCK2y0bEdEMPv7LFE";
 const sitePhoneDisplay = "(253) 282-1126";
+// Only the live site reports to GA4, Google Ads and OpenAI Ads. Preview versions on workers.dev
+// and local servers send nothing, so test leads never count as conversions.
+const liveSiteTest = String.raw`/(^|\.)apexgroupwa\.com$/i.test(location.hostname)`;
 const googleTagSnippet = `<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=${googleTagId}"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-  gtag('config', '${googleTagId}');
-  gtag('config', '${googleAdsTagId}');
-  gtag('config', '${googleAdsWebsiteCallLabel}', { 'phone_conversion_number': '${sitePhoneDisplay}' });
+  if (${liveSiteTest}) {
+    gtag('config', '${googleTagId}');
+    gtag('config', '${googleAdsTagId}');
+    gtag('config', '${googleAdsWebsiteCallLabel}', { 'phone_conversion_number': '${sitePhoneDisplay}' });
+  }
 </script>
 <!-- End Google tag -->`;
+
+// OpenAI Ads Measurement Pixel (data source "Apex Website Pixel"). On the ad's landing page it
+// saves the oppref click reference from the URL in its own first-party cookie; the confirmation
+// page sends lead_created (see script.js). No user data or advanced matching is configured.
+// Console logging only with ?oaiq_debug=1 in the page URL, for checking in Ads Manager.
+const openAiPixelId = "FXDQgvBzg9HwYoqXTJBX4s";
+// The pixel reads the click reference only from \`oppref\`. Our campaign passes it as
+// \`oa_oppref\`, so when only that one is in the URL it is copied to \`oppref\` (same page, no
+// reload) before the SDK loads. An existing \`oppref\` is never changed or removed.
+const openAiPixelSnippet = `<!-- OpenAI Ads pixel -->
+<script>
+  try{var oaP=new URLSearchParams(location.search),oaR=oaP.get("oa_oppref");if(oaR&&!oaP.get("oppref")&&!/[{}%]/.test(oaR)){oaP.set("oppref",oaR);history.replaceState(history.state,"",location.pathname+"?"+oaP.toString()+location.hash)}}catch(e){}
+  if(${liveSiteTest})!function(w,d,s,u){
+    if(w.oaiq)return;
+    var q=function(){q.q.push(arguments)};
+    q.q=[];
+    w.oaiq=q;
+    var j=d.createElement(s);
+    j.async=1;
+    j.src=u;
+    var f=d.getElementsByTagName(s)[0];
+    f.parentNode.insertBefore(j,f)
+  }(window,document,"script","https://bzrcdn.openai.com/sdk/oaiq.min.js");
+  if(window.oaiq)oaiq("init", { pixelId: "${openAiPixelId}", debug: /[?&]oaiq_debug=1(&|$)/.test(location.search) });
+</script>
+<!-- End OpenAI Ads pixel -->`;
 
 fs.rmSync(dist, { force: true, recursive: true });
 fs.mkdirSync(path.join(dist, "server"), { recursive: true });
@@ -104,6 +137,15 @@ function injectGoogleTagIntoHtml(filePath) {
   html = html
     .replace(/<head(\s[^>]*)?>/i, (match) => `${match}\n    ${googleTagSnippet}`);
 
+  fs.writeFileSync(filePath, html);
+}
+
+function injectOpenAiPixelIntoHtml(filePath) {
+  if (path.basename(filePath) === "admin.html") return;
+  let html = fs.readFileSync(filePath, "utf8");
+  if (html.includes(`pixelId: "${openAiPixelId}"`)) return;
+  // Near the top of <head>, as OpenAI asks, so the click reference is saved before anything else loads.
+  html = html.replace(/<head(\s[^>]*)?>/i, (match) => `${match}\n    ${openAiPixelSnippet}`);
   fs.writeFileSync(filePath, html);
 }
 
@@ -204,6 +246,7 @@ for (const filePath of listFiles(dist)) {
     injectMobileCtaBar(filePath);
     injectFooterSocialLinks(filePath);
     injectGoogleTagIntoHtml(filePath);
+    injectOpenAiPixelIntoHtml(filePath);
   }
 }
 

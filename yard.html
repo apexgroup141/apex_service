@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Apex Service Group | Local HVAC Installation, Repair &amp; Maintenance</title>
+    <meta name="description" content="Tell Apex Service Group what you need help with: mini-splits, heat pumps, furnaces, repair and maintenance across Pierce, King and Thurston counties." />
+    <meta name="robots" content="noindex,follow" />
+    <link rel="canonical" href="https://apexgroupwa.com/yard" />
+    <meta name="theme-color" content="#061f49" />
+    <link rel="icon" href="/assets/apex-icon.png" />
+    <link rel="preload" as="image" href="/assets/hvac-hero-mobile.avif" type="image/avif" media="(max-width: 640px)" fetchpriority="high" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="site-header header-solid" data-header></header>
+    <main class="page-main yard-landing">
+      <section class="page-hero yard-hero" aria-labelledby="yard-hero-title">
+        <picture class="yard-hero-media" aria-hidden="true">
+          <source type="image/avif" media="(max-width: 640px)" srcset="/assets/hvac-hero-mobile.avif" />
+          <source type="image/avif" media="(max-width: 1024px)" srcset="/assets/hvac-hero-tablet.avif" />
+          <source type="image/webp" media="(max-width: 640px)" srcset="/assets/hvac-hero-mobile.webp" />
+          <source type="image/webp" media="(max-width: 1024px)" srcset="/assets/hvac-hero-tablet.webp" />
+          <source type="image/webp" srcset="/assets/hvac-hero-desktop.webp" />
+          <img src="/assets/hvac-hero.png" width="1823" height="863" alt="" fetchpriority="high" decoding="async" />
+        </picture>
+        <p class="eyebrow">Apex Service Group · Spanaway, WA</p>
+        <h1 id="yard-hero-title">Local Heating &amp; Cooling Installation, Repair and Maintenance</h1>
+        <p>Mini-splits, heat pumps and furnaces for homeowners across Pierce, King and Thurston counties.</p>
+        <!-- GOOGLE_RATING_BADGE -->
+        <a class="button primary yard-start" href="#yard-picker" data-yard-start>Get Started</a>
+      </section>
+
+      <section class="content-section yard-picker" id="yard-picker" aria-labelledby="yard-picker-title" data-yard-picker>
+        <div class="yard-step" data-yard-step="category">
+          <h2 id="yard-picker-title" tabindex="-1">What can we help you with?</h2>
+          <div class="yard-card-grid" role="group" aria-labelledby="yard-picker-title">
+            <button class="yard-card" type="button" data-yard-category="mini_split" aria-pressed="false"><strong>Mini-Split</strong><span>Ductless heating &amp; cooling</span></button>
+            <button class="yard-card" type="button" data-yard-category="heat_pump" aria-pressed="false"><strong>Heat Pump</strong><span>Central heating &amp; cooling</span></button>
+            <button class="yard-card" type="button" data-yard-category="furnace" aria-pressed="false"><strong>Furnace</strong><span>Gas or electric furnace</span></button>
+            <button class="yard-card" type="button" data-yard-category="repair_maintenance" aria-pressed="false"><strong>Repair &amp; Maintenance</strong><span>Service for a system you already have</span></button>
+            <button class="yard-card" type="button" data-yard-category="other" aria-pressed="false"><strong>Other</strong><span>Something else? Tell us about it</span></button>
+          </div>
+        </div>
+
+        <div class="yard-step" data-yard-step="task" hidden>
+          <button class="yard-back" type="button" data-yard-back="category">← Back</button>
+          <h2 tabindex="-1" data-yard-task-title>What do you need?</h2>
+          <div class="yard-card-grid yard-task-grid" role="group" aria-label="Choose a task" data-yard-task-options>
+            <button class="yard-card" type="button" data-yard-task="install_replace" aria-pressed="false"><strong>Install or Replace</strong><span>New system or replacing an old one</span></button>
+            <button class="yard-card" type="button" data-yard-task="repair" aria-pressed="false"><strong>Repair</strong><span>Not working the way it should</span></button>
+            <button class="yard-card" type="button" data-yard-task="maintenance" aria-pressed="false"><strong>Maintenance</strong><span>Cleaning and seasonal check</span></button>
+          </div>
+          <label class="yard-field" data-yard-equipment-wrap hidden>
+            <span>Equipment type <span class="instant-optional">(optional)</span></span>
+            <select name="equipment" data-yard-equipment>
+              <option value="">Choose if you know</option>
+              <option value="mini_split">Mini-Split</option>
+              <option value="heat_pump">Heat Pump</option>
+              <option value="furnace">Furnace</option>
+              <option value="air_conditioner">Air Conditioner</option>
+              <option value="not_sure">Not sure / other</option>
+            </select>
+          </label>
+          <label class="yard-field" data-yard-description-wrap hidden>
+            <span>What can we help you with? <span aria-hidden="true">*</span></span>
+            <textarea name="description" rows="3" maxlength="1000" aria-describedby="yard-description-hint yard-description-error" data-yard-description></textarea>
+            <span class="yard-hint" id="yard-description-hint">For example: ventilation, water heater, or another question.</span>
+            <span class="instant-field-error" id="yard-description-error" data-yard-description-error aria-live="polite"></span>
+          </label>
+        </div>
+
+        <div class="yard-step yard-contact" data-yard-step="contact" hidden>
+          <p class="yard-summary" data-yard-summary aria-live="polite"></p>
+          <div class="yard-actions">
+            <button class="button primary" type="button" data-yard-open-form>Request a Free Estimate</button>
+            <a class="button secondary yard-call" href="tel:+12532821126" data-yard-call>Call Us</a>
+          </div>
+
+          <form class="instant-contact yard-form" data-yard-form data-endpoint="/api/lead" novalidate hidden>
+            <h3 tabindex="-1" data-yard-form-title>Your contact details</h3>
+            <label class="form-honeypot" aria-hidden="true">Company<input name="company" tabindex="-1" autocomplete="off" /></label>
+            <label><span>Name <span aria-hidden="true">*</span></span><input name="name" autocomplete="name" maxlength="120" required aria-describedby="yard-name-error" data-yard-name /><span class="instant-field-error" id="yard-name-error" data-yard-name-error aria-live="polite"></span></label>
+            <fieldset class="instant-contact-methods">
+              <legend>How should we contact you?</legend>
+              <div class="instant-contact-method-options">
+                <label><input type="radio" name="preferred_contact_method" value="phone" checked data-yard-method /><span>Phone</span></label>
+                <label><input type="radio" name="preferred_contact_method" value="email" data-yard-method /><span>Email</span></label>
+              </div>
+            </fieldset>
+            <label data-yard-phone-wrap><span>Phone <span aria-hidden="true">*</span></span><span class="phone-input"><span class="phone-prefix">+1</span><input name="phone" type="tel" autocomplete="tel-national" inputmode="tel" aria-describedby="yard-phone-error" data-yard-phone /></span><span class="instant-field-error" id="yard-phone-error" data-yard-phone-error aria-live="polite"></span></label>
+            <label data-yard-email-wrap hidden><span>Email <span aria-hidden="true">*</span></span><input name="email" type="email" autocomplete="email" inputmode="email" aria-describedby="yard-email-error" data-yard-email /><span class="instant-field-error" id="yard-email-error" data-yard-email-error aria-live="polite"></span></label>
+            <label><span>ZIP Code <span aria-hidden="true">*</span></span><input name="zip" autocomplete="postal-code" inputmode="numeric" maxlength="10" required aria-describedby="yard-zip-error" data-yard-zip /><span class="instant-field-error" id="yard-zip-error" data-yard-zip-error aria-live="polite"></span></label>
+            <label><span>Additional Details <span class="instant-optional">(optional)</span></span><textarea name="details" rows="3" maxlength="1600" data-yard-details></textarea></label>
+            <p class="form-status" data-yard-status aria-live="polite"></p>
+            <button class="button primary" type="submit" data-yard-submit>Request a Free Estimate</button>
+            <p class="instant-privacy-note">🔒 We don’t sell your contact information.</p>
+          </form>
+
+          <div class="yard-success" data-yard-success tabindex="-1" hidden>
+            <h3>Thank you, your request was sent.</h3>
+            <p>We’ll contact you by <span data-yard-success-method>phone</span>. If you need us sooner, call <a href="tel:+12532821126" data-yard-call>(253) 282-1126</a>.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="content-section alt google-reviews-section yard-reviews" aria-labelledby="yard-reviews-title" data-google-reviews-state="empty"><div class="about-heading-row"><div class="section-heading"><p class="eyebrow">Local customer feedback</p><h2 id="yard-reviews-title">What Homeowners Say About Apex</h2></div><a class="button secondary" href="/reviews">Read All Reviews</a></div><!-- GOOGLE_REVIEWS_SUMMARY --><!-- GOOGLE_REVIEWS_LIST --><div class="google-reviews-empty"><p>See verified feedback from local homeowners on our Reviews page.</p></div></section>
+
+      <section class="content-section about-projects yard-projects" aria-labelledby="yard-projects-title"><div class="about-heading-row"><div class="section-heading"><p class="eyebrow">Real Apex work</p><h2 id="yard-projects-title">Recent Projects</h2></div><a class="button secondary" href="/projects">View All Projects</a></div><div class="about-project-grid"><article><a class="about-project-image" href="/projects/mitsubishi-heat-pump-air-handler-replacement-kirkland"><img src="/assets/projects/mitsubishi-heat-pump-air-handler-kirkland/mitsubishi-heat-pump-kirkland-01.webp" width="1350" height="1800" loading="lazy" decoding="async" alt="Mitsubishi heat pump installed at a Kirkland home" /></a><div><p class="about-card-label">Kirkland, WA</p><h3>Heat Pump &amp; Air Handler Replacement</h3></div></article><article><a class="about-project-image" href="/projects/mini-split-deep-cleaning-seattle"><img src="/assets/projects/mini-split-deep-cleaning-seattle/fujitsu-mini-split-after-deep-cleaning-seattle-01.webp" width="1350" height="1800" loading="lazy" decoding="async" alt="Fujitsu mini-split after professional deep cleaning in Seattle" /></a><div><p class="about-card-label">Seattle, WA</p><h3>Mini-Split Deep Cleaning</h3></div></article><article><a class="about-project-image" href="/projects/mitsubishi-ducted-air-conditioning-hrv-installation-bellevue"><img src="/assets/projects/mitsubishi-ducted-ac-hrv-bellevue/mitsubishi-ducted-indoor-equipment-04.webp" width="2000" height="1500" loading="lazy" decoding="async" alt="Ducted Mitsubishi equipment integrated with residential ventilation in Bellevue" /></a><div><p class="about-card-label">Bellevue, WA</p><h3>Ducted HVAC &amp; Ventilation</h3></div></article></div></section>
+
+      <section class="content-section alt about-area yard-about" aria-labelledby="yard-about-title"><div><p class="eyebrow">About Apex</p><h2 id="yard-about-title">A Local, Owner-Operated HVAC Company</h2><p>Apex Service Group is based in Spanaway and installs, repairs and maintains residential heating and cooling systems. The people you talk to are the people who do the work. Washington Contractor License APEXSSG746LJ.</p><p>We serve homeowners across Pierce County, South King County, Seattle, the Eastside and the Thurston area.</p></div><a class="button heat-pump-blue-button" href="/service-areas">View Service Area</a></section>
+    </main>
+    <footer class="site-footer"><div><strong>Apex Service Group LLC</strong><span>Licensed HVAC installation, repair and maintenance. License APEXSSG746LJ.</span><span>Serving Pierce, King &amp; Thurston counties from Spanaway, WA</span></div><a href="/">Home</a></footer>
+    <script src="/script.js"></script>
+    <script src="/yard.js"></script>
+  </body>
+</html>

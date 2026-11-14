@@ -13,6 +13,7 @@ const totalLeads = document.querySelector("[data-total-leads]");
 const totalCalls = document.querySelector("[data-total-calls]");
 const shownLeads = document.querySelector("[data-shown-leads]");
 const undeliveredLeads = document.querySelector("[data-undelivered]");
+const heldLeads = document.querySelector("[data-held]");
 const addClientButton = document.querySelector("[data-add-client]");
 const editor = document.querySelector("[data-admin-editor]");
 const cancelEditorButton = document.querySelector("[data-cancel-editor]");
@@ -84,6 +85,7 @@ const hideEditor = () => {
 };
 
 const deliveryBadge = (lead) => {
+  if (lead.notify_status === "held") return `<br><span class="admin-badge is-error">Possible spam, not sent</span> <button type="button" data-release-lead>Not spam: send to Telegram</button>${lead.notify_last_error ? `<br><small>${escapeHtml(String(lead.notify_last_error).replace(/^Possible spam, not sent to Telegram: /, ""))}</small>` : ""}`;
   if (lead.notify_status === "failed") return `<br><span class="admin-badge is-error">Telegram failed</span> <button type="button" data-retry-notification>Resend</button>`;
   if (lead.notify_status === "pending" || lead.notify_status === "sending") return `<br><span class="admin-badge">Telegram retrying (${escapeHtml(lead.notify_attempts)})</span> <button type="button" data-retry-notification>Resend now</button>`;
   return "";
@@ -121,6 +123,7 @@ const renderLeads = (data) => {
   const notifications = data.stats?.notifications;
   undeliveredLeads.textContent = notifications ? String((notifications.pending || 0) + (notifications.failed || 0)) : "–";
   undeliveredLeads.closest("[data-undelivered-card]")?.classList.toggle("is-alert", Boolean(notifications?.failed));
+  heldLeads.textContent = notifications ? String(notifications.held || 0) : "–";
 
   tableBody.innerHTML = leads.length
     ? leads.map(leadRow).join("")
@@ -297,6 +300,24 @@ tableBody.addEventListener("click", async (event) => {
 
   if (event.target.closest("[data-edit-client]")) {
     showEditor(lead);
+    return;
+  }
+
+  if (event.target.closest("[data-release-lead]")) {
+    if (!window.confirm(`Send ${lead.name || "this request"} to Telegram as a real lead?`)) return;
+    try {
+      const response = await fetch("/api/admin/leads/release", {
+        method: "POST",
+        headers: adminJsonHeaders(),
+        body: JSON.stringify({ id: Number(lead.id) })
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || "Could not send the lead to Telegram.");
+      setStatus(status, result.sent ? "Sent to Telegram." : "Telegram is unavailable; the lead is queued and will be resent.", result.sent ? "success" : "error");
+      await loadLeads();
+    } catch (error) {
+      setStatus(status, error.message, "error");
+    }
     return;
   }
 

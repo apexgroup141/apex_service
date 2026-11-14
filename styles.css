@@ -1712,6 +1712,11 @@ h3 {
   left: -9999px;
 }
 
+/* Cloudflare Turnstile: invisible unless Cloudflare asks the visitor to tick its box. */
+.lead-guard-widget {
+  max-width: 100%;
+}
+
 .form-status {
   min-height: 22px;
   margin: -2px 0 0;
@@ -4181,4 +4186,81 @@ h3 {
   .page-hero.repair-conversion-hero .service-hero-media { bottom: auto; height: min(72vw, 430px); }
   .repair-conversion-hero .service-hero-media img { object-position: center 40%; }
   .page-hero.repair-conversion-hero::before { background: linear-gradient(180deg, rgba(3,21,54,0) 0, rgba(3,21,54,0) calc(min(72vw, 430px) - 70px), rgba(3,21,54,1) min(72vw, 430px), rgba(3,21,54,1) 100%); }
+}
+
+/* /yard: yard-sign QR landing page. Mobile first: a short hero so the picker shows early. */
+.yard-hero { position: relative; isolation: isolate; overflow: hidden; padding: 26px 16px 26px; background: var(--deep-2); }
+.yard-hero::before { position: absolute; z-index: -1; inset: 0; background: linear-gradient(90deg,rgba(3,21,54,.9),rgba(3,21,54,.68)),linear-gradient(0deg,rgba(3,21,54,.55),rgba(3,21,54,.1)); content: ""; pointer-events: none; }
+.yard-hero-media { position: absolute; z-index: -2; inset: 0; overflow: hidden; }
+.yard-hero-media img { width: 100%; height: 100%; object-fit: cover; }
+.yard-hero .eyebrow { margin-bottom: 8px; color: #ffcbcc; font-size: 12px; }
+.yard-hero h1 { margin: 0 0 10px; font-size: clamp(27px, 7.4vw, 56px); line-height: 1.08; overflow-wrap: anywhere; }
+.yard-hero > p:not(.eyebrow) { margin: 0; font-size: 16px; line-height: 1.45; }
+.yard-hero .hero-rating-badge { margin-top: 12px; }
+.yard-start { width: 100%; min-height: 52px; margin-top: 16px; font-size: 17px; }
+.yard-landing .content-section { padding: 30px 16px; }
+.yard-landing .section-heading, .yard-landing .content-section > * { min-width: 0; max-width: 100%; }
+.yard-picker { scroll-margin-top: 76px; }
+.yard-step, .yard-form, .yard-success { scroll-margin-top: 92px; }
+.yard-step h2, .yard-step h3 { margin: 0 0 14px; font-size: clamp(25px, 6.4vw, 38px); line-height: 1.12; }
+.yard-step h2:focus, .yard-step h3:focus, .yard-success:focus { outline: none; }
+.yard-card-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+.yard-card { display: grid; gap: 2px; width: 100%; min-height: 64px; padding: 13px 16px; border: 2px solid #d7e1ea; border-radius: 10px; background: #fff; color: var(--ink); font: inherit; text-align: left; cursor: pointer; transition: border-color .18s ease, background .18s ease, box-shadow .18s ease; }
+.yard-card strong { font-size: 18px; font-weight: 850; line-height: 1.25; }
+.yard-card span { color: var(--muted); font-size: 14px; line-height: 1.35; }
+.yard-card:hover { border-color: #8caccc; }
+.yard-card:focus-visible { outline: 3px solid rgba(47,111,168,.3); outline-offset: 2px; }
+.yard-card[aria-pressed="true"] { border-color: #2f6fa8; background: #edf6ff; box-shadow: inset 0 0 0 1px #2f6fa8; }
+.yard-back { margin: 0 0 10px; padding: 6px 0; border: 0; background: none; color: #2f6fa8; font: inherit; font-weight: 800; cursor: pointer; }
+.yard-field { display: grid; gap: 8px; margin-top: 16px; color: var(--ink); font-weight: 800; }
+.yard-field select, .yard-field textarea, .yard-form textarea { width: 100%; min-height: 50px; padding: 12px 14px; border: 1px solid #b9c8d6; border-radius: 6px; background: #fff; color: var(--ink); font: inherit; font-weight: 500; }
+.yard-field textarea, .yard-form textarea { resize: vertical; }
+.yard-hint { color: var(--muted); font-size: 14px; font-weight: 600; }
+.yard-contact { margin-top: 24px; padding-top: 22px; border-top: 1px solid #dce4ec; }
+.yard-summary { margin: 0 0 12px; color: var(--muted); font-weight: 800; }
+.yard-actions { display: grid; gap: 10px; }
+.yard-actions .button { width: 100%; min-height: 54px; font-size: 17px; }
+.yard-landing .button.secondary.yard-call { border-color: #2f6fa8; background: #fff; color: #2f6fa8; }
+.yard-form.instant-contact { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 22px; padding-top: 0; border-top: 0; }
+.yard-form .instant-contact-methods { margin: 0; }
+.yard-form .instant-contact-methods legend { font-size: 17px; }
+.yard-form .instant-contact-method-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.yard-form .phone-input input { border: 0; border-radius: 0; }
+.yard-form .button { width: 100%; min-height: 54px; margin-top: 0; }
+.yard-form .instant-privacy-note { margin: 0; color: var(--muted); font-size: 14px; }
+.yard-form .form-status:empty { display: none; }
+.yard-success { padding: 20px; border: 2px solid #278254; border-radius: 10px; background: #effaf3; }
+.yard-success h3 { margin: 0 0 8px; font-size: 22px; }
+.yard-success p { margin: 0; }
+.yard-landing .about-heading-row { flex-wrap: wrap; gap: 12px 30px; }
+.yard-landing .yard-reviews .section-heading h2, .yard-projects .section-heading h2, .yard-about h2 { font-size: clamp(26px, 6vw, 40px); }
+.yard-projects .about-project-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 18px; }
+.yard-projects .about-project-image { height: auto; aspect-ratio: 3 / 4; }
+.yard-projects .about-project-grid article > div { padding: 10px; }
+.yard-projects .about-project-grid h3 { margin: 0; font-size: 14px; line-height: 1.3; }
+.yard-projects .about-card-label { margin-bottom: 2px; font-size: 12px; }
+.yard-about p { font-size: 16px; }
+@media (max-width: 700px) {
+  .yard-landing .about-heading-row > .button { display: none; }
+  .yard-about .button { width: 100%; }
+}
+@media (min-width: 700px) {
+  .yard-hero { padding: 54px clamp(18px,6vw,86px) 50px; }
+  .yard-hero > p:not(.eyebrow) { max-width: 680px; font-size: 19px; }
+  .yard-start { width: auto; }
+  .yard-landing .content-section { padding: 56px clamp(18px,6vw,86px); }
+  .yard-card-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  .yard-card { min-height: 96px; align-content: center; padding: 18px 20px; }
+  .yard-actions { grid-template-columns: repeat(2, max-content); }
+  .yard-actions .button { width: auto; min-width: 230px; }
+  .yard-form.instant-contact { max-width: 620px; }
+  .yard-form .button { width: auto; justify-self: start; min-width: 260px; }
+  .yard-step, .yard-contact { max-width: 980px; }
+  .yard-projects .about-project-grid h3 { font-size: 18px; }
+  .yard-projects .about-project-grid article > div { padding: 16px 18px; }
+}
+.yard-landing .about-heading-row > .button.secondary { border-color: #2f6fa8; background: #fff; color: #2f6fa8; }
+@media (min-width: 700px) {
+  .yard-projects .about-project-image { aspect-ratio: 4 / 3; }
+  .yard-projects .about-project-grid { max-width: 980px; }
 }

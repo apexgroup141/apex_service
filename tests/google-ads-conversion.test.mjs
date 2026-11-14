@@ -27,7 +27,7 @@ test("the shared lead form sets the marker and redirects only after confirmed su
   const generateLead = classicSource.indexOf('"generate_lead"', successLatch);
   const markerSet = classicSource.indexOf('sessionStorage.setItem(googleAdsLeadPendingKey, payload.submission_id || "1")', generateLead);
   const redirect = classicSource.indexOf('window.location.href = "/thank-you"', markerSet);
-  const catchBlock = classicSource.indexOf("    } catch {", redirect);
+  const catchBlock = classicSource.indexOf("    } catch (error) {", redirect);
   assert.ok(successCheck >= 0 && successLatch > successCheck && generateLead > successLatch && markerSet > generateLead && redirect > markerSet && catchBlock > redirect);
   assert.doesNotMatch(classicSource.slice(successLatch, catchBlock), /trackEvent\(\s*"conversion"/);
   assert.doesNotMatch(classicSource.slice(catchBlock, classicSource.indexOf("  });", catchBlock)), /sessionStorage\.setItem|conversion/);
@@ -35,7 +35,7 @@ test("the shared lead form sets the marker and redirects only after confirmed su
 });
 
 test("both instant estimates set the marker and redirect after confirmed success and GA4", () => {
-  assert.equal((quizSource.match(/if \(!response\.ok \|\| (?:data|result)\?\.ok !== true\) throw new Error\("Request failed"\);/g) || []).length, 2);
+  assert.equal((quizSource.match(/if \(!response\.ok \|\| (?:data|result)\?\.ok !== true\) throw refusal\(leadForm, response, (?:data|result)\);/g) || []).length, 2);
   assert.equal((quizSource.match(/sessionStorage\.setItem\(GOOGLE_ADS_LEAD_PENDING_KEY, payload\.submission_id \|\| "1"\)/g) || []).length, 2);
   assert.equal((quizSource.match(/window\.location\.href = "\/thank-you"/g) || []).length, 2);
   assert.equal((quizSource.match(/track\("generate_lead"/g) || []).length, 2);
@@ -61,7 +61,7 @@ test("failed and validation paths cannot set a marker or fire an Ads conversion"
 test("direct visits and refreshes do not convert without a pending session marker", () => {
   assert.match(classicSource, new RegExp(`const googleAdsLeadPendingKey = "${marker}"`));
   assert.match(quizSource, new RegExp(`const GOOGLE_ADS_LEAD_PENDING_KEY = "${marker}"`));
-  assert.match(classicSource, /const pendingLead = window\.sessionStorage\.getItem\(googleAdsLeadPendingKey\);\s+if \(pendingLead && typeof window\.gtag === "function"\)/);
+  assert.match(classicSource, /const pendingLead = window\.sessionStorage\.getItem\(googleAdsLeadPendingKey\);\s+if \(pendingLead && isLiveSite && typeof window\.gtag === "function"\)/);
   assert.match(classicSource, /sessionStorage\.removeItem\(googleAdsLeadPendingKey\)/);
 });
 
@@ -159,4 +159,76 @@ test("the conversion carries the submission id as transaction_id so Google Ads d
   assert.match(classicSource, /if \(pendingLead !== "1"\) conversion\.transaction_id = pendingLead;/);
   assert.match(classicSource, /window\.apexLeadContext\.decorate\(payload, leadForm\);/);
   assert.equal((quizSource.match(/window\.apexLeadContext\?\.decorate\(payload, leadForm\);/g) || []).length, 2);
+});
+
+test("OpenAI lead_created fires only on the confirmation page, from the confirmed-lead marker, once per lead", () => {
+  assert.equal((classicSource.match(/"lead_created"/g) || []).length, 1);
+  assert.doesNotMatch(quizSource, /oaiq|lead_created/);
+  const thankYouCheck = classicSource.indexOf('window.location.pathname === "/thank-you"');
+  const measure = classicSource.indexOf('"lead_created"');
+  const thankYouEnd = classicSource.indexOf("document.querySelectorAll('a[href]')");
+  assert.ok(thankYouCheck >= 0 && measure > thankYouCheck && measure < thankYouEnd);
+  const block = classicSource.slice(thankYouCheck, measure);
+  assert.match(block, /sessionStorage\.getItem\(googleAdsLeadPendingKey\)/);
+  assert.match(block, /sessionStorage\.getItem\(openAiLeadSentKey\) !== pendingLead/);
+  assert.match(classicSource, /measureArgs\.push\(\{ event_id: pendingLead \}\)/);
+  assert.doesNotMatch(classicSource.slice(measure - 400, measure + 400), /email|phone|user_data/);
+});
+
+const runThankYou = ({ marker, sent, oaiq = true, hostname = "apexgroupwa.com" }) => {
+  const session = new Map(Object.entries({ apex_google_ads_lead_pending: marker, apex_openai_lead_sent: sent }).filter(([, v]) => v != null));
+  const calls = [];
+  // Any element: every property and call returns the same stub, enough for the page setup code.
+  const element = new Proxy(function () {}, { get: (target, prop) => (prop === "then" ? undefined : element), apply: () => element });
+  const context = {
+    window: {
+      location: { pathname: "/thank-you", search: "", hostname, href: `https://${hostname}/thank-you` },
+      gtag: (...args) => calls.push(["gtag", ...args]),
+      sessionStorage: { getItem: (k) => session.get(k) ?? null, setItem: (k, v) => session.set(k, String(v)), removeItem: (k) => session.delete(k) },
+      localStorage: { getItem: () => null, setItem() {}, removeItem() {} },
+      scrollY: 0, addEventListener() {}, matchMedia: () => ({ matches: false }), setTimeout, clearTimeout,
+      oaiq: oaiq ? (...args) => calls.push(args) : undefined
+    },
+    document: { querySelector: () => element, querySelectorAll: () => [], createElement: () => element, body: element, referrer: "", addEventListener() {} },
+    URLSearchParams, URL, Date, JSON, Math, Object, Promise, TextEncoder
+  };
+  context.window.document = context.document;
+  vm.runInNewContext(classicSource, context);
+  return { calls, session };
+};
+
+test("the confirmation page sends lead_created once with the submission id and never on a direct visit", () => {
+  const first = runThankYou({ marker: "11111111-2222-3333-4444-555555555555" });
+  assert.deepEqual(first.calls.filter((c) => c[0] !== "gtag").map((c) => JSON.stringify(c)), [JSON.stringify(["measure", "lead_created", { type: "customer_action" }, { event_id: "11111111-2222-3333-4444-555555555555" }])]);
+  assert.equal(runThankYou({}).calls.filter((c) => c[0] !== "gtag").length, 0, "direct visit");
+  assert.equal(runThankYou({ marker: "11111111-2222-3333-4444-555555555555", sent: "11111111-2222-3333-4444-555555555555" }).calls.filter((c) => c[0] !== "gtag").length, 0, "reload with a leftover marker");
+  assert.doesNotThrow(() => runThankYou({ marker: "11111111-2222-3333-4444-555555555555", oaiq: false }), "pixel missing");
+});
+
+test("the Google Ads lead conversion fires only on apexgroupwa.com, never on a preview or local server", () => {
+  const marker = "11111111-2222-3333-4444-555555555555";
+  const live = runThankYou({ marker, oaiq: false }).calls.filter((c) => c[0] === "gtag" && c[2] === "conversion");
+  assert.equal(live.length, 1);
+  for (const hostname of ["7fd2012c-apexservice.tight-pond-73b1.workers.dev", "localhost"]) {
+    const { calls, session } = runThankYou({ marker, oaiq: false, hostname });
+    assert.equal(calls.filter((c) => c[0] === "gtag" && c[2] === "conversion").length, 0, hostname);
+    assert.equal(session.has("apex_google_ads_user_data"), false, "hashed contact data is still cleared");
+  }
+});
+
+test("GA4 generate_lead gets only the city or ZIP, never the street address", () => {
+  const start = classicSource.indexOf("const analyticsLeadArea");
+  const end = classicSource.indexOf("};", start) + 2;
+  const analyticsLeadArea = vm.runInNewContext(`(${classicSource.slice(start, end).replace(/^const analyticsLeadArea = /, "").replace(/;$/, "")})`);
+  assert.equal(analyticsLeadArea({ address: "123 Main St", city: "Spanaway", zip: "98387", area: "123 Main St, Spanaway, WA 98387" }), "Spanaway");
+  assert.equal(analyticsLeadArea({ address: "123 Main St", zip: "98387", area: "123 Main St, WA 98387" }), "WA 98387");
+  assert.equal(analyticsLeadArea({ city: "123 Main St", zip: "98387" }), "WA 98387");
+  assert.equal(analyticsLeadArea({ area: "Puyallup" }), "Puyallup");
+  assert.equal(analyticsLeadArea({ area: "4512 Pacific Ave Tacoma" }), "");
+  assert.match(classicSource, /lead_area: analyticsLeadArea\(payload\)/);
+  assert.doesNotMatch(classicSource, /lead_area: payload\.area/);
+});
+
+test("the shared tag reader skips {oppref} placeholders, plain or URL-encoded", () => {
+  assert.match(classicSource, /if \(value && !\/\[\{\}\]\|%7\[BD\]\/i\.test\(value\)\) found\[field\]/);
 });

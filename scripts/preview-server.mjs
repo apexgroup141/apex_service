@@ -26,6 +26,13 @@ http.createServer((request, response) => {
     return;
   }
 
+  // Same as worker.js: the yard-sign QR code lands here.
+  if (url.pathname === "/go" || url.pathname === "/go/") {
+    response.writeHead(302, { Location: "/yard?utm_source=yard_sign&utm_medium=offline&utm_campaign=local_hvac", "Cache-Control": "no-store" });
+    response.end();
+    return;
+  }
+
   if (url.pathname.endsWith(".html")) {
     response.writeHead(301, { Location: url.pathname.slice(0, -5) || "/" });
     response.end();

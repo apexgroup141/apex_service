@@ -44,6 +44,7 @@
               <label><span>ZIP Code <span aria-hidden="true">*</span></span><input name="zip" autocomplete="postal-code" inputmode="numeric" pattern="[0-9]{5}(-[0-9]{4})?" maxlength="10" required /></label>
               <label><span>Name <span class="instant-optional">(optional)</span></span><input name="first_name" autocomplete="given-name" /></label>
             </div>
+            <label class="form-honeypot" aria-hidden="true">Company<input name="company" tabindex="-1" autocomplete="off" /></label>
             <p class="instant-field-error" data-contact-method-error aria-live="polite"></p>
             <p class="form-status" data-instant-status aria-live="polite"></p>
             <button class="button primary" type="submit">Show My Price Range</button>

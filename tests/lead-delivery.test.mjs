@@ -166,7 +166,7 @@ test("a notification that keeps failing stops at the attempt limit and can be re
       headers: { Authorization: "Bearer local-admin" }
     }), env);
     const adminData = await admin.json();
-    assert.deepEqual(adminData.stats.notifications, { pending: 0, failed: 1 });
+    assert.deepEqual(adminData.stats.notifications, { pending: 0, failed: 1, held: 0 });
     assert.equal(adminData.leads[0].notify_status, "failed");
 
     tg.restore();
@@ -280,6 +280,74 @@ test("leads without attribution keep the original Telegram layout", async () => 
     await postLead({ ...secrets }, genericLead);
     assert.doesNotMatch(tg.calls[0].body.text, /Source:/);
     assert.match(tg.calls[0].body.text, /<b>Message:<\/b> Local delivery test\n\n<b>Page:<\/b>/);
+  } finally {
+    tg.restore();
+  }
+});
+
+const chatGptAdsAttribution = (extra = {}) => recentAttribution({
+  utm_source: "chatgpt",
+  utm_medium: "cpc",
+  utm_campaign: "minisplit_pierce_14d",
+  utm_content: "ad1",
+  oa_oppref: "test-oppref-123",
+  ...extra
+});
+
+test("ChatGPT Ads leads are labelled with campaign, ad and form in Telegram", async () => {
+  const { db, binding } = createD1();
+  const tg = telegram();
+  try {
+    await postLead({ DB: binding, ...secrets }, { ...genericLead, attribution: chatGptAdsAttribution() });
+    await postLead({ DB: binding, ...secrets }, {
+      ...instantLead,
+      lead_source: "mini_split_instant_estimate",
+      system_type: "mini_split",
+      zones: "1",
+      phone: "+12535550124",
+      preferred_contact_methods: ["phone"],
+      service: "Mini-split installation",
+      attribution: chatGptAdsAttribution({ utm_content: "<b>ad2</b>" })
+    });
+    const [generic, quiz] = tg.calls.map((call) => call.body.text);
+    assert.match(generic, /<b>Source:<\/b> ChatGPT Ads\n<b>Campaign:<\/b> minisplit_pierce_14d\n<b>Ad:<\/b> ad1\n<b>Form:<\/b> Estimate request form/);
+    assert.match(quiz, /<b>Source:<\/b> ChatGPT Ads\n<b>Campaign:<\/b> minisplit_pierce_14d\n<b>Ad:<\/b> &lt;b&gt;ad2&lt;\/b&gt;\n<b>Form:<\/b> Mini-split instant estimate/);
+    assert.doesNotMatch(generic + quiz, /test-oppref-123/, "the click reference stays out of the message");
+    const rows = leads(db);
+    assert.equal(rows.length, 2);
+    assert.equal(rows[0].utm_source, "chatgpt");
+    assert.equal(rows[0].utm_campaign, "minisplit_pierce_14d");
+  } finally {
+    tg.restore();
+  }
+});
+
+test("organic ChatGPT and Google Ads leads are not labelled ChatGPT Ads", async () => {
+  const tg = telegram();
+  try {
+    await postLead({ ...secrets }, { ...genericLead, attribution: recentAttribution({ utm_source: "chatgpt.com" }) });
+    await postLead({ ...secrets }, { ...genericLead, attribution: recentAttribution({ gclid: "Cj0KCQjw-test_click_id", utm_source: "google", utm_medium: "cpc" }) });
+    const [organic, google] = tg.calls.map((call) => call.body.text);
+    assert.match(organic, /<b>Source:<\/b> chatgpt\.com\n<b>Submitted/);
+    assert.match(google, /<b>Source:<\/b> Google Ads click\n<b>Submitted/);
+    assert.doesNotMatch(organic + google, /ChatGPT Ads|Campaign:|Form:/);
+  } finally {
+    tg.restore();
+  }
+  assert.equal(sanitizeAttribution(recentAttribution({ oppref: "{oppref}" })).oppref, null, "an unexpanded placeholder is not a click");
+  assert.equal(sanitizeAttribution(recentAttribution({ oppref: "x".repeat(600) })).oppref, null);
+});
+
+test("unexpanded or encoded {oppref} placeholders never make a visit ChatGPT Ads", async () => {
+  for (const placeholder of ["{oppref}", "%7Boppref%7D", "%257Boppref%257D"]) {
+    const attribution = sanitizeAttribution(recentAttribution({ oppref: placeholder, oa_oppref: placeholder }));
+    assert.equal(attribution.oppref, null, placeholder);
+    assert.equal(attribution.oa_oppref, null, placeholder);
+  }
+  const tg = telegram();
+  try {
+    await postLead({ ...secrets }, { ...genericLead, attribution: recentAttribution({ oa_oppref: "{oppref}", oppref: "%7Boppref%7D" }) });
+    assert.doesNotMatch(tg.calls[0].body.text, /ChatGPT Ads|Source:/);
   } finally {
     tg.restore();
   }
