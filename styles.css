@@ -4264,3 +4264,8 @@ h3 {
   .yard-projects .about-project-image { aspect-ratio: 4 / 3; }
   .yard-projects .about-project-grid { max-width: 980px; }
 }
+
+/* Financing prompt shown with instant-estimate ranges */
+.thank-you-estimate .estimate-financing { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
+.thank-you-estimate .estimate-financing .button { margin-top: 4px; }
+.home-hero-trust a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
