@@ -1,11 +1,11 @@
 const serviceLinks = [
-  ["Home", "/"],
   ["Heat Pumps", "/services/heat-pumps"],
   ["Mini Splits", "/services/mini-splits"],
   ["Air Conditioning", "/services/air-conditioning"],
   ["Furnaces", "/services/furnaces"],
   ["Ductwork", "/services/ductwork"],
-  ["Repair & Maintenance", "/services/repair-maintenance"]
+  ["Repair & Maintenance", "/services/repair-maintenance"],
+  ["Financing", "/rebates-financing"]
 ];
 
 const aboutLinks = [
